@@ -34,14 +34,30 @@ def _get_client() -> gspread.Client:
     creds = Credentials.from_service_account_info(_get_creds_dict(), scopes=SCOPES)
     return gspread.authorize(creds)
 
-def read_sheet(sheet_name: str) -> List[dict]:
+def read_sheet(sheet_name: str, header_row: int = 2) -> List[dict]:
+    """
+    header_row: 실제 컬럼명이 있는 행 번호 (1-based)
+    주식현황상세는 1행=그룹헤더, 2행=컬럼명이라 header_row=2
+    """
     try:
         client = _get_client()
         sheets_id = _get_sheets_id()
         logger.info(f"Opening sheet_id={sheets_id}, tab={sheet_name}")
-        spreadsheet = client.open_by_key(sheets_id)
-        sheet = spreadsheet.worksheet(sheet_name)
-        rows = sheet.get_all_records(head=2)  # 2행이 헤더
+        sheet = client.open_by_key(sheets_id).worksheet(sheet_name)
+
+        all_values = sheet.get_all_values()
+        if len(all_values) < header_row:
+            logger.warning("Sheet has no data")
+            return []
+
+        headers = all_values[header_row - 1]  # 2행 = index 1
+        rows = []
+        for row in all_values[header_row:]:  # 3행부터 데이터
+            if not any(row):  # 빈 행 스킵
+                continue
+            row_dict = {headers[i]: row[i] if i < len(row) else "" for i in range(len(headers))}
+            rows.append(row_dict)
+
         logger.info(f"read_sheet OK: {len(rows)} rows")
         return rows
     except Exception as e:
