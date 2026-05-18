@@ -9,8 +9,9 @@
 | 항목 | 내용 |
 |------|------|
 | 레포 | https://github.com/Dalbonz/invest-dash (Public) |
+| 앱 URL | https://invest-dash-ddfydopf3x7jvqggbzc5el.streamlit.app |
 | UI | Streamlit Cloud |
-| 언어 | Python |
+| 언어 | Python 3.14 |
 | AI | Claude API (claude-sonnet-4-20250514) |
 | Holdings | Google Sheets 연동 |
 | 저장소 | GitHub |
@@ -27,6 +28,7 @@
 - 달봉즈님 액션은 단계별 번호 리스트 + URL
 - 코드 C&P는 TXT 파일로 제공
 - 토큰 최소화
+- 코드 생성 전 Streamlit Cloud 환경 기준 사전 검증 필수
 
 ---
 
@@ -39,7 +41,70 @@ engines/**/**.py → output.json
     ↓
 ai_summary/ → Claude API
     ↓
-dashboard/app.py (Streamlit)
+app.py (Streamlit, 루트)
+```
+
+---
+
+## 프로젝트 구조 확정
+
+```
+invest-dash/
+├── app.py                          ← 루트 (Streamlit main)
+├── engines/
+│   ├── __init__.py
+│   ├── market/
+│   │   ├── __init__.py
+│   │   ├── market_collector.py
+│   │   ├── scoring_engine.py
+│   │   ├── risk_detector.py
+│   │   └── output.json
+│   ├── portfolio/
+│   │   ├── __init__.py
+│   │   ├── holdings_loader.py
+│   │   └── output.json
+│   ├── ai_summary/
+│   │   ├── __init__.py
+│   │   ├── claude_client.py
+│   │   ├── prompt_builder.py
+│   │   ├── market_interpreter.py
+│   │   └── output.json
+│   ├── short_term/ (미완)
+│   ├── mid_term/ (미완)
+│   ├── long_term/ (미완)
+│   └── theme/ (미완)
+├── shared/
+│   ├── __init__.py
+│   ├── config.py
+│   ├── constants.py
+│   ├── logger.py
+│   ├── models.py
+│   ├── utils.py
+│   ├── cache.py
+│   └── gsheet_client.py
+├── dashboard/                      ← pages/widgets/components용 (app.py 없음)
+├── review/
+│   ├── code_reviewer.py
+│   └── output_validator.py
+├── docs/
+│   └── architecture.md
+├── requirements.txt
+├── .env.example
+└── PROGRESS.md
+```
+
+---
+
+## Streamlit Secrets 설정 완료
+
+```toml
+ANTHROPIC_API_KEY = "sk-ant-..."
+GOOGLE_SHEETS_ID = "..."
+
+[GOOGLE_SERVICE_ACCOUNT]
+type = "service_account"
+project_id = "invest-dash-496701"
+... (설정 완료)
 ```
 
 ---
@@ -48,33 +113,36 @@ dashboard/app.py (Streamlit)
 
 ### 환경 세팅
 - [x] GitHub 레포 생성 (invest-dash, Public)
-- [x] Streamlit Cloud GitHub 연동
-- [x] Google Cloud 프로젝트 생성 (invest-dash)
+- [x] Streamlit Cloud 배포 완료
+- [x] Google Cloud 프로젝트 (invest-dash-496701)
 - [x] Google Sheets API + Drive API 활성화
-- [x] 서비스 계정 JSON 키 발급
+- [x] 서비스 계정 (invest-dash-bot) JSON 키 발급
 - [x] Anthropic API 키 확인
+- [x] Streamlit Secrets 설정 완료
 
-### 코드 생성 및 GitHub 업로드
-- [x] 전체 폴더 스캐폴딩
-- [x] `requirements.txt`
-- [x] `.env.example`
-- [x] `shared/config.py`
+### 코드
+- [x] `app.py` (루트)
+- [x] `shared/config.py` (st.secrets 지원)
 - [x] `shared/constants.py`
 - [x] `shared/logger.py`
 - [x] `shared/models.py`
 - [x] `shared/utils.py`
 - [x] `shared/cache.py`
-- [x] `shared/gsheet_client.py`
+- [x] `shared/gsheet_client.py` (AttrDict → dict 변환 수정 완료)
+- [x] `shared/__init__.py`
+- [x] `engines/__init__.py`
+- [x] `engines/market/__init__.py`
 - [x] `engines/market/market_collector.py`
 - [x] `engines/market/scoring_engine.py`
 - [x] `engines/market/risk_detector.py`
+- [x] `engines/portfolio/__init__.py`
 - [x] `engines/portfolio/holdings_loader.py`
+- [x] `engines/ai_summary/__init__.py`
 - [x] `engines/ai_summary/claude_client.py`
 - [x] `engines/ai_summary/prompt_builder.py`
 - [x] `engines/ai_summary/market_interpreter.py`
-- [x] `review/output_validator.py`
 - [x] `review/code_reviewer.py`
-- [x] `dashboard/app.py`
+- [x] `review/output_validator.py`
 - [x] `docs/architecture.md`
 
 ---
@@ -99,31 +167,17 @@ dashboard/app.py (Streamlit)
 - [ ] `review/data_flow_checker.py`
 - [ ] `shared/timeframe.py`
 
-### 배포
-- [ ] Streamlit Cloud 배포 설정
-- [ ] Streamlit Secrets 환경변수 설정
-- [ ] Google Sheets holdings 시트 초기 데이터 구성
-
-### 문서
-- [ ] `docs/roadmap.md`
-- [ ] `docs/prompts.md`
-- [ ] `docs/api_rules.md`
+### 다음 할 일 (우선순위 순)
+1. gsheet_client 에러 확인 (AttrDict fix 배포 후)
+2. Google Sheets holdings 시트 초기 데이터 구성
+3. 나머지 엔진 코드 작성
+4. UI 개선
 
 ---
 
-## 다음 할 일 (우선순위 순)
+## 주요 에러 해결 이력
 
-1. Streamlit Cloud 배포
-2. Streamlit Secrets 환경변수 설정
-3. Google Sheets holdings 시트 구성
-4. 나머지 엔진 코드 작성
-
----
-
-## 환경변수 목록 (.env / Streamlit Secrets)
-
-```
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_SHEETS_ID=...
-GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
-```
+| 에러 | 원인 | 해결 |
+|------|------|------|
+| ModuleNotFoundError: shared | app.py가 dashboard/ 안에 있음 | app.py를 루트로 이동 |
+| missing fields client_email | st.secrets AttrDict를 dict로 변환 안 함 | dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"]) |

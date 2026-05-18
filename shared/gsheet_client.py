@@ -14,19 +14,7 @@ SCOPES = [
 def _get_creds_dict() -> dict:
     try:
         import streamlit as st
-        sa = st.secrets["GOOGLE_SERVICE_ACCOUNT"]
-        return {
-            "type": sa["type"],
-            "project_id": sa["project_id"],
-            "private_key_id": sa["private_key_id"],
-            "private_key": sa["private_key"],
-            "client_email": sa["client_email"],
-            "client_id": sa["client_id"],
-            "auth_uri": sa["auth_uri"],
-            "token_uri": sa["token_uri"],
-            "auth_provider_x509_cert_url": sa["auth_provider_x509_cert_url"],
-            "client_x509_cert_url": sa["client_x509_cert_url"],
-        }
+        return dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
     except Exception:
         import os
         from dotenv import load_dotenv
