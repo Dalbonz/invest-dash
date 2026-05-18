@@ -8,7 +8,7 @@ from shared.logger import get_logger
 logger = get_logger("holdings_loader")
 OUTPUT_PATH = os.path.join(os.path.dirname(__file__), "output.json")
 
-SHEET_NAME = "주식현황세"
+SHEET_NAME = "주식현황상세"
 
 def load_holdings() -> List[dict]:
     rows = read_sheet(SHEET_NAME)
