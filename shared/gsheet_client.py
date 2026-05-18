@@ -1,0 +1,58 @@
+import json
+from typing import List
+import gspread
+from google.oauth2.service_account import Credentials
+from shared.config import GOOGLE_SHEETS_ID, GOOGLE_SERVICE_ACCOUNT_JSON
+from shared.logger import get_logger
+
+logger = get_logger("gsheet_client")
+
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive",
+]
+
+def _get_client() -> gspread.Client:
+    creds_dict = json.loads(GOOGLE_SERVICE_ACCOUNT_JSON)
+    creds = Credentials.from_service_account_info(creds_dict, scopes=SCOPES)
+    return gspread.authorize(creds)
+
+def read_sheet(sheet_name: str) -> List[dict]:
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEETS_ID).worksheet(sheet_name)
+        return sheet.get_all_records()
+    except Exception as e:
+        logger.error(f"read_sheet failed: {e}")
+        return []
+
+def write_sheet(sheet_name: str, rows: List[dict]) -> bool:
+    try:
+        client = _get_client()
+        spreadsheet = client.open_by_key(GOOGLE_SHEETS_ID)
+        try:
+            sheet = spreadsheet.worksheet(sheet_name)
+        except gspread.WorksheetNotFound:
+            sheet = spreadsheet.add_worksheet(sheet_name, rows=1000, cols=20)
+
+        if not rows:
+            return True
+
+        headers = list(rows[0].keys())
+        values = [headers] + [[row.get(h, "") for h in headers] for row in rows]
+        sheet.clear()
+        sheet.update(values, "A1")
+        return True
+    except Exception as e:
+        logger.error(f"write_sheet failed: {e}")
+        return False
+
+def append_row(sheet_name: str, row: dict) -> bool:
+    try:
+        client = _get_client()
+        sheet = client.open_by_key(GOOGLE_SHEETS_ID).worksheet(sheet_name)
+        sheet.append_row(list(row.values()))
+        return True
+    except Exception as e:
+        logger.error(f"append_row failed: {e}")
+        return False
