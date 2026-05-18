@@ -15,7 +15,8 @@ def _get_creds_dict() -> dict:
     try:
         import streamlit as st
         return json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
-    except Exception:
+    except Exception as e:
+        logger.error(f"creds load failed: {e}")
         import os
         from dotenv import load_dotenv
         load_dotenv()
@@ -35,10 +36,16 @@ def _get_client() -> gspread.Client:
 
 def read_sheet(sheet_name: str) -> List[dict]:
     try:
-        sheet = _get_client().open_by_key(_get_sheets_id()).worksheet(sheet_name)
-        return sheet.get_all_records()
+        client = _get_client()
+        sheets_id = _get_sheets_id()
+        logger.info(f"Opening sheet_id={sheets_id}, tab={sheet_name}")
+        spreadsheet = client.open_by_key(sheets_id)
+        sheet = spreadsheet.worksheet(sheet_name)
+        rows = sheet.get_all_records(head=2)  # 2행이 헤더
+        logger.info(f"read_sheet OK: {len(rows)} rows")
+        return rows
     except Exception as e:
-        logger.error(f"read_sheet failed: {e}")
+        logger.error(f"read_sheet failed [{sheet_name}]: {type(e).__name__}: {e}")
         return []
 
 def write_sheet(sheet_name: str, rows: List[dict]) -> bool:
@@ -56,7 +63,7 @@ def write_sheet(sheet_name: str, rows: List[dict]) -> bool:
         sheet.update(values, "A1")
         return True
     except Exception as e:
-        logger.error(f"write_sheet failed: {e}")
+        logger.error(f"write_sheet failed [{sheet_name}]: {type(e).__name__}: {e}")
         return False
 
 def append_row(sheet_name: str, row: dict) -> bool:
@@ -65,5 +72,5 @@ def append_row(sheet_name: str, row: dict) -> bool:
         sheet.append_row(list(row.values()))
         return True
     except Exception as e:
-        logger.error(f"append_row failed: {e}")
+        logger.error(f"append_row failed [{sheet_name}]: {type(e).__name__}: {e}")
         return False
