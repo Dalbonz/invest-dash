@@ -3,9 +3,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
-GOOGLE_SHEETS_ID = os.getenv("GOOGLE_SHEETS_ID", "")
-GOOGLE_SERVICE_ACCOUNT_JSON = os.getenv("GOOGLE_SERVICE_ACCOUNT_JSON", "")
+def _get(key: str, default: str = "") -> str:
+    try:
+        import streamlit as st
+        return st.secrets.get(key, os.getenv(key, default))
+    except Exception:
+        return os.getenv(key, default)
+
+ANTHROPIC_API_KEY = _get("ANTHROPIC_API_KEY")
+GOOGLE_SHEETS_ID = _get("GOOGLE_SHEETS_ID")
 
 CLAUDE_MODEL = "claude-sonnet-4-20250514"
 CLAUDE_MAX_TOKENS = 1000
