@@ -14,7 +14,7 @@ SCOPES = [
 def _get_creds_dict() -> dict:
     try:
         import streamlit as st
-        return dict(st.secrets["GOOGLE_SERVICE_ACCOUNT"])
+        return json.loads(st.secrets["GOOGLE_SERVICE_ACCOUNT_JSON"])
     except Exception:
         import os
         from dotenv import load_dotenv
@@ -24,7 +24,7 @@ def _get_creds_dict() -> dict:
 def _get_sheets_id() -> str:
     try:
         import streamlit as st
-        return st.secrets["GOOGLE_SHEETS_ID"]
+        return str(st.secrets["GOOGLE_SHEETS_ID"])
     except Exception:
         import os
         return os.getenv("GOOGLE_SHEETS_ID", "")
