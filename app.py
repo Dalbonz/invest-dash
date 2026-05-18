@@ -11,7 +11,7 @@ st.set_page_config(
 )
 
 def load_engine_output(engine_name: str) -> dict:
-    path = os.path.join(os.path.dirname(__file__), f"../engines/{engine_name}/output.json")
+    path = os.path.join(os.path.dirname(__file__), f"engines/{engine_name}/output.json")
     if not os.path.exists(path):
         return {}
     with open(path) as f:
@@ -28,10 +28,8 @@ with st.sidebar:
 if page == "🏠 대시보드":
     st.title("대시보드")
     col1, col2, col3 = st.columns(3)
-
     market = load_engine_output("market")
     ai = load_engine_output("ai_summary")
-
     scores = market.get("data", {}).get("scores", {})
     with col1:
         st.metric("KR 시장 점수", scores.get("kr", "-"))
@@ -40,7 +38,6 @@ if page == "🏠 대시보드":
     with col3:
         risk = market.get("data", {}).get("risk_level", "-")
         st.metric("리스크 레벨", f"Lv.{risk}")
-
     st.markdown("---")
     st.subheader("🤖 AI 요약")
     ai_data = ai.get("data", {})
@@ -54,7 +51,6 @@ if page == "🏠 대시보드":
 elif page == "💼 포트폴리오":
     st.title("포트폴리오")
     from shared.gsheet_client import read_sheet, write_sheet
-
     sheet_data = read_sheet("holdings")
     if sheet_data:
         df = pd.DataFrame(sheet_data)
@@ -95,7 +91,10 @@ elif page == "⚙️ 설정":
     st.title("설정")
     st.info("API 키 및 환경변수는 Streamlit Cloud Secrets에서 관리하세요.")
     st.code("""
-ANTHROPIC_API_KEY=sk-ant-...
-GOOGLE_SHEETS_ID=...
-GOOGLE_SERVICE_ACCOUNT_JSON={"type":"service_account",...}
+ANTHROPIC_API_KEY = "sk-ant-..."
+GOOGLE_SHEETS_ID = "..."
+
+[GOOGLE_SERVICE_ACCOUNT]
+type = "service_account"
+...
     """)
