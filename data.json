@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-18T13:41:23Z",
+  "updated": "2026-05-18T13:44:30Z",
   "market": {
     "kospi": {
       "price": 7516.04,
@@ -12,19 +12,19 @@
       "pct": -6.72
     },
     "sp500": {
-      "price": 7408.53,
-      "change": -92.71,
-      "pct": -1.24
+      "price": 7402.02,
+      "change": -99.22,
+      "pct": -1.32
     },
     "nasdaq": {
-      "price": 26239.129,
-      "change": -396.091,
-      "pct": -1.49
+      "price": 26183.982,
+      "change": -451.238,
+      "pct": -1.69
     },
     "dow": {
-      "price": 49497.45,
-      "change": -566.01,
-      "pct": -1.13
+      "price": 49574.09,
+      "change": -489.37,
+      "pct": -0.98
     },
     "usdkrw": {
       "price": 1494.8,
@@ -42,34 +42,34 @@
       "pct": 0.33
     },
     "oil": {
-      "price": 99.89,
-      "change": -1.13,
-      "pct": -1.12
+      "price": 99.82,
+      "change": -1.2,
+      "pct": -1.19
     },
     "gold": {
-      "price": 4575.5,
-      "change": 13.6,
-      "pct": 0.3
+      "price": 4581.2,
+      "change": 19.3,
+      "pct": 0.42
     },
     "nvda": {
-      "price": 226.21,
-      "change": -9.53,
-      "pct": -4.04
+      "price": 225.17,
+      "change": -10.57,
+      "pct": -4.48
     },
     "aapl": {
-      "price": 299.26,
-      "change": 1.05,
-      "pct": 0.35
+      "price": 299.19,
+      "change": 0.98,
+      "pct": 0.33
     },
     "msft": {
-      "price": 419.67,
-      "change": 10.24,
-      "pct": 2.5
+      "price": 419.34,
+      "change": 9.91,
+      "pct": 2.42
     },
     "tsla": {
-      "price": 413.835,
-      "change": -29.465,
-      "pct": -6.65
+      "price": 412.43,
+      "change": -30.87,
+      "pct": -6.96
     },
     "samsung": {
       "price": 281000.0,
