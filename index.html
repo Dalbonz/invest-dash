@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Invest Dash</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Sans+KR:wght@300;400;500;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --border: #2a2a3a;
+    --accent: #00d4aa;
+    --accent2: #7c6aff;
+    --red: #ff4d6d;
+    --green: #00d4aa;
+    --text: #e8e8f0;
+    --text2: #888899;
+    --text3: #555566;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Noto Sans KR', sans-serif; font-size: 14px; min-height: 100vh; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); background: var(--bg2); position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Bebas Neue', sans-serif; font-size: 22px; letter-spacing: 3px; color: var(--accent); }
+  .updated { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text3); }
+  main { padding: 16px; max-width: 1200px; margin: 0 auto; }
+  .ai-banner { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border: 1px solid var(--accent2); border-radius: 12px; padding: 16px 20px; margin-bottom: 16px; position: relative; overflow: hidden; }
+  .ai-banner::before { content: 'AI'; position: absolute; right: 16px; top: 50%; transform: translateY(-50%); font-family: 'Bebas Neue', sans-serif; font-size: 60px; color: var(--accent2); opacity: 0.1; }
+  .ai-label { font-size: 10px; letter-spacing: 2px; color: var(--accent2); margin-bottom: 8px; font-weight: 700; }
+  .ai-summary { font-size: 14px; line-height: 1.7; color: var(--text); }
+  .ai-meta { display: flex; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+  .risk-badge { display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+  .risk-1 { background: #00d4aa22; color: #00d4aa; border: 1px solid #00d4aa44; }
+  .risk-2 { background: #7fff0022; color: #7fff00; border: 1px solid #7fff0044; }
+  .risk-3 { background: #ffcc0022; color: #ffcc00; border: 1px solid #ffcc0044; }
+  .risk-4 { background: #ff880022; color: #ff8800; border: 1px solid #ff880044; }
+  .risk-5 { background: #ff4d6d22; color: #ff4d6d; border: 1px solid #ff4d6d44; }
+  .action-hint { font-size: 13px; color: var(--text2); font-style: italic; }
+  .section-title { font-size: 11px; letter-spacing: 2px; color: var(--text3); margin-bottom: 10px; font-weight: 700; }
+  .market-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 16px; }
+  @media (min-width: 600px) { .market-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (min-width: 900px) { .market-grid { grid-template-columns: repeat(5, 1fr); } }
+  .market-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; transition: border-color 0.2s; }
+  .market-card:hover { border-color: var(--accent); }
+  .market-name { font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+  .market-price { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 600; margin-bottom: 4px; }
+  .market-change { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+  .up { color: var(--green); } .down { color: var(--red); } .flat { color: var(--text3); }
+  .portfolio-section { margin-bottom: 16px; }
+  .portfolio-summary { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-bottom: 12px; }
+  @media (min-width: 600px) { .portfolio-summary { grid-template-columns: repeat(4, 1fr); } }
+  .summary-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .summary-label { font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-bottom: 6px; font-weight: 700; }
+  .summary-value { font-family: 'JetBrains Mono', monospace; font-size: 15px; font-weight: 600; }
+  .table-wrap { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th { font-size: 10px; letter-spacing: 1px; color: var(--text3); font-weight: 700; padding: 10px 14px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child { text-align: left; }
+  td { padding: 10px 14px; border-bottom: 1px solid #1a1a24; font-family: 'JetBrains Mono', monospace; font-size: 13px; text-align: right; white-space: nowrap; }
+  td:first-child { text-align: left; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; }
+  tr:last-child td { border-bottom: none; } tr:hover td { background: var(--bg3); }
+  .market-tag { display: inline-block; font-size: 9px; padding: 2px 6px; border-radius: 4px; margin-left: 4px; font-family: 'JetBrains Mono', monospace; }
+  .tag-kr { background: #ff4d6d22; color: #ff4d6d; } .tag-us { background: #7c6aff22; color: #7c6aff; }
+  .news-section { margin-bottom: 16px; }
+  .news-list { display: flex; flex-direction: column; gap: 8px; }
+  .news-item { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; text-decoration: none; transition: border-color 0.2s; }
+  .news-item:hover { border-color: var(--accent); }
+  .news-source { font-size: 10px; color: var(--accent2); font-weight: 700; white-space: nowrap; padding-top: 2px; }
+  .news-title { font-size: 13px; color: var(--text); line-height: 1.5; flex: 1; }
+  .loading { text-align: center; padding: 60px 20px; color: var(--text3); font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+  .spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .signals { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+  .signal-tag { font-size: 11px; padding: 3px 10px; border-radius: 4px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); }
+  .section { margin-bottom: 20px; }
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">INVEST DASH</div>
+  <div class="updated" id="updated">로딩 중...</div>
+</header>
+<main>
+  <div class="loading" id="loading"><div class="spinner"></div><br>데이터 불러오는 중...</div>
+  <div id="content" style="display:none">
+    <div class="section">
+      <div class="section-title">AI MARKET ANALYSIS</div>
+      <div class="ai-banner">
+        <div class="ai-label">CLAUDE AI · 시장 해석</div>
+        <div class="ai-summary" id="ai-summary">-</div>
+        <div class="ai-meta">
+          <span class="risk-badge" id="risk-badge">-</span>
+          <span class="action-hint" id="action-hint">-</span>
+        </div>
+        <div class="signals" id="signals"></div>
+      </div>
+    </div>
+    <div class="section">
+      <div class="section-title">MARKET INDEX</div>
+      <div class="market-grid" id="market-grid"></div>
+    </div>
+    <div class="section portfolio-section">
+      <div class="section-title">PORTFOLIO</div>
+      <div class="portfolio-summary" id="portfolio-summary"></div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>종목</th><th>보유량</th><th>평단(원)</th><th>평가(원)</th><th>수익(원)</th></tr></thead>
+          <tbody id="holdings-table"></tbody>
+        </table>
+      </div>
+    </div>
+    <div class="section news-section">
+      <div class="section-title">MARKET NEWS</div>
+      <div class="news-list" id="news-list"></div>
+    </div>
+  </div>
+</main>
+<script>
+const DATA_URL='data.json';
+const MARKET_LABELS={kospi:'KOSPI',kosdaq:'KOSDAQ',sp500:'S&P 500',nasdaq:'NASDAQ',dow:'DOW',usdkrw:'USD/KRW',vix:'VIX',oil:'OIL',gold:'GOLD',nvda:'NVDA',aapl:'AAPL',msft:'MSFT',tsla:'TSLA',samsung:'삼성전자',hynix:'SK하이닉스'};
+const MARKET_SHOW=['kospi','kosdaq','sp500','nasdaq','usdkrw','vix','oil','gold','nvda','tsla'];
+function fmt(n,dec=0){if(n===null||n===undefined||isNaN(n))return'-';return Number(n).toLocaleString('ko-KR',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
+function pctClass(v){if(v>0)return'up';if(v<0)return'down';return'flat';}
+function pctStr(v){if(v===null||v===undefined)return'-';return(v>0?'+':'')+Number(v).toFixed(2)+'%';}
+function riskLabel(r){const map={1:'매우낮음',2:'낮음',3:'보통',4:'높음',5:'매우높음'};return map[r]||'-';}
+function renderMarket(market){const grid=document.getElementById('market-grid');grid.innerHTML='';MARKET_SHOW.forEach(key=>{if(!market[key])return;const d=market[key];const cls=pctClass(d.pct);grid.innerHTML+=`<div class="market-card"><div class="market-name">${MARKET_LABELS[key]||key}</div><div class="market-price ${cls}">${fmt(d.price,key==='usdkrw'?2:0)}</div><div class="market-change ${cls}">${pctStr(d.pct)}</div></div>`;});}
+function renderAI(ai){document.getElementById('ai-summary').textContent=ai.market_summary||'-';document.getElementById('action-hint').textContent=ai.action_hint||'';const risk=ai.risk_level;const badge=document.getElementById('risk-badge');badge.textContent=`RISK Lv.${risk} · ${riskLabel(risk)}`;badge.className=`risk-badge risk-${risk}`;const signals=document.getElementById('signals');signals.innerHTML='';(ai.key_signals||[]).forEach(s=>{signals.innerHTML+=`<span class="signal-tag">${s}</span>`;});}
+function renderPortfolio(portfolio){const holdings=portfolio.holdings||[];let totalValue=0,totalProfit=0,totalCost=0;holdings.forEach(h=>{const v=parseFloat((h['평가총액(원)']||'').toString().replace(/,/g,''))||0;const p=parseFloat((h['원화수익']||'').toString().replace(/,/g,''))||0;const c=parseFloat((h['매수총액(원)']||'').toString().replace(/,/g,''))||0;totalValue+=v;totalProfit+=p;totalCost+=c;});const profitPct=totalCost>0?(totalProfit/totalCost*100):0;const profitCls=pctClass(totalProfit);document.getElementById('portfolio-summary').innerHTML=`<div class="summary-card"><div class="summary-label">종목수</div><div class="summary-value">${holdings.length}개</div></div><div class="summary-card"><div class="summary-label">평가금액</div><div class="summary-value">${fmt(totalValue)}원</div></div><div class="summary-card"><div class="summary-label">총수익</div><div class="summary-value ${profitCls}">${fmt(totalProfit)}원</div></div><div class="summary-card"><div class="summary-label">수익률</div><div class="summary-value ${profitCls}">${pctStr(profitPct)}</div></div>`;const tbody=document.getElementById('holdings-table');tbody.innerHTML='';holdings.forEach(h=>{const market=h['시장']||'';const tagCls=market==='국내'?'tag-kr':'tag-us';const tagLabel=market==='국내'?'KR':'US';const profit=parseFloat((h['원화수익']||'').toString().replace(/,/g,''))||0;const cls=pctClass(profit);tbody.innerHTML+=`<tr><td>${h['종목명']||'-'}<span class="market-tag ${tagCls}">${tagLabel}</span></td><td>${h['보유량']||'-'}</td><td>${h['매수평단가(원)']||'-'}</td><td>${h['평가총액(원)']||'-'}</td><td class="${cls}">${h['원화수익']||'-'}</td></tr>`;});}
+function renderNews(news){const list=document.getElementById('news-list');list.innerHTML='';(news||[]).forEach(n=>{list.innerHTML+=`<a class="news-item" href="${n.link}" target="_blank" rel="noopener"><span class="news-source">${n.source}</span><span class="news-title">${n.title}</span></a>`;});}
+async function load(){try{const res=await fetch(DATA_URL+'?t='+Date.now());const data=await res.json();const dt=new Date(data.updated);document.getElementById('updated').textContent=dt.toLocaleString('ko-KR',{timeZone:'Asia/Seoul',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' 업데이트';if(data.market)renderMarket(data.market);if(data.ai)renderAI(data.ai);if(data.portfolio)renderPortfolio(data.portfolio);if(data.news)renderNews(data.news);document.getElementById('loading').style.display='none';document.getElementById('content').style.display='block';}catch(e){document.getElementById('loading').innerHTML='<div style="color:#ff4d6d">데이터 로드 실패<br><small>'+e.message+'</small></div>';}}
+load();
+</script>
+</body>
+</html>
