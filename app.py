@@ -62,7 +62,7 @@ elif page == "💼 포트폴리오":
     st.title("포트폴리오")
     from shared.gsheet_client import read_sheet
 
-    sheet_data = read_sheet("주식현황세")
+    sheet_data = read_sheet("주식현황상세")
     if sheet_data:
         df = pd.DataFrame(sheet_data)
         # 빈 행 제거
