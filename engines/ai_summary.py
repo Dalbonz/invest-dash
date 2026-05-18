@@ -21,7 +21,7 @@ US: {json.dumps(us, ensure_ascii=False)}
   "market_summary": "시장 전체 요약 2문장",
   "kr_signal": "한국 시장 핵심 시그널",
   "us_signal": "미국 시장 핵심 시그널",
-  "risk_level": 1~5,
+  "risk_level": 3,
   "action_hint": "단기 액션 힌트 1문장",
   "key_signals": ["신호1", "신호2", "신호3"]
 }}"""
@@ -29,14 +29,40 @@ US: {json.dumps(us, ensure_ascii=False)}
     try:
         res = requests.post(
             'https://api.anthropic.com/v1/messages',
-            headers={'x-api-key': ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json'},
-            json={'model': 'claude-sonnet-4-20250514', 'max_tokens': 1000, 'messages': [{'role': 'user', 'content': prompt}]},
+            headers={
+                'x-api-key': ANTHROPIC_API_KEY,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json'
+            },
+            json={
+                'model': 'claude-sonnet-4-20250514',
+                'max_tokens': 1000,
+                'system': SYSTEM,
+                'messages': [{'role': 'user', 'content': prompt}]
+            },
             timeout=30
         )
-        text = res.json()['content'][0]['text']
+
+        if res.status_code != 200:
+            print(f'API 에러 {res.status_code}: {res.text[:200]}')
+            return {'error': f'api_status_{res.status_code}'}
+
+        data = res.json()
+
+        if 'content' not in data:
+            print(f'응답에 content 없음: {json.dumps(data)[:200]}')
+            return {'error': 'no_content_in_response'}
+
+        text = data['content'][0]['text']
         start = text.find('{')
         end = text.rfind('}') + 1
+        if start == -1:
+            return {'error': 'no_json_in_response', 'raw': text[:200]}
+
         return json.loads(text[start:end])
+
+    except json.JSONDecodeError as e:
+        return {'error': f'json_parse: {e}'}
     except Exception as e:
         return {'error': str(e)}
 
