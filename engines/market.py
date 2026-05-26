@@ -12,12 +12,10 @@ SYMBOLS = {
     'nasdaq':  '^IXIC',
     'dow':     '^DJI',
     'ndx':     '^NDX',
-    'vix':     '^VIX',
     # 환율
     'usdkrw':  'USDKRW=X',
     'jpykrw':  'JPYKRW=X',
     'eurkrw':  'EURKRW=X',
-    'cnykrw':  'CNYKRW=X',
     'usdjpy':  'JPY=X',
     'eurusd':  'EURUSD=X',
     'dxy':     'DX-Y.NYB',
@@ -26,6 +24,9 @@ SYMBOLS = {
     'brent':   'BZ=F',
     'gold':    'GC=F',
     'silver':  'SI=F',
+    # 채권
+    'us10y':   '^TNX',
+    'us30y':   '^TYX',
     # 미국 주요주
     'nvda':    'NVDA',
     'aapl':    'AAPL',
@@ -35,6 +36,10 @@ SYMBOLS = {
     # ETF
     'spy':     'SPY',
     'qqq':     'QQQ',
+    'tlt':     'TLT',
+    'gld':     'GLD',
+    'eem':     'EEM',
+    'xle':     'XLE',
     # 국내 주요주
     'samsung': '005930.KS',
     'hynix':   '000660.KS',
@@ -51,7 +56,6 @@ def fetch_price(symbol):
         chg = price - prev
         pct = round(chg / prev * 100, 2) if prev else 0
 
-        # 캔들 데이터
         candles = []
         ts = d.get('timestamp', [])
         q = d.get('indicators', {}).get('quote', [{}])[0]
@@ -61,7 +65,7 @@ def fetch_price(symbol):
         closes = q.get('close', [])
         vols = q.get('volume', [])
         for i in range(len(ts)):
-            if closes[i] is None:
+            if i >= len(closes) or closes[i] is None:
                 continue
             candles.append({
                 'time': ts[i],
@@ -69,7 +73,7 @@ def fetch_price(symbol):
                 'high': round(highs[i] or 0, 4),
                 'low':  round(lows[i] or 0, 4),
                 'close': round(closes[i] or 0, 4),
-                'vol':  int(vols[i] or 0),
+                'vol':  int(vols[i] or 0) if i < len(vols) else 0,
             })
 
         return {
