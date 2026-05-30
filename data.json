@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-30T08:25:49Z",
+  "updated": "2026-05-30T10:46:58Z",
   "market": {
     "kospi": {
       "price": 8476.15,
@@ -1500,6 +1500,12 @@
     {
       "source": "매일경제",
       "category": "분석",
+      "title": "“120조 더 써도 빚 안는다”…‘세수 대박’에 정부 AI 인프라 투자론 부상",
+      "link": "https://www.mk.co.kr/news/economy/12061934"
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
       "title": "“안 그래도 없는 돈, 지키면서 불리자”…청년 위한 ‘잃지 않는 투자’ 방법은? [캥거루족 탈출기⑳]",
       "link": "https://www.mk.co.kr/news/economy/12061840"
     },
@@ -1516,12 +1522,6 @@
       "link": "https://www.mk.co.kr/news/economy/12061471"
     },
     {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "대출 연체도 'K자 양극화' … 고금리·내수 부진에 中企·자영업자 직격탄",
-      "link": "https://www.mk.co.kr/news/economy/12061470"
-    },
-    {
       "source": "한국경제",
       "category": "국내",
       "title": "구윤철 \"초과세수 상당액 국부펀드에 넣겠다\"",
@@ -1534,10 +1534,10 @@
       "link": "https://www.hankyung.com/article/202605269465i"
     },
     {
-      "source": "한국경제",
+      "source": "연합뉴스",
       "category": "국내",
-      "title": "\"랠리 불안하지만 지속\"…전쟁 끝→반도체 위험? [김현석의 월스트리트나우]",
-      "link": "https://www.hankyung.com/article/202605307799i"
+      "title": "박홍근 \"물 들어올 때 제대로 투자…글로벌 톱3 기반 만들 것\"",
+      "link": "https://www.yna.co.kr/view/AKR20260530048300002"
     },
     {
       "source": "연합뉴스",
@@ -1556,12 +1556,6 @@
       "category": "국내",
       "title": "달러-원, 최종 결정 준비하는 트럼프에 오름폭 축소…1,504.70원 마감",
       "link": "https://www.yna.co.kr/view/AKR20260530003500002"
-    },
-    {
-      "source": "연합뉴스",
-      "category": "국내",
-      "title": "국민성장펀드 3만명, 평균 2천만원 가입…서민비중 39%",
-      "link": "https://www.yna.co.kr/view/AKR20260529153900002"
     }
   ],
   "portfolio": {
@@ -1874,6 +1868,6 @@
     "count": 16
   },
   "ai": {
-    "error": "json_parse: Expecting value: line 1 column 1 (char 0)"
+    "error": "json_parse: Expecting ',' delimiter: line 39 column 6 (char 1727)"
   }
 }
