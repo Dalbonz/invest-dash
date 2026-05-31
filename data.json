@@ -1,5 +1,5 @@
 {
-  "updated": "2026-05-30T10:46:58Z",
+  "updated": "2026-05-31T03:32:16Z",
   "market": {
     "kospi": {
       "price": 8476.15,
@@ -1500,6 +1500,18 @@
     {
       "source": "매일경제",
       "category": "분석",
+      "title": "이억원 “국민참여성장펀드 2차분 추가 출시”",
+      "link": "https://www.mk.co.kr/news/economy/12062049"
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
+      "title": "“일본 추월은 시간문제”…K반도체 업고 수출 ‘1조달러’ 달성 눈앞",
+      "link": "https://www.mk.co.kr/news/economy/12062023"
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
       "title": "“120조 더 써도 빚 안는다”…‘세수 대박’에 정부 AI 인프라 투자론 부상",
       "link": "https://www.mk.co.kr/news/economy/12061934"
     },
@@ -1510,52 +1522,52 @@
       "link": "https://www.mk.co.kr/news/economy/12061840"
     },
     {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "[표] 외국환율고시표",
-      "link": "https://www.mk.co.kr/news/economy/12061488"
-    },
-    {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "증시 호황에 연금 기금 68조 늘었지만 … 국내주식 쏠림은 '불안'",
-      "link": "https://www.mk.co.kr/news/economy/12061471"
+      "source": "한국경제",
+      "category": "국내",
+      "title": "[KIW2026 다시보기 영상]  제인 자오 \"국부펀드는 어떻게 추가 수익을 창출할 것인가\"",
+      "link": "https://www.hankyung.com/article/202605297361i"
     },
     {
       "source": "한국경제",
       "category": "국내",
-      "title": "구윤철 \"초과세수 상당액 국부펀드에 넣겠다\"",
-      "link": "https://www.hankyung.com/article/202605308092i"
+      "title": "美 비트코인 ETF 3주 연속 순유출…'극단적 공포' 재진입",
+      "link": "https://www.hankyung.com/article/202605297079i"
     },
     {
       "source": "한국경제",
       "category": "국내",
-      "title": "부자들의 돈은 어디로 향하나…AI 장세가 바꾼 투자 지도",
-      "link": "https://www.hankyung.com/article/202605269465i"
+      "title": "'코스닥 1위' 회사마저 제쳤다…'28조' 뚫은 ETF 뭐길래",
+      "link": "https://www.hankyung.com/article/2026053186017"
+    },
+    {
+      "source": "한국경제",
+      "category": "국내",
+      "title": "\"다른 반도체주 오를 때 뭐했지?\"…1/4 토막 났다가 반등 시작",
+      "link": "https://www.hankyung.com/article/202605297461i"
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "박홍근 \"물 들어올 때 제대로 투자…글로벌 톱3 기반 만들 것\"",
-      "link": "https://www.yna.co.kr/view/AKR20260530048300002"
+      "title": "7월 6일부터 원/달러 24시간 거래된다…공휴일 포함",
+      "link": "https://www.yna.co.kr/view/AKR20260530042800002"
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "[부고] 심선화(한화투자증권 송파WM센터장)씨 부친상",
-      "link": "https://www.yna.co.kr/view/AKR20260530042300008"
+      "title": "한은 \"경제안보 시대, 반도체 등 핵심 제조공정 국내 유지해야\"",
+      "link": "https://www.yna.co.kr/view/AKR20260530049200002"
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "[부동산캘린더] 내주 경기 김포 호반써밋풍무Ⅱ 등 2천437가구 분양",
-      "link": "https://www.yna.co.kr/view/AKR20260529156900003"
+      "title": "토허구역 '세 낀 매물' 매도 허용에도 시장은 아직 잠잠",
+      "link": "https://www.yna.co.kr/view/AKR20260531016500003"
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "달러-원, 최종 결정 준비하는 트럼프에 오름폭 축소…1,504.70원 마감",
-      "link": "https://www.yna.co.kr/view/AKR20260530003500002"
+      "title": "[게시판] 우리금융, 경기 화성시에 발달장애 자립 지원 '굿윌스토어' 개점",
+      "link": "https://www.yna.co.kr/view/AKR20260530042600002"
     }
   ],
   "portfolio": {
@@ -1868,6 +1880,6 @@
     "count": 16
   },
   "ai": {
-    "error": "json_parse: Expecting ',' delimiter: line 39 column 6 (char 1727)"
+    "error": "json_parse: Expecting ',' delimiter: line 40 column 4 (char 1613)"
   }
 }
