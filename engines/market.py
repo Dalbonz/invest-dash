@@ -41,8 +41,16 @@ SYMBOLS = {
     'eem':     'EEM',
     'xle':     'XLE',
     # 국내 주요주
-    'samsung': '005930.KS',
-    'hynix':   '000660.KS',
+    'samsung':    '005930.KS',
+    'hynix':      '000660.KS',
+    'hanwha':     '012450.KS',
+    'lignex':     '079550.KS',
+    'rainbow':    '277810.KS',
+    'doosanrobo': '454910.KS',
+    'samsungbio': '207940.KS',
+    'celltrion':  '068270.KS',
+    # 미국 추가
+    'meta':       'META',
 }
 
 def fetch_price(symbol):

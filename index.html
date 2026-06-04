@@ -249,17 +249,6 @@ tr:hover td{background:#f8fafc}
       <div class="brief-card-title">주요 시장</div>
       <div class="market-grid" id="brief-market"></div>
     </div>
-    <div class="brief-card">
-      <div class="brief-card-title">주요 뉴스</div>
-      <div class="nf-row">
-        <button class="nf-btn on" onclick="filterNews('brief','all',this)">전체</button>
-        <button class="nf-btn" onclick="filterNews('brief','속보',this)">속보</button>
-        <button class="nf-btn" onclick="filterNews('brief','분석',this)">분석</button>
-        <button class="nf-btn" onclick="filterNews('brief','국내',this)">국내</button>
-        <button class="nf-btn" onclick="filterNews('brief','미국',this)">미국</button>
-      </div>
-      <div id="brief-news"></div>
-    </div>
   </div>
   <div class="brief-updated" id="brief-updated"></div>
 </div>
@@ -319,9 +308,12 @@ tr:hover td{background:#f8fafc}
 <!-- 탭3: 미디어 분석 -->
 <div class="page" id="page-media">
 <div class="media-wrap">
-  <div class="media-subtabs">
-    <button class="media-subtab on" onclick="switchMediaTab('news',this)">뉴스</button>
-    <button class="media-subtab" onclick="switchMediaTab('youtube',this)">유튜브</button>
+  <div class="media-subtabs" style="justify-content:space-between;align-items:center">
+    <div style="display:flex;gap:6px">
+      <button class="media-subtab on" onclick="switchMediaTab('news',this)">뉴스</button>
+      <button class="media-subtab" onclick="switchMediaTab('youtube',this)">유튜브</button>
+    </div>
+    <button onclick="openAdminFromMedia()" style="background:transparent;border:0.5px solid var(--border);border-radius:20px;font-size:11px;font-weight:600;color:var(--text3);padding:4px 12px;cursor:pointer;font-family:inherit">관리자</button>
   </div>
   <div id="media-news-wrap">
     <div class="nf-row">
@@ -456,6 +448,20 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- 포트폴리오 진입 비번 -->
+<div class="pw-overlay" id="pf-view-overlay">
+  <div class="pw-box">
+    <div style="color:#e6edf3;font-weight:800;font-size:18px;margin-bottom:4px">포트폴리오</div>
+    <div style="color:#8b949e;font-size:12px;margin-bottom:16px">비밀번호를 입력하세요</div>
+    <input type="password" id="pf-view-input" class="pf-edit-input" placeholder="비밀번호" style="margin-bottom:8px;font-size:14px;padding:10px 12px" onkeydown="if(event.key==='Enter')submitPfViewPw()">
+    <div id="pf-view-err" style="color:#f85149;font-size:11px;margin-bottom:8px;display:none">비밀번호가 올바르지 않습니다</div>
+    <div style="display:flex;gap:8px">
+      <button onclick="submitPfViewPw()" style="flex:1;background:#c8fa00;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">확인</button>
+      <button onclick="closePfViewOverlay()" style="background:#21262d;color:#8b949e;border:none;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">취소</button>
+    </div>
+  </div>
+</div>
+
 <!-- 관리자 메뉴 모달 -->
 <div class="admin-overlay" id="admin-overlay">
   <div class="admin-modal">
@@ -482,6 +488,16 @@ tr:hover td{background:#f8fafc}
       <div class="admin-section-title">이메일 수신자</div>
       <div id="admin-email"></div>
       <button class="admin-add-btn" onclick="addAdminRow('email')">+ 수신자 추가</button>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-title">주식 타일 (한국)</div>
+      <div id="admin-stock-kr"></div>
+      <button class="admin-add-btn" onclick="addStockTileRow('kr')">+ 종목 추가</button>
+    </div>
+    <div class="admin-section">
+      <div class="admin-section-title">주식 타일 (미국)</div>
+      <div id="admin-stock-us"></div>
+      <button class="admin-add-btn" onclick="addStockTileRow('us')">+ 종목 추가</button>
     </div>
     <div class="modal-btns">
       <button class="modal-save" onclick="saveAdminSettings()">저장</button>
@@ -515,9 +531,9 @@ const NAVER={up:'#c84a31',down:'#1261c4',upBg:'rgba(200,74,49,0.10)',downBg:'rgb
 const PF_COLORS=['#1d4ed8','#0891b2','#059669','#d97706','#dc2626','#7c3aed','#be185d','#0d9488','#65a30d','#ea580c','#0284c7','#16a34a','#b45309','#9333ea','#e11d48'];
 const PF_PW_HASH='0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c';
 const ADMIN_PW_HASH='0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c';
-const KEY_TO_YF={samsung:'005930.KS',hynix:'000660.KS',hyundai:'005380.KS',hanwha:'012450.KS',naver:'035420.KS',nvda:'NVDA',tsla:'TSLA',aapl:'AAPL',msft:'MSFT',googl:'GOOGL',kospi:'^KS11',kosdaq:'^KQ11',dow:'^DJI',sp500:'^GSPC',nasdaq:'^IXIC',ndx:'^NDX',vix:'^VIX',dxy:'DX-Y.NYB',us10y:'^TNX',us30y:'^TYX',usdkrw:'USDKRW=X',jpykrw:'JPYKRW=X',eurkrw:'EURKRW=X',gbpkrw:'GBPKRW=X',cnykrw:'CNYKRW=X',gold:'GC=F',silver:'SI=F',brent:'BZ=F',oil:'CL=F',natgas:'NG=F',copper:'HG=F',spy:'SPY',qqq:'QQQ',tlt:'TLT',gld:'GLD',eem:'EEM',xle:'XLE'};
-const STOCK_KR=[{k:'kospi',l:'코스피'},{k:'kosdaq',l:'코스닥'},{k:'samsung',l:'삼성전자'},{k:'hynix',l:'SK하이닉스'},{k:'hyundai',l:'현대차'},{k:'hanwha',l:'한화에어로'},{k:'naver',l:'NAVER'}];
-const STOCK_US=[{k:'nasdaq',l:'나스닥'},{k:'sp500',l:'S&P500'},{k:'nvda',l:'NVDA'},{k:'tsla',l:'TSLA'},{k:'aapl',l:'AAPL'},{k:'msft',l:'MSFT'},{k:'googl',l:'GOOGL'}];
+const KEY_TO_YF={samsung:'005930.KS',hynix:'000660.KS',hyundai:'005380.KS',hanwha:'012450.KS',naver:'035420.KS',lignex:'079550.KS',rainbow:'277810.KS',doosanrobo:'454910.KS',samsungbio:'207940.KS',celltrion:'068270.KS',nvda:'NVDA',tsla:'TSLA',aapl:'AAPL',msft:'MSFT',googl:'GOOGL',meta:'META',kospi:'^KS11',kosdaq:'^KQ11',dow:'^DJI',sp500:'^GSPC',nasdaq:'^IXIC',ndx:'^NDX',vix:'^VIX',dxy:'DX-Y.NYB',us10y:'^TNX',us30y:'^TYX',usdkrw:'USDKRW=X',jpykrw:'JPYKRW=X',eurkrw:'EURKRW=X',gbpkrw:'GBPKRW=X',cnykrw:'CNYKRW=X',gold:'GC=F',silver:'SI=F',brent:'BZ=F',oil:'CL=F',natgas:'NG=F',copper:'HG=F',spy:'SPY',qqq:'QQQ',tlt:'TLT',gld:'GLD',eem:'EEM',xle:'XLE'};
+let STOCK_KR=[{k:'samsung',l:'삼성전자'},{k:'hynix',l:'SK하이닉스'},{k:'hanwha',l:'한화에어로'},{k:'lignex',l:'LIG넥스원'},{k:'rainbow',l:'레인보우로보틱스'},{k:'doosanrobo',l:'두산로보틱스'},{k:'samsungbio',l:'삼성바이오'},{k:'celltrion',l:'셀트리온'}];
+let STOCK_US=[{k:'nvda',l:'NVDA'},{k:'msft',l:'MSFT'},{k:'aapl',l:'AAPL'},{k:'tsla',l:'TSLA'},{k:'meta',l:'META'},{k:'googl',l:'GOOGL'}];
 const KR50=[{n:'삼성전자',s:'005930.KS'},{n:'SK하이닉스',s:'000660.KS'},{n:'LG에너지',s:'373220.KS'},{n:'삼성바이오',s:'207940.KS'},{n:'현대차',s:'005380.KS'},{n:'기아',s:'000270.KS'},{n:'셀트리온',s:'068270.KS'},{n:'POSCO홀딩스',s:'005490.KS'},{n:'한화에어로',s:'012450.KS'},{n:'KB금융',s:'105560.KS'},{n:'신한지주',s:'055550.KS'},{n:'삼성SDI',s:'006400.KS'},{n:'LG화학',s:'051910.KS'},{n:'NAVER',s:'035420.KS'},{n:'카카오',s:'035720.KS'},{n:'현대모비스',s:'012330.KS'},{n:'SK이노베이션',s:'096770.KS'},{n:'하나금융',s:'086790.KS'},{n:'우리금융',s:'316140.KS'},{n:'삼성물산',s:'028260.KS'},{n:'LG전자',s:'066570.KS'},{n:'KT&G',s:'033780.KS'},{n:'SK텔레콤',s:'017670.KS'},{n:'KT',s:'030200.KS'},{n:'두산에너빌',s:'034020.KS'},{n:'한국전력',s:'015760.KS'},{n:'롯데케미칼',s:'011170.KS'},{n:'S-Oil',s:'010950.KS'},{n:'현대제철',s:'004020.KS'},{n:'LG디스플레이',s:'034220.KS'},{n:'삼성전기',s:'009150.KS'},{n:'한미약품',s:'128940.KS'},{n:'유한양행',s:'000100.KS'},{n:'고려아연',s:'010130.KS'},{n:'한국항공우주',s:'047810.KS'},{n:'HMM',s:'011200.KS'},{n:'대한항공',s:'003490.KS'},{n:'CJ제일제당',s:'097950.KS'},{n:'아모레퍼시픽',s:'090430.KS'},{n:'카카오뱅크',s:'323410.KS'},{n:'크래프톤',s:'259960.KS'},{n:'엔씨소프트',s:'036570.KS'},{n:'넷마블',s:'251270.KS'},{n:'카카오게임즈',s:'293490.KS'},{n:'에코프로비엠',s:'247540.KQ'},{n:'LIG넥스원',s:'079550.KS'},{n:'현대로템',s:'064350.KS'},{n:'HD현대',s:'267250.KS'},{n:'포스코퓨처엠',s:'003670.KS'},{n:'두산밥캣',s:'241560.KS'}];
 const US50=[{n:'Apple',s:'AAPL'},{n:'Microsoft',s:'MSFT'},{n:'NVIDIA',s:'NVDA'},{n:'Amazon',s:'AMZN'},{n:'Alphabet',s:'GOOGL'},{n:'Meta',s:'META'},{n:'Berkshire B',s:'BRK-B'},{n:'Tesla',s:'TSLA'},{n:'Broadcom',s:'AVGO'},{n:'JPMorgan',s:'JPM'},{n:'Visa',s:'V'},{n:'Exxon',s:'XOM'},{n:'UnitedHealth',s:'UNH'},{n:'Walmart',s:'WMT'},{n:'Mastercard',s:'MA'},{n:'P&G',s:'PG'},{n:'J&J',s:'JNJ'},{n:'Eli Lilly',s:'LLY'},{n:'Home Depot',s:'HD'},{n:'Costco',s:'COST'},{n:'Netflix',s:'NFLX'},{n:'AMD',s:'AMD'},{n:'Salesforce',s:'CRM'},{n:'Oracle',s:'ORCL'},{n:'Qualcomm',s:'QCOM'},{n:'TSMC',s:'TSM'},{n:'Palantir',s:'PLTR'},{n:'Arm',s:'ARM'},{n:'Caterpillar',s:'CAT'},{n:'Goldman',s:'GS'},{n:'BofA',s:'BAC'},{n:'Boeing',s:'BA'},{n:'Intel',s:'INTC'},{n:'IBM',s:'IBM'},{n:'Chevron',s:'CVX'},{n:'Pepsico',s:'PEP'},{n:'Coca-Cola',s:'KO'},{n:'Abbott',s:'ABT'},{n:'Pfizer',s:'PFE'},{n:'Merck',s:'MRK'},{n:'AbbVie',s:'ABBV'},{n:'Amgen',s:'AMGN'},{n:'Deere',s:'DE'},{n:'Honeywell',s:'HON'},{n:'Linde',s:'LIN'},{n:'Coupang',s:'CPNG'},{n:'Medtronic',s:'MDT'},{n:'3M',s:'MMM'},{n:'COP',s:'COP'},{n:'Eaton',s:'ETN'}];
 const SECTOR_UP=[{n:'NVDA',s:'NVDA'},{n:'MSFT',s:'MSFT'},{n:'AVGO',s:'AVGO'},{n:'AMD',s:'AMD'},{n:'AAPL',s:'AAPL'},{n:'META',s:'META'},{n:'GOOGL',s:'GOOGL'},{n:'ARM',s:'ARM'},{n:'PLTR',s:'PLTR'},{n:'TSM',s:'TSM'}];
@@ -525,7 +541,7 @@ const SECTOR_DOWN=[{n:'TSLA',s:'TSLA'},{n:'INTC',s:'INTC'},{n:'BA',s:'BA'},{n:'X
 const ETF_LIST=[{n:'SPDR S&P500',s:'SPY',sec:'미국주식'},{n:'Invesco QQQ',s:'QQQ',sec:'기술주'},{n:'iShares 20Y',s:'TLT',sec:'미국채권'},{n:'SPDR Gold',s:'GLD',sec:'금'},{n:'iShares EM',s:'EEM',sec:'신흥국'},{n:'Energy Select',s:'XLE',sec:'에너지'}];
 const SYMBOL_DB=[{n:'코스피지수',s:'^KS11',m:'KR'},{n:'코스닥지수',s:'^KQ11',m:'KR'},{n:'나스닥',s:'^IXIC',m:'US'},{n:'S&P500',s:'^GSPC',m:'US'},{n:'다우존스',s:'^DJI',m:'US'},...KR50.map(s=>({n:s.n,s:s.s,m:'KR'})),{n:'NVIDIA',s:'NVDA',m:'US'},{n:'Tesla',s:'TSLA',m:'US'},{n:'Apple',s:'AAPL',m:'US'},{n:'Microsoft',s:'MSFT',m:'US'},{n:'Alphabet',s:'GOOGL',m:'US'},{n:'Amazon',s:'AMZN',m:'US'},{n:'Meta',s:'META',m:'US'},{n:'Broadcom',s:'AVGO',m:'US'},{n:'TSMC',s:'TSM',m:'US'},{n:'Palantir',s:'PLTR',m:'US'},{n:'Arm',s:'ARM',m:'US'},{n:'Coupang',s:'CPNG',m:'US'}];
 const DEFAULT_ADMIN_CFG={mediaChannels:[{name:'한국경제TV',handle:'hkwowtv'},{name:'연합뉴스경제TV',handle:'UC6kZpTl39-_SqfBrF1-N2oQ'},{name:'매일경제TV',handle:'MKeconomy_TV'}],ytChannels:[{name:'12시에 만나요',handle:'gyeomsonisnothing'},{name:'경제사냥꾼',handle:'UC7usMJDHmtbs_oegmzQKKMA'},{name:'슈페tv',handle:'supe-tv'}],tgRecipients:[{name:'달봉즈',id:'8649321702'},{name:'경',id:'8799181333'},{name:'대규',id:'8689376301'}],emailRecipients:[]};
-let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[];
+let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[],pendingPfTabEl=null;
 const cls=v=>v>0?'up':v<0?'down':'flat';
 const sign=v=>v>0?'+':'';
 function fmt(v,d=2){if(v==null||isNaN(v))return'-';return Number(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -534,10 +550,12 @@ function escHtml(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt
 async function hashPw(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');}
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
+// 관리자가 저장한 커스텀 타일 적용
+(function(){const kr=lsGet('stock_tiles_kr');if(kr&&kr.length)STOCK_KR=kr;const us=lsGet('stock_tiles_us');if(us&&us.length)STOCK_US=us;})();
 function getEtfCols(){const w=window.innerWidth;if(w>=1024)return 3;if(w>=600)return 2;return 1;}
 function getAdminCfg(){return lsGet('admin_cfg')||DEFAULT_ADMIN_CFG;}
 // 탭 전환
-function switchTab(id,el){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('page-'+id).classList.add('active');if(id==='portfolio')initPortfolio();if(id==='media'){renderNewsTo('media','all');if(!ytData)loadYoutube();else renderYtAll();}if(id==='market'&&jsonData)renderMarketCards();}
+function switchTab(id,el){if(id==='portfolio'&&sessionStorage.getItem('portfolio_view_auth')!=='1'){pendingPfTabEl=el;document.getElementById('pf-view-overlay').classList.add('show');document.getElementById('pf-view-input').value='';document.getElementById('pf-view-err').style.display='none';setTimeout(()=>document.getElementById('pf-view-input').focus(),120);return;}document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('page-'+id).classList.add('active');if(id==='portfolio')initPortfolio();if(id==='media'){renderNewsTo('media','all');if(!ytData)loadYoutube();else renderYtAll();}if(id==='market'&&jsonData)renderMarketCards();}
 // 데이터 로드
 async function loadData(){try{const r=await fetch(INVEST_URL+'?t='+Date.now());jsonData=await r.json();}catch(e){document.getElementById('brief-loading').textContent='데이터 로드 실패';return;}renderBrief();renderMarketCards();renderStockSec();}
 async function loadYoutube(){try{const r=await fetch(YT_URL+'?t='+Date.now());ytData=await r.json();renderYtAll();}catch(e){document.getElementById('yt-loading').textContent='유튜브 데이터 없음';}}
@@ -633,14 +651,20 @@ function addSavingsRow(){collectSavingsEditData();pfSavingsEditData.push({type:'
 function deleteSavingsRow(i){collectSavingsEditData();pfSavingsEditData.splice(i,1);renderSavingsEditRows();}
 async function savePfInline(){const owner=currentOwner==='total'?'bong':currentOwner;collectPfEditData();collectCashEditData();collectSavingsEditData();const holdings=pfEditData.filter(h=>h.name&&h.symbol&&h.qty>0).map(h=>({...h,symbol:h.symbol.toUpperCase()}));lsSet('pf_'+owner+'_holdings',holdings);const cash=pfCashEditData.filter(c=>c.bank&&c.amount>=0);lsSet('pf_'+owner+'_cash',cash);const savings=pfSavingsEditData.filter(s=>s.bank);lsSet('pf_'+owner+'_savings',savings);syncToGs(owner,holdings,cash,savings);exitPfEditMode();await loadAndRenderPortfolio(currentOwner);}
 // 관리자 메뉴
-function openAdminModal(){const cfg=getAdminCfg();renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);document.getElementById('admin-overlay').classList.add('show');}
+function closePfViewOverlay(){document.getElementById('pf-view-overlay').classList.remove('show');pendingPfTabEl=null;}
+async function submitPfViewPw(){const pw=document.getElementById('pf-view-input').value;if(await hashPw(pw)===PF_PW_HASH){sessionStorage.setItem('portfolio_view_auth','1');document.getElementById('pf-view-overlay').classList.remove('show');if(pendingPfTabEl){const el=pendingPfTabEl;pendingPfTabEl=null;switchTab('portfolio',el);}}else{document.getElementById('pf-view-err').style.display='block';document.getElementById('pf-view-input').select();}}
+function openAdminFromMedia(){if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal();}else{openAdminPwModal();}}
+function renderStockTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.k)}" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
+function addStockTileRow(mkt){const elId=mkt==='kr'?'admin-stock-kr':'admin-stock-us';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
+function collectStockTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const k=inp[0]?.value.trim();const l=inp[1]?.value.trim();if(k&&l)result.push({k,l});});return result;}
+function openAdminModal(){const cfg=getAdminCfg();renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);document.getElementById('admin-overlay').classList.add('show');}
 function closeAdminModal(){document.getElementById('admin-overlay').classList.remove('show');}
 function renderAdminRows(elId,items,type){const el=document.getElementById(elId);el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-${type}-name-${i}" value="${escHtml(item.name)}" placeholder="채널명"><input class="admin-input" id="adm-${type}-handle-${i}" value="${escHtml(item.handle)}" placeholder="핸들/채널ID" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function renderAdminTgRows(items){const el=document.getElementById('admin-tg');el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-tg-name-${i}" value="${escHtml(item.name)}" placeholder="이름"><input class="admin-input" id="adm-tg-id-${i}" value="${escHtml(item.id)}" placeholder="Chat ID" style="flex:0.8"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function renderAdminEmailRows(items){const el=document.getElementById('admin-email');el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-email-name-${i}" value="${escHtml(item.name||'')}" placeholder="이름"><input class="admin-input" id="adm-email-addr-${i}" value="${escHtml(item.email||'')}" placeholder="이메일" style="flex:1.5"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function addAdminRow(type){const elId={'media':'admin-media-ch','yt':'admin-yt-ch','tg':'admin-tg','email':'admin-email'}[type];const el=document.getElementById(elId);const i=el.querySelectorAll('.admin-row').length;const row=document.createElement('div');row.className='admin-row';if(type==='tg'){row.innerHTML=`<input class="admin-input" id="adm-tg-name-${i}" placeholder="이름"><input class="admin-input" id="adm-tg-id-${i}" placeholder="Chat ID" style="flex:0.8"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}else if(type==='email'){row.innerHTML=`<input class="admin-input" id="adm-email-name-${i}" placeholder="이름"><input class="admin-input" id="adm-email-addr-${i}" placeholder="이메일" style="flex:1.5"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}else{row.innerHTML=`<input class="admin-input" id="adm-${type}-name-${i}" placeholder="채널명"><input class="admin-input" id="adm-${type}-handle-${i}" placeholder="핸들/채널ID" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}el.appendChild(row);}
 function collectAdminRows(elId,type){const rows=document.getElementById(elId).querySelectorAll('.admin-row');const result=[];rows.forEach((row,i)=>{if(type==='tg'){const name=document.getElementById(`adm-tg-name-${i}`)?.value||'';const id=document.getElementById(`adm-tg-id-${i}`)?.value||'';if(id)result.push({name,id});}else if(type==='email'){const name=document.getElementById(`adm-email-name-${i}`)?.value||'';const email=document.getElementById(`adm-email-addr-${i}`)?.value||'';if(email)result.push({name,email});}else{const name=document.getElementById(`adm-${type}-name-${i}`)?.value||'';const handle=document.getElementById(`adm-${type}-handle-${i}`)?.value||'';if(name&&handle)result.push({name,handle});}});return result;}
-function saveAdminSettings(){const cfg={mediaChannels:collectAdminRows('admin-media-ch','media'),ytChannels:collectAdminRows('admin-yt-ch','yt'),tgRecipients:collectAdminRows('admin-tg','tg'),emailRecipients:collectAdminRows('admin-email','email')};lsSet('admin_cfg',cfg);closeAdminModal();if(ytData)renderYtAll();}
+function saveAdminSettings(){const cfg={mediaChannels:collectAdminRows('admin-media-ch','media'),ytChannels:collectAdminRows('admin-yt-ch','yt'),tgRecipients:collectAdminRows('admin-tg','tg'),emailRecipients:collectAdminRows('admin-email','email')};lsSet('admin_cfg',cfg);const newKr=collectStockTileRows('admin-stock-kr');const newUs=collectStockTileRows('admin-stock-us');if(newKr.length){STOCK_KR=newKr;lsSet('stock_tiles_kr',newKr);}if(newUs.length){STOCK_US=newUs;lsSet('stock_tiles_us',newUs);}closeAdminModal();if(ytData)renderYtAll();const isUs=document.querySelector('.card-subtab.on')?.textContent.trim()==='미국';currentStockCardList=isUs?STOCK_US:STOCK_KR;if(jsonData)renderStockCard(currentStockCardList);}
 // 관리자 비번: 로고 5번 탭
 let logoTapCount=0,logoTapTimer=null;
 document.getElementById('logo-tap').addEventListener('click',()=>{logoTapCount++;clearTimeout(logoTapTimer);logoTapTimer=setTimeout(()=>{logoTapCount=0;},2000);if(logoTapCount>=5){logoTapCount=0;if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal();}else{openAdminPwModal();}}});
