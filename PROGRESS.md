@@ -1,77 +1,62 @@
 # PROGRESS.md - invest-dash 진행상황
 
-> 새 세션 시작 시 CLAUDE.md + 이 파일을 전달하면 바로 이어서 진행 가능
+> 새 세션 시작 시 날짜 입력 + CLAUDE.md + 이 파일 전달
 
 ---
 
 ## 현재 상태
 
-**단계: AI 요약 모델명 오류 수정 필요**
+**단계: index.html 4탭 통합 완료, 추가 수정 진행 중**
+
+접속 URL: https://dalbonz.github.io/invest-dash
 
 ---
 
-## 완료 ✅
+## 완료
 
-- GitHub 레포 생성 (Dalbonz/invest-dash, Public)
-- 전체 구조 구축 완료
-- GitHub Actions 자동화 (data.json 생성/push)
-- GitHub Pages 배포 완료
-- Google Sheets 포트폴리오 연동 (주식현황상세, 16개 종목)
-- 시장 데이터 수집 정상 (yfinance)
-- 뉴스 수집 정상 (RSS)
-- index.html 대시보드 배포 완료
-
-**접속 URL:** https://dalbonz.github.io/invest-dash
+- GitHub Actions 자동화 (KST 9시/15시/18시)
+- market.py: us10y(^TNX), us30y(^TYX), candles 포함
+- ai_summary.py: summary/kr/us/sectors/picks/do/dont 7개 섹션
+- news.py: category 포함
+- Apps Script: 미디어채널 3개(한경TV/연합TV/매경TV) + 일반채널 3개 + 48시간 히스토리
+- index.html 4탭 구조 배포 완료
 
 ---
 
-## 즉시 해결 필요 🔥
+## 현재 index.html 탭 구조
 
-### AI 요약 모델명 오류
-- 현재 에러: `api_status_404`
-- 원인: 모델명이 유효하지 않음
-- 파일: `engines/ai_summary.py`
-- 해결: Actions 로그에서 정확한 에러 메시지 확인 후 올바른 모델명으로 수정
-- **다음 세션 시작 시 첫 번째로 할 것**
-
-**검증 방법:**
-1. `engines/ai_summary.py` 에서 에러 시 상세 로그 출력 확인
-2. https://console.anthropic.com → API Keys → 현재 유효한 키 확인
-3. GitHub Secrets `ANTHROPIC_API_KEY` 업데이트
+| 탭 | 제목 | 내용 |
+|---|---|---|
+| 1 | 투자 브리핑 | AI시황(7섹션) + 주요시장8개 + 뉴스(필터) |
+| 2 | 증시 | 4카드(주식/지수/외환/원자재) + 주식시세 + ETF |
+| 3 | 미디어 분석 | 뉴스(필터) + 유튜브(미디어/채널) |
+| 4 | 포트폴리오 | Total/Bong/Kyoung + 비번(1111) + GS연동 |
 
 ---
 
-## 다음 할 일 🔲
+## 다음 작업 (미완료)
 
-1. AI 요약 모델명 수정 (최우선)
-2. 포트폴리오 평가금액/수익 0원 수정 (₩ 기호 파싱 문제)
-3. 탭 구조 UI 구현 (4개 탭)
-4. 유튜브 탭 연동 (4-my-money youtube.json)
-5. 뉴스 탭 연동 (investment-news-bot data.json)
-6. 애플 스타일 UI 디자인
-
----
-
-## 탭 구조 확정 (UI 작업 예정)
-
-| 탭 | 데이터 소스 |
-|------|------|
-| 📊 시장 | invest-dash data.json |
-| 💼 포트폴리오 | invest-dash data.json |
-| 📰 뉴스 | investment-news-bot data.json |
-| 🎬 유튜브 | 4-my-money youtube.json |
+1. 탭1 뉴스 섹션 제거 (탭3 중복)
+2. 탭2 주식 타일 종목 교체
+   - 한국: 삼성전자/SK하이닉스(반도체) + 한화에어로/LIG넥스원(방산) + 레인보우로보틱스/두산로보틱스(로봇) + 삼성바이오/셀트리온(바이오)
+   - 미국: NVDA/MSFT/AAPL/TSLA/META/GOOGL
+   - 관리자 메뉴에서 편집 가능하게
+3. 탭3 관리자 진입 버튼 추가
+4. 탭4 진입 시 비번 요구 (1111 SHA-256: 0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c)
+5. 관리자 메뉴에 주식 타일 종목 편집 추가
 
 ---
 
-## 아키텍처 (확정)
+## 주요 설정값
 
-```
-Python 엔진들 (GitHub Actions - KST 9시, 15시, 18시)
-    ↓
-data.json (GitHub 레포)
-    ↓
-GitHub Pages HTML 대시보드
-```
+| 항목 | 값 |
+|---|---|
+| 포트폴리오 비번 | 1111 |
+| SHA-256 해시 | 0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c |
+| 관리자 비번 | 1111 (동일) |
+| 관리자 진입 | 로고 5번 탭 |
+| Bong GS URL | https://script.google.com/macros/s/AKfycbw1W851igwvCuIzoghZyKfgkpqsgc2oPxNHrHsJhDLWhQbKHvlxQGTqMzLuImqnImHv/exec |
+| AI 모델 | claude-haiku-4-5-20251001 |
 
 ---
 
@@ -80,41 +65,29 @@ GitHub Pages HTML 대시보드
 ```
 invest-dash/
 ├── engines/
-│   ├── __init__.py
-│   ├── market.py       ✅
-│   ├── news.py         ✅
-│   ├── portfolio.py    ✅
-│   └── ai_summary.py   ⚠️ 모델명 수정 필요
+│   ├── market.py      완료 (us10y/us30y 포함)
+│   ├── news.py        완료
+│   ├── portfolio.py   완료
+│   └── ai_summary.py  완료 (7섹션 프롬프트)
 ├── .github/workflows/
-│   └── update.yml      ✅
-├── index.html          ✅
-├── run.py              ✅
-├── requirements.txt    ✅
-├── data.json           ✅ (자동 생성)
-├── CLAUDE.md           ✅
-└── PROGRESS.md         ✅
+│   └── update.yml     완료
+├── index.html         완료 (4탭, 수정 필요)
+├── run.py             완료
+├── requirements.txt   완료
+├── data.json          자동생성
+├── CLAUDE.md          완료
+└── PROGRESS.md        이 파일
 ```
 
 ---
 
-## 기술 스택
+## 에러 이력 (반복 방지)
 
-| 항목 | 내용 |
-|------|------|
-| 언어 | Python |
-| 자동화 | GitHub Actions |
-| UI | GitHub Pages HTML |
-| AI | Anthropic Claude API |
-| 포트폴리오 | Google Sheets (주식현황상세, 2행 헤더) |
-
----
-
-## Google Sheets
-
-- ID: `1jYVXz_rJ5CiVOWl3Rts5EPXBSgib3BCvf-TDXFegC6E`
-- 탭: `주식현황상세`
-- 1행: 그룹헤더, 2행: 컬럼명, 3행~: 데이터
-- 서비스계정: `invest-dash-bot@invest-dash-496701.iam.gserviceaccount.com`
+| 에러 | 원인 | 해결 |
+|---|---|---|
+| api_status_404 | 모델명 오류 | claude-haiku-4-5-20251001 사용 |
+| WorksheetNotFound | 탭 이름 불일치 | 주식현황상세 (정확히) |
+| Actions push 403 | workflow permissions | Read and write 설정 |
 
 ---
 
@@ -122,15 +95,3 @@ invest-dash/
 
 - https://github.com/Dalbonz/investment-news-bot
 - https://github.com/Dalbonz/4-my-money
-
----
-
-## 주요 에러 이력 (반복 방지)
-
-| 에러 | 원인 | 해결 |
-|------|------|------|
-| Streamlit 구조 | 배포 환경 불안정 | GitHub Pages로 전환 |
-| WorksheetNotFound | 탭 이름 불일치 | 정확한 탭명 확인 |
-| 2행 헤더 | get_all_records() 한계 | get_all_values() 사용 |
-| Actions push 403 | workflow permissions | Read and write 설정 |
-| AI api_status_404 | 모델명 오류 | 다음 세션에서 수정 |
