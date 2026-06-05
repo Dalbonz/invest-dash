@@ -24,14 +24,30 @@ def _rss_url(handle):
     return f'https://www.youtube.com/feeds/videos.xml?user={handle}'
 
 def _resolve_handle(handle):
-    """@handle 페이지에서 channel_id 추출"""
-    try:
-        r = requests.get(f'https://www.youtube.com/@{handle}', headers=HEADERS, timeout=10)
-        m = re.search(r'"channelId"\s*:\s*"(UC[A-Za-z0-9_-]{22})"', r.text)
-        if m:
-            return m.group(1)
-    except Exception:
-        pass
+    """여러 URL 패턴으로 channel_id 추출 시도"""
+    urls = [
+        f'https://www.youtube.com/@{handle}',
+        f'https://www.youtube.com/c/{handle}',
+        f'https://www.youtube.com/user/{handle}',
+    ]
+    patterns = [
+        r'"channelId"\s*:\s*"(UC[A-Za-z0-9_-]{22})"',
+        r'"externalChannelId"\s*:\s*"(UC[A-Za-z0-9_-]{22})"',
+        r'href="/channel/(UC[A-Za-z0-9_-]{22})"',
+        r'channel/(UC[A-Za-z0-9_-]{22})',
+    ]
+    for url in urls:
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=10, allow_redirects=True)
+            if r.status_code != 200:
+                continue
+            for pat in patterns:
+                m = re.search(pat, r.text)
+                if m:
+                    print(f'  → handle 해결: {handle} → {m.group(1)[:12]}...')
+                    return m.group(1)
+        except Exception:
+            continue
     return None
 
 def _parse_xml(text):
