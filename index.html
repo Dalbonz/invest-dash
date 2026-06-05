@@ -284,7 +284,7 @@ tr:hover td{background:#f8fafc}
     </div>
   </div>
   <div class="sec">
-    <div class="sec-hd"><div class="sec-title">주식 시세</div></div>
+    <div class="sec-hd"><div class="sec-title">주식 시세</div><button onclick="openAdminWithAuth('market')" style="background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:11px;font-weight:600;color:var(--text2);padding:3px 10px;cursor:pointer;font-family:inherit">설정</button></div>
     <div class="stock-tabs">
       <button class="stock-tab" onclick="switchStockTab('mine',this)">내 주식</button>
       <button class="stock-tab on" onclick="switchStockTab('kr',this)">한국 Top50</button>
@@ -343,6 +343,7 @@ tr:hover td{background:#f8fafc}
         <button id="pf-save-btn" onclick="savePfInline()" style="display:none;background:#c8fa00;color:#0d1117;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">저장</button>
         <button id="pf-cancel-btn" onclick="cancelPfEdit()" style="display:none;background:#1c2128;color:#8b949e;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit">취소</button>
         <button onclick="openSyncSettings()" style="background:#1c2128;color:#8b949e;border:1px solid #30363d;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit">Sheets 설정</button>
+        <button onclick="openAdminWithAuth('portfolio')" style="background:#1c2128;color:#8b949e;border:1px solid #30363d;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;font-family:inherit">알림설정</button>
       </div>
     </div>
     <div class="owner-tabs">
@@ -466,35 +467,35 @@ tr:hover td{background:#f8fafc}
 <div class="admin-overlay" id="admin-overlay">
   <div class="admin-modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-      <div style="font-size:15px;font-weight:700">관리자 메뉴</div>
+      <div id="admin-modal-title" style="font-size:15px;font-weight:700">관리자 메뉴</div>
       <button onclick="closeAdminModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);line-height:1">x</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-media">
       <div class="admin-section-title">유튜브 미디어 채널</div>
       <div id="admin-media-ch"></div>
       <button class="admin-add-btn" onclick="addAdminRow('media')">+ 채널 추가</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-yt">
       <div class="admin-section-title">유튜브 일반 채널</div>
       <div id="admin-yt-ch"></div>
       <button class="admin-add-btn" onclick="addAdminRow('yt')">+ 채널 추가</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-tg">
       <div class="admin-section-title">텔레그램 수신자</div>
       <div id="admin-tg"></div>
       <button class="admin-add-btn" onclick="addAdminRow('tg')">+ 수신자 추가</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-email">
       <div class="admin-section-title">이메일 수신자</div>
       <div id="admin-email"></div>
       <button class="admin-add-btn" onclick="addAdminRow('email')">+ 수신자 추가</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-kr">
       <div class="admin-section-title">주식 타일 (한국)</div>
       <div id="admin-stock-kr"></div>
       <button class="admin-add-btn" onclick="addStockTileRow('kr')">+ 종목 추가</button>
     </div>
-    <div class="admin-section">
+    <div class="admin-section" id="admin-sec-us">
       <div class="admin-section-title">주식 타일 (미국)</div>
       <div id="admin-stock-us"></div>
       <button class="admin-add-btn" onclick="addStockTileRow('us')">+ 종목 추가</button>
@@ -541,7 +542,7 @@ const SECTOR_DOWN=[{n:'TSLA',s:'TSLA'},{n:'INTC',s:'INTC'},{n:'BA',s:'BA'},{n:'X
 const ETF_LIST=[{n:'SPDR S&P500',s:'SPY',sec:'미국주식'},{n:'Invesco QQQ',s:'QQQ',sec:'기술주'},{n:'iShares 20Y',s:'TLT',sec:'미국채권'},{n:'SPDR Gold',s:'GLD',sec:'금'},{n:'iShares EM',s:'EEM',sec:'신흥국'},{n:'Energy Select',s:'XLE',sec:'에너지'}];
 const SYMBOL_DB=[{n:'코스피지수',s:'^KS11',m:'KR'},{n:'코스닥지수',s:'^KQ11',m:'KR'},{n:'나스닥',s:'^IXIC',m:'US'},{n:'S&P500',s:'^GSPC',m:'US'},{n:'다우존스',s:'^DJI',m:'US'},...KR50.map(s=>({n:s.n,s:s.s,m:'KR'})),{n:'NVIDIA',s:'NVDA',m:'US'},{n:'Tesla',s:'TSLA',m:'US'},{n:'Apple',s:'AAPL',m:'US'},{n:'Microsoft',s:'MSFT',m:'US'},{n:'Alphabet',s:'GOOGL',m:'US'},{n:'Amazon',s:'AMZN',m:'US'},{n:'Meta',s:'META',m:'US'},{n:'Broadcom',s:'AVGO',m:'US'},{n:'TSMC',s:'TSM',m:'US'},{n:'Palantir',s:'PLTR',m:'US'},{n:'Arm',s:'ARM',m:'US'},{n:'Coupang',s:'CPNG',m:'US'}];
 const DEFAULT_ADMIN_CFG={mediaChannels:[{name:'한국경제TV',handle:'hkwowtv'},{name:'연합뉴스경제TV',handle:'UC6kZpTl39-_SqfBrF1-N2oQ'},{name:'매일경제TV',handle:'MKeconomy_TV'}],ytChannels:[{name:'12시에 만나요',handle:'gyeomsonisnothing'},{name:'경제사냥꾼',handle:'UC7usMJDHmtbs_oegmzQKKMA'},{name:'슈페tv',handle:'supe-tv'}],tgRecipients:[{name:'달봉즈',id:'8649321702'},{name:'경',id:'8799181333'},{name:'대규',id:'8689376301'}],emailRecipients:[]};
-let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[],pendingPfTabEl=null;
+let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[],pendingPfTabEl=null,pendingAdminCtx='all';
 const cls=v=>v>0?'up':v<0?'down':'flat';
 const sign=v=>v>0?'+':'';
 function fmt(v,d=2){if(v==null||isNaN(v))return'-';return Number(v).toLocaleString(undefined,{minimumFractionDigits:d,maximumFractionDigits:d});}
@@ -653,24 +654,51 @@ async function savePfInline(){const owner=currentOwner==='total'?'bong':currentO
 // 관리자 메뉴
 function closePfViewOverlay(){document.getElementById('pf-view-overlay').classList.remove('show');pendingPfTabEl=null;}
 async function submitPfViewPw(){const pw=document.getElementById('pf-view-input').value;if(await hashPw(pw)===PF_PW_HASH){sessionStorage.setItem('portfolio_view_auth','1');document.getElementById('pf-view-overlay').classList.remove('show');if(pendingPfTabEl){const el=pendingPfTabEl;pendingPfTabEl=null;switchTab('portfolio',el);}}else{document.getElementById('pf-view-err').style.display='block';document.getElementById('pf-view-input').select();}}
-function openAdminFromMedia(){if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal();}else{openAdminPwModal();}}
+function openAdminWithAuth(ctx='all'){pendingAdminCtx=ctx;if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal(ctx);}else{openAdminPwModal();}}
+function openAdminFromMedia(){openAdminWithAuth('media');}
 function renderStockTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.k)}" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function addStockTileRow(mkt){const elId=mkt==='kr'?'admin-stock-kr':'admin-stock-us';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
 function collectStockTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const k=inp[0]?.value.trim();const l=inp[1]?.value.trim();if(k&&l)result.push({k,l});});return result;}
-function openAdminModal(){const cfg=getAdminCfg();renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);document.getElementById('admin-overlay').classList.add('show');}
+function openAdminModal(ctx='all'){
+const cfg=getAdminCfg();
+const sm=ctx==='market',sd=ctx==='media',sp=ctx==='portfolio',sa=ctx==='all';
+const show=(id,vis)=>{const e=document.getElementById(id);if(e)e.style.display=vis?'':'none';};
+show('admin-sec-media',sa||sd);show('admin-sec-yt',sa||sd);
+show('admin-sec-tg',sa||sp);show('admin-sec-email',sa||sp);
+show('admin-sec-kr',sa||sm);show('admin-sec-us',sa||sm);
+const titles={market:'주식 타일 설정',media:'미디어 채널 설정',portfolio:'알림 설정',all:'관리자 메뉴'};
+document.getElementById('admin-modal-title').textContent=titles[ctx]||'관리자 메뉴';
+if(sa||sd){renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');}
+if(sa||sp){renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);}
+if(sa||sm){renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);}
+document.getElementById('admin-overlay').classList.add('show');}
 function closeAdminModal(){document.getElementById('admin-overlay').classList.remove('show');}
 function renderAdminRows(elId,items,type){const el=document.getElementById(elId);el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-${type}-name-${i}" value="${escHtml(item.name)}" placeholder="채널명"><input class="admin-input" id="adm-${type}-handle-${i}" value="${escHtml(item.handle)}" placeholder="핸들/채널ID" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function renderAdminTgRows(items){const el=document.getElementById('admin-tg');el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-tg-name-${i}" value="${escHtml(item.name)}" placeholder="이름"><input class="admin-input" id="adm-tg-id-${i}" value="${escHtml(item.id)}" placeholder="Chat ID" style="flex:0.8"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function renderAdminEmailRows(items){const el=document.getElementById('admin-email');el.innerHTML='';items.forEach((item,i)=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" id="adm-email-name-${i}" value="${escHtml(item.name||'')}" placeholder="이름"><input class="admin-input" id="adm-email-addr-${i}" value="${escHtml(item.email||'')}" placeholder="이메일" style="flex:1.5"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function addAdminRow(type){const elId={'media':'admin-media-ch','yt':'admin-yt-ch','tg':'admin-tg','email':'admin-email'}[type];const el=document.getElementById(elId);const i=el.querySelectorAll('.admin-row').length;const row=document.createElement('div');row.className='admin-row';if(type==='tg'){row.innerHTML=`<input class="admin-input" id="adm-tg-name-${i}" placeholder="이름"><input class="admin-input" id="adm-tg-id-${i}" placeholder="Chat ID" style="flex:0.8"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}else if(type==='email'){row.innerHTML=`<input class="admin-input" id="adm-email-name-${i}" placeholder="이름"><input class="admin-input" id="adm-email-addr-${i}" placeholder="이메일" style="flex:1.5"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}else{row.innerHTML=`<input class="admin-input" id="adm-${type}-name-${i}" placeholder="채널명"><input class="admin-input" id="adm-${type}-handle-${i}" placeholder="핸들/채널ID" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}el.appendChild(row);}
 function collectAdminRows(elId,type){const rows=document.getElementById(elId).querySelectorAll('.admin-row');const result=[];rows.forEach((row,i)=>{if(type==='tg'){const name=document.getElementById(`adm-tg-name-${i}`)?.value||'';const id=document.getElementById(`adm-tg-id-${i}`)?.value||'';if(id)result.push({name,id});}else if(type==='email'){const name=document.getElementById(`adm-email-name-${i}`)?.value||'';const email=document.getElementById(`adm-email-addr-${i}`)?.value||'';if(email)result.push({name,email});}else{const name=document.getElementById(`adm-${type}-name-${i}`)?.value||'';const handle=document.getElementById(`adm-${type}-handle-${i}`)?.value||'';if(name&&handle)result.push({name,handle});}});return result;}
-function saveAdminSettings(){const cfg={mediaChannels:collectAdminRows('admin-media-ch','media'),ytChannels:collectAdminRows('admin-yt-ch','yt'),tgRecipients:collectAdminRows('admin-tg','tg'),emailRecipients:collectAdminRows('admin-email','email')};lsSet('admin_cfg',cfg);const newKr=collectStockTileRows('admin-stock-kr');const newUs=collectStockTileRows('admin-stock-us');if(newKr.length){STOCK_KR=newKr;lsSet('stock_tiles_kr',newKr);}if(newUs.length){STOCK_US=newUs;lsSet('stock_tiles_us',newUs);}closeAdminModal();if(ytData)renderYtAll();const isUs=document.querySelector('.card-subtab.on')?.textContent.trim()==='미국';currentStockCardList=isUs?STOCK_US:STOCK_KR;if(jsonData)renderStockCard(currentStockCardList);}
+function saveAdminSettings(){
+const vis=id=>document.getElementById(id)?.style.display!=='none';
+const cfg=getAdminCfg();
+if(vis('admin-sec-media'))cfg.mediaChannels=collectAdminRows('admin-media-ch','media');
+if(vis('admin-sec-yt'))cfg.ytChannels=collectAdminRows('admin-yt-ch','yt');
+if(vis('admin-sec-tg'))cfg.tgRecipients=collectAdminRows('admin-tg','tg');
+if(vis('admin-sec-email'))cfg.emailRecipients=collectAdminRows('admin-email','email');
+lsSet('admin_cfg',cfg);
+if(vis('admin-sec-kr')){const r=collectStockTileRows('admin-stock-kr');if(r.length){STOCK_KR=r;lsSet('stock_tiles_kr',r);}}
+if(vis('admin-sec-us')){const r=collectStockTileRows('admin-stock-us');if(r.length){STOCK_US=r;lsSet('stock_tiles_us',r);}}
+closeAdminModal();
+if(ytData)renderYtAll();
+const isUs=document.querySelector('.card-subtab.on')?.textContent.trim()==='미국';
+currentStockCardList=isUs?STOCK_US:STOCK_KR;
+if(jsonData)renderStockCard(currentStockCardList);}
 // 관리자 비번: 로고 5번 탭
 let logoTapCount=0,logoTapTimer=null;
-document.getElementById('logo-tap').addEventListener('click',()=>{logoTapCount++;clearTimeout(logoTapTimer);logoTapTimer=setTimeout(()=>{logoTapCount=0;},2000);if(logoTapCount>=5){logoTapCount=0;if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal();}else{openAdminPwModal();}}});
+document.getElementById('logo-tap').addEventListener('click',()=>{logoTapCount++;clearTimeout(logoTapTimer);logoTapTimer=setTimeout(()=>{logoTapCount=0;},2000);if(logoTapCount>=5){logoTapCount=0;openAdminWithAuth('all');}});
 function openAdminPwModal(){document.getElementById('admin-pw-overlay').classList.add('show');document.getElementById('admin-pw-input').value='';document.getElementById('admin-pw-err').style.display='none';setTimeout(()=>document.getElementById('admin-pw-input').focus(),120);}
 function closeAdminPwModal(){document.getElementById('admin-pw-overlay').classList.remove('show');}
-async function submitAdminPw(){const pw=document.getElementById('admin-pw-input').value;if(await hashPw(pw)===ADMIN_PW_HASH){sessionStorage.setItem('admin_auth','1');closeAdminPwModal();document.getElementById('admin-btn').classList.add('visible');openAdminModal();}else{document.getElementById('admin-pw-err').style.display='block';document.getElementById('admin-pw-input').select();}}
+async function submitAdminPw(){const pw=document.getElementById('admin-pw-input').value;if(await hashPw(pw)===ADMIN_PW_HASH){sessionStorage.setItem('admin_auth','1');closeAdminPwModal();document.getElementById('admin-btn').classList.add('visible');openAdminModal(pendingAdminCtx);}else{document.getElementById('admin-pw-err').style.display='block';document.getElementById('admin-pw-input').select();}}
 // 초기화
 async function init(){if(!localStorage.getItem('pf_apps_script_url_bong'))localStorage.setItem('pf_apps_script_url_bong',BONG_GS_URL);await loadData();}
 init();
