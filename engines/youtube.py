@@ -74,16 +74,20 @@ def fetch_latest(handle):
     return None
 
 def _summarize(name, title, description):
+    # 설명이 충분하지 않으면 AI 호출 없이 제목만 반환 (할루시네이션 방지)
+    if len(description.strip()) < 30:
+        return title
+
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
         return title
 
     prompt = (
-        f'유튜브 채널 "{name}" 최신 영상:\n'
+        f'아래는 유튜브 영상의 실제 제목과 설명입니다.\n'
         f'제목: {title}\n'
         f'설명: {description}\n\n'
-        '핵심 투자 인사이트를 2문장으로 요약하세요. '
-        '설명이 없으면 제목 기반으로만 짧게 설명하세요.'
+        '위 내용만 바탕으로 핵심을 2문장으로 요약하세요. '
+        '제목/설명에 없는 내용은 절대 추가하지 마세요.'
     )
     try:
         r = requests.post(
@@ -95,7 +99,8 @@ def _summarize(name, title, description):
             },
             json={
                 'model': 'claude-haiku-4-5-20251001',
-                'max_tokens': 200,
+                'max_tokens': 150,
+                'temperature': 0,
                 'messages': [{'role': 'user', 'content': prompt}],
             },
             timeout=30,
