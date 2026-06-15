@@ -1,11 +1,11 @@
 import os, json, requests
 
 ANTHROPIC_API_KEY = os.environ.get('ANTHROPIC_API_KEY', '')
-MODEL = 'claude-haiku-4-5-20251001'
+MODEL = 'claude-sonnet-4-6'
 
 SYSTEM = """당신은 전문 투자 애널리스트입니다.
-제공된 시장 데이터를 바탕으로 한국어로 상세하고 실용적인 투자 분석을 제공하세요.
-JSON 형식으로만 응답하세요. 이모지 사용 금지."""
+제공된 실제 시장 데이터만을 바탕으로 한국어로 상세하고 실용적인 투자 분석을 제공하세요.
+데이터에 없는 내용은 절대 추가하지 마세요. JSON 형식으로만 응답하세요. 이모지 사용 금지."""
 
 def run(market: dict, portfolio: dict) -> dict:
     if not ANTHROPIC_API_KEY:
@@ -14,29 +14,39 @@ def run(market: dict, portfolio: dict) -> dict:
     kr = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
           for k in ['kospi', 'kosdaq', 'usdkrw'] if k in market}
     us = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
-          for k in ['sp500', 'nasdaq', 'nvda', 'aapl', 'tsla', 'msft'] if k in market}
+          for k in ['sp500', 'nasdaq', 'dow', 'nvda', 'aapl', 'tsla', 'msft', 'meta', 'googl'] if k in market}
     bond = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
             for k in ['us10y', 'us30y'] if k in market}
     fx = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
-          for k in ['usdkrw', 'dxy'] if k in market}
+          for k in ['usdkrw', 'dxy', 'jpykrw'] if k in market}
+    commodity = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
+                 for k in ['gold', 'oil', 'brent', 'silver'] if k in market}
+    kr_stocks = {k: {'price': market[k]['price'], 'pct': market[k]['pct']}
+                 for k in ['samsung', 'hynix', 'hanwha', 'samsungbio', 'celltrion'] if k in market}
 
-    prompt = f"""오늘의 시장 데이터:
+    prompt = f"""오늘의 실제 시장 데이터:
 
-한국: {json.dumps(kr, ensure_ascii=False)}
-미국: {json.dumps(us, ensure_ascii=False)}
-미국채: {json.dumps(bond, ensure_ascii=False)}
+한국 지수: {json.dumps(kr, ensure_ascii=False)}
+미국 지수/주요주: {json.dumps(us, ensure_ascii=False)}
+미국채금리: {json.dumps(bond, ensure_ascii=False)}
 환율: {json.dumps(fx, ensure_ascii=False)}
-보유종목수: {portfolio.get('count', 0)}개
+원자재: {json.dumps(commodity, ensure_ascii=False)}
+국내 주요주: {json.dumps(kr_stocks, ensure_ascii=False)}
+포트폴리오 종목수: {portfolio.get('count', 0)}개
 
-아래 JSON 형식으로만 응답 (이모지 사용 금지, 구체적인 수치와 종목명 포함):
+위 데이터만 바탕으로 아래 JSON 형식으로 응답하세요.
+각 항목은 반드시 줄바꿈(\\n)으로 구분된 번호 리스트 형식으로 작성하세요.
+예시: "1. 내용\\n2. 내용\\n3. 내용"
+이모지 사용 금지. 데이터에 없는 종목/지수 언급 금지.
+
 {{
-  "summary": "오늘 시장 한줄 핵심 요약",
-  "kr": "한국 시장 상세 분석 (코스피/코스닥 동향, 외국인/기관 수급, 주요 섹터 흐름 포함, 3~4문장)",
-  "us": "미국 시장 상세 분석 (주요 지수 동향, 기술주/가치주 흐름, 채권금리 영향 포함, 3~4문장)",
-  "sectors": "주목 섹터 분석 (상승/하락 섹터 각 1~2개, 이유 포함)",
-  "picks": "추천 분야 및 종목 (구체적 종목명 2~3개, 각 추천 이유 1문장씩)",
-  "do": "오늘 해야 할 것 (구체적 액션 2~3가지)",
-  "dont": "오늘 하지 말아야 할 것 (구체적 주의사항 2~3가지)",
+  "summary": "오늘 시장 핵심 한줄 요약 (수치 포함)",
+  "kr": "한국 시장 분석:\\n1. 코스피/코스닥 수준과 방향 (구체적 수치 포함)\\n2. 환율 영향 분석 (달러/원 수준과 주식시장 영향)\\n3. 국내 주요 종목 흐름 (위 데이터 기반)\\n4. 오늘 주목할 포인트",
+  "us": "미국 시장 분석:\\n1. 주요 지수 동향 (다우/S&P500/나스닥 각각 수치 포함)\\n2. 기술주 흐름 (나스닥/빅테크 분석)\\n3. 미국채 금리 수준과 시장 영향\\n4. 달러 인덱스 영향",
+  "sectors": "주목 섹터:\\n1. 상승 섹터: [섹터명] - [이유]\\n2. 하락/주의 섹터: [섹터명] - [이유]\\n3. 중립 관망: [섹터명]",
+  "picks": "관심 분야 (데이터 기반):\\n1. [분야/종목]: [이유 1문장]\\n2. [분야/종목]: [이유 1문장]\\n3. [분야/종목]: [이유 1문장]",
+  "do": "오늘 할 것:\\n1. [구체적 액션]\\n2. [구체적 액션]\\n3. [구체적 액션]",
+  "dont": "오늘 하지 말 것:\\n1. [주의사항]\\n2. [주의사항]\\n3. [주의사항]",
   "risk_level": 3
 }}"""
 
@@ -50,11 +60,11 @@ def run(market: dict, portfolio: dict) -> dict:
             },
             json={
                 'model': MODEL,
-                'max_tokens': 1500,
+                'max_tokens': 3000,
                 'system': SYSTEM,
                 'messages': [{'role': 'user', 'content': prompt}]
             },
-            timeout=30
+            timeout=45
         )
 
         if res.status_code != 200:

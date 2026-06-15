@@ -20,7 +20,8 @@
 | 데이터 흐름 | Python 엔진 → data.json → GitHub Pages HTML |
 | 자동화 | GitHub Actions (스케줄 실행) |
 | UI | GitHub Pages (단일 HTML, 모바일/PC 반응형) |
-| AI | Anthropic Claude API (claude-sonnet-4-20250514) |
+| AI (시황) | Anthropic Claude API (claude-sonnet-4-20250514) |
+| AI (유튜브 요약) | Anthropic Claude API (claude-haiku-4-5-20251001) |
 | 포트폴리오 | Google Sheets 연동 (읽기 전용) |
 | 저장소 | GitHub (Dalbonz/invest-dash) |
 
@@ -40,12 +41,13 @@ GitHub Pages HTML 대시보드
 
 ## 데이터 소스
 
-| 소스 | 용도 | 참고 레포 |
+| 소스 | 용도 | 엔진 |
 |------|------|------|
-| yfinance | 시장 지수/종목 가격 | investment-news-bot |
-| RSS (매경, 한경 등) | 뉴스 | investment-news-bot |
-| Google Sheets | 포트폴리오 보유 현황 | 주식현황상세 탭 |
-| Anthropic Claude API | 시장 해석/AI 요약 | investment-news-bot |
+| yfinance | 시장 지수/종목 가격 | market.py |
+| RSS (매경, 한경 등) | 뉴스 | news.py |
+| YouTube RSS XML | 유튜브 최신 영상 수집 | youtube.py |
+| Google Sheets | 포트폴리오 보유 현황 | portfolio.py |
+| Anthropic Claude API | 시장 해석/AI 요약/유튜브 요약 | ai_summary.py, youtube.py |
 
 ---
 
