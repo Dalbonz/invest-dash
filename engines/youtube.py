@@ -24,7 +24,6 @@ def _rss_url(handle):
     return f'https://www.youtube.com/feeds/videos.xml?user={handle}'
 
 def _resolve_handle(handle):
-    """여러 URL 패턴으로 channel_id 추출 시도"""
     urls = [
         f'https://www.youtube.com/@{handle}',
         f'https://www.youtube.com/c/{handle}',
@@ -59,14 +58,13 @@ def _parse_xml(text):
         return {
             'videoId':     getattr(entry.find('yt:videoId', NS),           'text', '') or '',
             'title':       getattr(entry.find('atom:title', NS),           'text', '') or '',
-            'description': (getattr(entry.find('.//media:description', NS),'text', '') or '')[:400],
+            'description': (getattr(entry.find('.//media:description', NS),'text', '') or '')[:600],
             'published':   getattr(entry.find('atom:published', NS),       'text', '') or '',
         }
     except Exception:
         return None
 
 def fetch_latest(handle):
-    # 1차 시도: channel_id or ?user=
     try:
         r = requests.get(_rss_url(handle), headers=HEADERS, timeout=10)
         if r.status_code == 200:
@@ -74,7 +72,6 @@ def fetch_latest(handle):
     except Exception:
         pass
 
-    # 2차 시도: @handle 페이지에서 channel_id 추출 후 재시도
     if not re.match(r'^UC', handle):
         cid = _resolve_handle(handle)
         if cid:
@@ -90,21 +87,38 @@ def fetch_latest(handle):
     return None
 
 def _summarize(name, title, description):
-    # 설명이 충분하지 않으면 AI 호출 없이 제목만 반환 (할루시네이션 방지)
-    if len(description.strip()) < 30:
-        return title
-
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
         return title
 
-    prompt = (
-        f'아래는 유튜브 영상의 실제 제목과 설명입니다.\n'
-        f'제목: {title}\n'
-        f'설명: {description}\n\n'
-        '위 내용만 바탕으로 핵심을 2문장으로 요약하세요. '
-        '제목/설명에 없는 내용은 절대 추가하지 마세요.'
-    )
+    has_desc = len(description.strip()) >= 50
+
+    if has_desc:
+        prompt = (
+            f'채널: {name}\n'
+            f'제목: {title}\n'
+            f'설명: {description}\n\n'
+            '위 정보만 바탕으로 투자자 관점에서 한국어로 요약하세요.\n'
+            '형식:\n'
+            '핵심 주제: [제목의 핵심 의미 1문장]\n'
+            '주요 내용:\n'
+            '1. [내용]\n'
+            '2. [내용]\n'
+            '3. [내용]\n'
+            '주목 키워드: [종목명/섹터/지수 등]\n\n'
+            '규칙: 제목과 설명에 있는 내용만 작성. 없는 내용 추가 금지.'
+        )
+    else:
+        prompt = (
+            f'채널: {name}\n'
+            f'제목: {title}\n\n'
+            '위 유튜브 영상 제목만을 바탕으로 투자자 관점에서 한국어로 요약하세요.\n'
+            '형식:\n'
+            '핵심 주제: [제목의 핵심 의미 1문장]\n'
+            '주목 키워드: [제목에서 추출한 종목명/섹터/키워드]\n\n'
+            '규칙: 제목에 있는 내용만 작성. 추측 금지.'
+        )
+
     try:
         r = requests.post(
             'https://api.anthropic.com/v1/messages',
@@ -115,7 +129,7 @@ def _summarize(name, title, description):
             },
             json={
                 'model': 'claude-haiku-4-5-20251001',
-                'max_tokens': 150,
+                'max_tokens': 300,
                 'temperature': 0,
                 'messages': [{'role': 'user', 'content': prompt}],
             },
