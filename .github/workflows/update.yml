@@ -2,8 +2,13 @@ name: Update Dashboard Data
 
 on:
   schedule:
-    - cron: '0 0,6,9 * * *'  # UTC 0시, 6시, 9시 (KST 9시, 15시, 18시)
-  workflow_dispatch:          # 수동 실행 가능
+    - cron: '0 21 * * *'   # KST 06:00 (개인채널 유튜브 체크)
+    - cron: '0 23 * * *'   # KST 08:00 (개인채널 유튜브 체크)
+    - cron: '30 23 * * *'  # KST 08:30 (전체 실행 + 아침 브리핑)
+    - cron: '0 1 * * *'    # KST 10:00 (개인채널 유튜브 체크)
+    - cron: '0 6 * * *'    # KST 15:00 (전체 실행)
+    - cron: '0 9 * * *'    # KST 18:00 (전체 실행)
+  workflow_dispatch:
 
 jobs:
   update:
@@ -24,6 +29,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           GOOGLE_SHEETS_ID: ${{ secrets.GOOGLE_SHEETS_ID }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+          GITHUB_SCHEDULE: ${{ github.event.schedule }}
         run: python run.py
 
       - name: Commit data.json

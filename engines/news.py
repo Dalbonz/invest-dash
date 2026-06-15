@@ -1,4 +1,4 @@
-import requests, xml.etree.ElementTree as ET
+import os, requests, xml.etree.ElementTree as ET
 
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
 
@@ -15,6 +15,38 @@ def is_invest(title):
     if any(k in title for k in EXCLUDE_KW): return False
     return any(k in title for k in INVEST_KW)
 
+def _ai_summary(title, source):
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return ''
+    try:
+        r = requests.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={
+                'x-api-key': api_key,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+            },
+            json={
+                'model': 'claude-haiku-4-5-20251001',
+                'max_tokens': 150,
+                'temperature': 0,
+                'messages': [{'role': 'user', 'content':
+                    f'다음 경제 뉴스 제목을 투자자 관점에서 2문장으로 설명하세요.\n'
+                    f'출처: {source}\n'
+                    f'제목: {title}\n\n'
+                    '형식: [배경/맥락 1문장] [투자 시사점 1문장]\n'
+                    '규칙: 제목 사실만. 추측 금지. 이모지 금지.'
+                }],
+            },
+            timeout=15,
+        )
+        if r.status_code == 200:
+            return r.json()['content'][0]['text'].strip()
+    except Exception as e:
+        print(f'뉴스 AI 요약 오류 ({title[:30]}): {e}')
+    return ''
+
 def run():
     news = []
     for src in RSS_SOURCES:
@@ -30,11 +62,13 @@ def run():
                 title = (t.text or '').strip()
                 link = (l.text or '').strip()
                 if not title or not is_invest(title): continue
+                summary = _ai_summary(title, src['name'])
                 news.append({
                     'source': src['name'],
                     'category': src['category'],
                     'title': title,
                     'link': link,
+                    'summary': summary,
                 })
                 cnt += 1
         except Exception as e:

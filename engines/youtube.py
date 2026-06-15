@@ -1,5 +1,15 @@
 import os, re, requests
 import xml.etree.ElementTree as ET
+from datetime import datetime, timezone, timedelta
+
+KST = timezone(timedelta(hours=9))
+
+def _is_today_kst(published_str):
+    try:
+        dt = datetime.fromisoformat(published_str.replace('Z', '+00:00'))
+        return dt.astimezone(KST).date() == datetime.now(KST).date()
+    except Exception:
+        return True
 
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
 
@@ -141,13 +151,18 @@ def _summarize(name, title, description):
         print(f'AI 요약 오류 ({name}): {e}')
     return title
 
-def run():
+def run(yt_only=False):
+    channels = [ch for ch in CHANNELS if ch['type'] == 'yt'] if yt_only else CHANNELS
     result = []
-    for ch in CHANNELS:
+    for ch in channels:
         print(f'YouTube: {ch["name"]} 수집 중...')
         video = fetch_latest(ch['handle'])
         if not video:
             print(f'  → 데이터 없음 (스킵)')
+            continue
+        # 개인채널은 오늘 영상만 사용
+        if ch['type'] == 'yt' and not _is_today_kst(video.get('published', '')):
+            print(f'  → 오늘 영상 없음 (스킵)')
             continue
         summary = _summarize(ch['name'], video['title'], video['description'])
         result.append({

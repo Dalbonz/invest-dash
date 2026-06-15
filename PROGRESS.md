@@ -15,20 +15,22 @@
 
 ## 완료
 
-- GitHub Actions 자동화 (KST 9시/15시/18시)
+- GitHub Actions 자동화 (KST 6/8/8:30/10/15/18시)
 - market.py: us10y(^TNX), us30y(^TYX), candles 포함 / pykrx 투자자별 순매수
 - ai_summary.py: Sonnet 4.6, 7개 섹션, **볼드** 형식 지시 포함
-- news.py: category 포함
-- youtube.py: RSS+AI 수집 엔진 (미디어채널 3개 + 일반채널 3개)
+- news.py: category + AI 요약(Haiku) 포함
+- youtube.py: RSS+AI 수집 엔진 (미디어채널 3개 + 개인채널 3개)
+  - 개인채널은 오늘 영상만 사용 (당일 KST 기준 필터)
   - 설명 600자로 확대, 구조화된 프롬프트 (핵심주제/주요내용/키워드)
-  - 설명 50자 미만이면 제목 기반 요약 (할루시네이션 방지)
   - temperature=0 고정
+- notify.py: 텔레그램 발송 (아침 브리핑 + 개인채널 새 영상 알림)
+- run.py: 모드 분기 (mode=yt/morning/full)
 - index.html 3탭 구조 (포트폴리오 관리자 전용)
-  - 탭1 투자브리핑: AI 볼드(**) 파싱, us30y→WTI유가 교체
-  - 탭2 증시: 상단카드 sparkline 기준선 추가, ETF cb5 상단제거, 타일 기준선 추가
+  - 탭1 투자브리핑: AI 섹션 들여쓰기 개선, 오늘할것/하지말것 중복 제거
+  - 탭2 증시: 기준선 항상 표시, 한국/미국 버튼 타이틀 인라인, K/A 뱃지
   - 탭2 증시: 상승/하락분야 → 테마탭 (반도체/AI/소부장/로봇/조선/금융/바이오)
-  - 탭3 미디어: 유튜브 필터버튼 (전체/뉴스채널/개인채널), 카드 기본 펼침, 제목 미리보기
-  - 관리자 버튼 항상 표시 (로그인 필요), 포트폴리오 관리자에서 진입
+  - 탭3 미디어: 뉴스 accordion(클릭→기사보기), 유튜브 기본닫힘→클릭펼침
+  - 관리자 버튼 업데이트 시간 왼쪽 배치
 - requirements.txt: pykrx 추가
 
 ---
@@ -37,16 +39,44 @@
 
 | 탭 | 제목 | 내용 |
 |---|---|---|
-| 1 | 투자 브리핑 | AI시황(7섹션,볼드) + 주요시장8개(WTI포함) |
-| 2 | 증시 | 4카드(기준선sparkline) + 주식시세(테마탭) + ETF(기준선) |
-| 3 | 미디어 분석 | 뉴스(필터) + 유튜브(필터+기본펼침+제목미리보기) |
+| 1 | 투자 브리핑 | AI시황(7섹션,들여쓰기) + 주요시장8개(WTI포함) |
+| 2 | 증시 | 4카드(기준선sparkline) + 주식시세(테마탭,K/A뱃지) + ETF |
+| 3 | 미디어 분석 | 뉴스(accordion+AI요약) + 유튜브(기본닫힘+펼침) |
 | - | 포트폴리오 | 관리자→포트폴리오 보기로만 진입 (비번 1111) |
+
+---
+
+## GitHub Actions 실행 스케줄
+
+| UTC | KST | 모드 | 내용 |
+|---|---|---|---|
+| 21:00 | 06:00 | yt | 개인채널 유튜브 체크 → 새 영상 텔레그램 발송 |
+| 23:00 | 08:00 | yt | 개인채널 유튜브 체크 → 새 영상 텔레그램 발송 |
+| 23:30 | 08:30 | morning | 전체 실행 + 아침 브리핑 텔레그램 발송 |
+| 01:00 | 10:00 | yt | 개인채널 유튜브 체크 → 새 영상 텔레그램 발송 |
+| 06:00 | 15:00 | full | 전체 실행 (알림 없음) |
+| 09:00 | 18:00 | full | 전체 실행 (알림 없음) |
 
 ---
 
 ## 다음 작업 (미완료)
 
 - 포트폴리오 Google Sheets 연동 설정 (아래 참고)
+- 기관/외국인/개인 pykrx 실패 원인 파악 (data.json에 investors 없음)
+- ETF → 연금 섹션으로 교체 (구상 중)
+- 카카오톡 알림 (검토 중)
+
+---
+
+## 텔레그램 발송 설정 방법
+
+GitHub Secrets에 추가 필요:
+- `TELEGRAM_BOT_TOKEN`: 봇 토큰 (BotFather에서 발급)
+- `TELEGRAM_CHAT_IDS`: 수신 Chat ID, 쉼표 구분 (예: `8649321702,8799181333`)
+
+모드별 동작:
+- **yt**: 개인채널(12시에만나요/경제사냥꾼/슈페tv) 새 영상 감지 시 발송
+- **morning**: 아침 브리핑 (AI요약 + 주요지수 + 뉴스헤드라인 + 링크)
 
 ---
 
@@ -59,7 +89,7 @@
 | 관리자 비번 | 1111 (동일) |
 | 관리자 진입 | 로고 5번 탭 |
 | Bong GS URL | https://script.google.com/macros/s/AKfycbw1W851igwvCuIzoghZyKfgkpqsgc2oPxNHrHsJhDLWhQbKHvlxQGTqMzLuImqnImHv/exec |
-| AI 모델 (요약) | claude-haiku-4-5-20251001 |
+| AI 모델 (유튜브/뉴스요약) | claude-haiku-4-5-20251001 |
 | AI 모델 (시황) | claude-sonnet-4-6 |
 
 ---
@@ -70,15 +100,16 @@
 invest-dash/
 ├── engines/
 │   ├── market.py      완료 (us10y/us30y/candles 포함)
-│   ├── news.py        완료 (category 포함)
+│   ├── news.py        완료 (category + AI 요약)
 │   ├── portfolio.py   완료 (GS 연동)
 │   ├── ai_summary.py  완료 (7섹션 프롬프트)
-│   ├── youtube.py     완료 (RSS+AI, data.json 통합)
+│   ├── youtube.py     완료 (RSS+AI, 개인채널 오늘필터)
+│   ├── notify.py      완료 (텔레그램 발송)
 │   └── __init__.py
 ├── .github/workflows/
-│   └── update.yml     완료 (KST 9/15/18시)
-├── index.html         완료 (4탭)
-├── run.py             완료
+│   └── update.yml     완료 (KST 6/8/8:30/10/15/18시)
+├── index.html         완료 (3탭 + 포트폴리오)
+├── run.py             완료 (yt/morning/full 모드)
 ├── requirements.txt   완료
 ├── data.json          자동생성 (keys: updated/market/news/portfolio/ai/youtube)
 ├── CLAUDE.md          완료
@@ -91,9 +122,9 @@ invest-dash/
 
 ```json
 {
-  "updated": "ISO8601 KST",
-  "market":  { "indices": [...], "stocks": [...], "etfs": [...], ... },
-  "news":    [ { "title", "link", "source", "category", "published" }, ... ],
+  "updated": "ISO8601 UTC",
+  "market":  { "kospi": {...}, "sp500": {...}, ... },
+  "news":    [ { "title", "link", "source", "category", "summary" }, ... ],
   "portfolio": { "bong": {...}, "kyoung": {...}, "total": {...} },
   "ai":      { "summary", "kr", "us", "sectors", "picks", "do", "dont" },
   "youtube": [ { "name", "type", "videoId", "title", "updated", "summary" }, ... ]
@@ -104,23 +135,14 @@ invest-dash/
 
 ## 포트폴리오 Google Sheets 연동 설정 방법
 
-현재 `portfolio.py`는 GS에서 데이터를 읽지만, UI의 포트폴리오 탭은 GS에서 직접 읽지 않고 Apps Script URL을 통해 읽음. 두 경로 중 하나가 연결되어야 함.
-
-**현재 구조 이슈:** portfolio.py는 data.json에 저장하지만, UI 포트폴리오 탭은 `getAppsScriptUrlFor('bong')` URL을 호출. data.json의 포트폴리오 데이터를 UI에서 읽도록 연결이 안 됨.
-
-**해결 방법 (둘 중 선택):**
+현재 `portfolio.py`는 GS에서 데이터를 읽지만, UI의 포트폴리오 탭은 GS에서 직접 읽지 않고 Apps Script URL을 통해 읽음.
 
 **A안 (권장): data.json 경유 방식**
 - portfolio.py에서 GS 데이터를 읽어 data.json의 `portfolio.bong`, `portfolio.kyoung`에 저장
 - UI에서 `jsonData.portfolio`를 직접 사용하도록 renderPortfolio 수정
 - Apps Script 불필요
 
-**B안: Apps Script 방식 (현재 구조 유지)**
-1. GS에서 도구 → 스크립트 편집기 → Apps Script 코드 배포
-2. 웹 앱 URL을 관리자 메뉴 → 포트폴리오 설정에 입력
-3. GS 공유 설정: "링크가 있는 모든 사용자" 뷰어 권한 필요
-
-**현재 상태:** portfolio.py가 GS 연동 중인지 Secrets 설정 여부 확인 필요
+**현재 상태:**
 - GOOGLE_SHEETS_ID: 설정됨
 - GOOGLE_SERVICE_ACCOUNT_JSON: 설정 여부 확인 필요
 
@@ -138,6 +160,7 @@ invest-dash/
 | handle 미해결 | YouTube @handle → channel_id 실패 | 다중 URL/패턴 시도 로직 강화 |
 | rainbow -74% 데이터 오류 | 277810.KS(KOSPI)로 잘못 설정 | 277810.KQ(KOSDAQ)으로 수정 |
 | Pages 공백 | index.html 미커밋으로 구 버전 서비스 | 전체 변경사항 수동 커밋 필요 |
+| loadETF JS 문법 오류 | `}}}}catch` 여분 중괄호 | `}}}catch`로 수정 |
 
 ---
 
