@@ -68,15 +68,17 @@
 
 ---
 
-## 텔레그램 발송 설정 방법
+## 텔레그램 발송 설정
 
-GitHub Secrets에 추가 필요:
-- `TELEGRAM_BOT_TOKEN`: 봇 토큰 (BotFather에서 발급)
-- `TELEGRAM_CHAT_IDS`: 수신 Chat ID, 쉼표 구분 (예: `8649321702,8799181333`)
+Secrets 설정 완료 (2026-06-15):
+- `TELEGRAM_BOT_TOKEN`: YT_sum_bot 토큰 설정됨
+- `TELEGRAM_CHAT_IDS`: `8649321702,8799181333` (달봉즈, 경)
 
 모드별 동작:
 - **yt**: 개인채널(12시에만나요/경제사냥꾼/슈페tv) 새 영상 감지 시 발송
 - **morning**: 아침 브리핑 (AI요약 + 주요지수 + 뉴스헤드라인 + 링크)
+
+주의: 봇 토큰이 채팅에 노출됨 → BotFather에서 `/token` 재발급 권장
 
 ---
 
