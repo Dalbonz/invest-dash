@@ -615,7 +615,48 @@ allNews=jsonData.news||[];document.getElementById('brief-loading').style.display
 function renderNewsTo(target,filter){const elId=target==='brief'?'brief-news':'media-news-list';const el=document.getElementById(elId);let items=allNews;if(filter!=='all')items=allNews.filter(n=>n.category===filter);if(!items.length){el.innerHTML='<div class="no-data">뉴스 없음</div>';return;}el.innerHTML=items.map(n=>`<div class="ni" onclick="this.classList.toggle('open')"><div class="ni-src">${n.source}${n.category?`<span class="ni-badge badge-${n.category}">${n.category}</span>`:''}</div><div class="ni-title">${n.title}</div><div class="ni-detail">${n.summary?`<div class="ni-summary">${n.summary}</div>`:''}<a class="ni-link" href="${n.link}" target="_blank" rel="noopener" onclick="event.stopPropagation()">기사 보기 →</a></div></div>`).join('');}
 function filterNews(target,filter,btn){const scope=target==='brief'?'#page-brief .nf-btn':'#media-news-wrap .nf-btn';document.querySelectorAll(scope).forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderNewsTo(target,filter);}
 // 탭2: 증시 차트
-function drawSparkSVG(el,values,isUp,h,prevClose){const w=el.clientWidth||200;h=h||80;const color=isUp?NAVER.up:NAVER.down;const mn=Math.min(...values),mx=Math.max(...values),rng=mx-mn||mx*0.02||1;const px=2,py=4;const pts=values.map((v,i)=>[px+(i/(values.length-1))*(w-px*2),py+(1-(v-mn)/rng)*(h-py*2)]);let line=`M${pts[0][0]},${pts[0][1]}`;for(let i=1;i<pts.length;i++){const cx=(pts[i-1][0]+pts[i][0])/2;line+=` C${cx},${pts[i-1][1]} ${cx},${pts[i][1]} ${pts[i][0]},${pts[i][1]}`;}const fill=line+` L${pts[pts.length-1][0]},${h} L${pts[0][0]},${h} Z`;const gid='sg'+Math.random().toString(36).slice(2);let bl='';if(prevClose!=null){const cpc=Math.max(mn,Math.min(mx,prevClose));const by=(py+(1-(cpc-mn)/rng)*(h-py*2)).toFixed(1);bl=`<line x1="${px}" y1="${by}" x2="${w-px}" y2="${by}" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.6"/>`;}el.innerHTML=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" style="display:block"><defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.13"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs><path d="${fill}" fill="url(#${gid})"/><path d="${line}" fill="none" stroke="${color}" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>${bl}</svg>`;}
+function drawSparkSVG(el,values,isUp,h,prevClose){
+  const w=el.clientWidth||200;h=h||80;
+  const showLbl=h>=70&&prevClose!=null;
+  const lw=showLbl?34:0,cw=w-lw;
+  const mn=Math.min(...values),mx=Math.max(...values),rng=mx-mn||mx*0.02||1;
+  const px=2,py=5;
+  const yAt=v=>py+(1-(v-mn)/rng)*(h-py*2);
+  const pts=values.map((v,i)=>[px+(i/(values.length-1))*(cw-px*2),yAt(v)]);
+  let lp=`M${pts[0][0].toFixed(1)},${pts[0][1].toFixed(1)}`;
+  for(let i=1;i<pts.length;i++){const cx=(pts[i-1][0]+pts[i][0])/2;lp+=` C${cx.toFixed(1)},${pts[i-1][1].toFixed(1)} ${cx.toFixed(1)},${pts[i][1].toFixed(1)} ${pts[i][0].toFixed(1)},${pts[i][1].toFixed(1)}`;}
+  const id='sg'+Math.random().toString(36).slice(2,8);
+  let body='';
+  if(prevClose!=null){
+    const by=Math.max(py,Math.min(h-py,yAt(prevClose))),byS=by.toFixed(1);
+    const fp=lp+` L${pts[pts.length-1][0].toFixed(1)},${byS} L${pts[0][0].toFixed(1)},${byS} Z`;
+    body=`<defs>
+      <clipPath id="cu${id}"><rect x="0" y="0" width="${cw}" height="${byS}"/></clipPath>
+      <clipPath id="cd${id}"><rect x="0" y="${byS}" width="${cw}" height="${h-by}"/></clipPath>
+      <linearGradient id="gu${id}" x1="0" y1="0" x2="0" y2="${byS}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="${NAVER.up}" stop-opacity="0"/><stop offset="100%" stop-color="${NAVER.up}" stop-opacity="0.22"/>
+      </linearGradient>
+      <linearGradient id="gd${id}" x1="0" y1="${byS}" x2="0" y2="${h}" gradientUnits="userSpaceOnUse">
+        <stop offset="0%" stop-color="${NAVER.down}" stop-opacity="0.22"/><stop offset="100%" stop-color="${NAVER.down}" stop-opacity="0"/>
+      </linearGradient>
+    </defs>
+    <g clip-path="url(#cu${id})"><path d="${fp}" fill="url(#gu${id})"/><path d="${lp}" fill="none" stroke="${NAVER.up}" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
+    <g clip-path="url(#cd${id})"><path d="${fp}" fill="url(#gd${id})"/><path d="${lp}" fill="none" stroke="${NAVER.down}" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/></g>
+    <line x1="0" y1="${byS}" x2="${cw}" y2="${byS}" stroke="#bbb" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.7"/>`;
+    if(showLbl){
+      const fL=v=>{const a=Math.abs(v);return a>=10000?(v/1000).toFixed(0)+'K':a>=1000?(v/1000).toFixed(1)+'K':a>=100?v.toFixed(0):v.toFixed(2);};
+      const lx=cw+3;
+      [[mx,Math.max(py+5,yAt(mx)+4),NAVER.up],[prevClose,by+3.5,'#999'],[mn,Math.min(h-1,yAt(mn)+4),NAVER.down]]
+        .forEach(([v,y,c])=>{body+=`<text x="${lx}" y="${y.toFixed(0)}" font-size="7.5" fill="${c}" font-family="-apple-system,Arial,sans-serif">${fL(v)}</text>`;});
+    }
+  }else{
+    const color=isUp?NAVER.up:NAVER.down;
+    body=`<defs><linearGradient id="g${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${color}" stop-opacity="0.13"/><stop offset="100%" stop-color="${color}" stop-opacity="0"/></linearGradient></defs>
+    <path d="${lp} L${pts[pts.length-1][0]},${h} L${pts[0][0]},${h} Z" fill="url(#g${id})"/>
+    <path d="${lp}" fill="none" stroke="${color}" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round"/>`;
+  }
+  el.innerHTML=`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="display:block">${body}</svg>`;
+}
 function buildCardPeriodTabs(cbId){const el=document.getElementById('cp-'+cbId);if(!el)return;el.innerHTML=CARD_PERIODS.map((p,i)=>`<button class="cptab${i===0?' on':''}" onclick="switchCardPeriod('${cbId}',${i},this)">${p[0]}</button>`).join('');}
 async function switchCardPeriod(cbId,idx,btn){document.getElementById('cp-'+cbId)?.querySelectorAll('.cptab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');const st=cardState[cbId];if(!st?.symbol)return;const[,interval,range]=CARD_PERIODS[idx];const el=document.getElementById(cbId);if(!el)return;el.innerHTML='<div style="text-align:center;color:#ddd;font-size:9px;line-height:76px">...</div>';const data=await yfetch(st.symbol,interval,range);if(data?.chart?.result?.[0]){const res=data.chart.result[0];const q=res.indicators.quote[0];const vals=(q.close||[]).filter(v=>v!=null);if(vals.length>=2){const pc=res.meta.chartPreviousClose||null;st.currentVals=vals;el.innerHTML='';drawSparkSVG(el,vals,st.isUp,80,pc);new ResizeObserver(()=>{if(el.clientWidth>0){el.innerHTML='';drawSparkSVG(el,vals,st.isUp,80,pc);}}).observe(el);}}}
 async function makeMiniChart(cbId,candles,isUp,symbol,prevClose){const el=document.getElementById(cbId);if(!el)return;el.innerHTML='';let vals=[],pc=prevClose??null;if(symbol){const data=await yfetch(symbol,'5m','1d');if(data?.chart?.result?.[0]){const res=data.chart.result[0];const q=res.indicators.quote[0];vals=(q.close||[]).filter(v=>v!=null);if(pc==null)pc=res.meta.chartPreviousClose||null;}}if(vals.length<2&&candles){const sorted=[...candles].sort((a,b)=>a.time-b.time);vals=sorted.map(c=>c.close).filter(v=>v!=null);if(pc==null&&sorted.length>=2)pc=sorted[0].close;}if(vals.length<2)return;cardState[cbId]={...(cardState[cbId]||{}),currentVals:vals};drawSparkSVG(el,vals,isUp,80,pc);new ResizeObserver(()=>{if(el.clientWidth>0){el.innerHTML='';drawSparkSVG(el,vals,isUp,80,pc);}}).observe(el);}
