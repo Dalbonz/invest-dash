@@ -31,6 +31,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
+          SUPADATA_API_KEY: ${{ secrets.SUPADATA_API_KEY }}
           GITHUB_SCHEDULE: ${{ github.event.schedule }}
         run: python run.py
 
