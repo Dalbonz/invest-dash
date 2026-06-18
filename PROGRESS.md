@@ -228,6 +228,10 @@ invest-dash/
 | 12시에만나요 영상 오매칭 | RSS 최신 1건만 사용 → 다른 시간대 프로그램 섞임 | RSS 전체 entry 순회 + titleKeyword 필터 |
 | Supadata 429 limit-exceeded | 기존 Apps Script가 매시간 호출해 Free플랜(월100) 소진 | 유료 플랜 업그레이드 + 중복호출 방지 추가 |
 | 08:30 브리핑 지연(2.5~5시간) | cron이 정각/30분에 몰려 GitHub 큐 혼잡 + investment-news-bot이 동일 시각 cron 운영 | 모든 cron을 비정각으로 오프셋, investment-news-bot 워크플로 비활성화 |
+| 수동실행시 신규영상 텔레그램 중복발송 | "모든 모드 알림 통일" 적용 후 workflow_dispatch도 알림 대상 포함됨 | GITHUB_EVENT_NAME=workflow_dispatch면 신규영상 알림만 보류 |
+| data.json push 충돌(non-fast-forward) | 여러 실행이 거의 동시에 끝나 git push 경쟁 | pull --rebase 후 재시도 루프(최대5회) 추가 |
+| 이메일 "AI 시황 데이터 없음" (조용한 실패) | 섹션 길이 확대 후 응답이 max_tokens(4500)에서 잘려 JSON 파싱 실패, 콘솔에 에러도 안 찍힘 | max_tokens 7000으로 확대 + 실패 분기에 print 로그 추가 |
+| 이메일에 **볼드** 마크다운 그대로 노출 | text.replace('\n','<br>')만 적용, 볼드/수치색상 처리 없음 | _fmt_ai_section/_fmt_yt_section 추가 (대시보드 fmtAI와 동일 로직) |
 
 ---
 
