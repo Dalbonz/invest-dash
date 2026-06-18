@@ -19,9 +19,10 @@
 - market.py: us10y(^TNX), us30y(^TYX), candles 포함 / pykrx 투자자별 순매수
 - ai_summary.py: Sonnet 4.6, 7개 섹션, **볼드** 형식 지시 포함
 - news.py: category + AI 요약(Haiku) 포함
-- youtube.py: RSS+AI 수집 엔진 (미디어채널 3개 + 개인채널 3개)
+- youtube.py: RSS로 영상탐색 + Supadata 자막 + AI 요약 (미디어채널 3개 + 개인채널 3개)
   - 개인채널은 오늘 영상만 사용 (당일 KST 기준 필터)
-  - 설명 600자로 확대, 구조화된 프롬프트 (핵심주제/주요내용/키워드)
+  - 자막 있으면 [섹션명]+불릿 구조 요약(투자/free 포맷), 자막 없으면 제목 기반 요약
+  - **중복 호출 방지**: data.json의 기존 videoId와 동일하면 자막 재호출 없이 기존 요약 재사용 (run.py에서 existing 맵 전달)
   - temperature=0 고정
 - notify.py: 텔레그램 발송 (아침 브리핑 + 개인채널 새 영상 알림)
 - run.py: 모드 분기 (mode=yt/morning/full)
@@ -62,9 +63,22 @@
 ## 다음 작업 (미완료)
 
 - 포트폴리오 Google Sheets 연동 설정 (아래 참고)
-- 기관/외국인/개인 pykrx 실패 원인 파악 (data.json에 investors 없음)
+- 기관/외국인/개인 pykrx 실패 원인 파악 (data.json에 investors 없음, KRX_ID/PW 필요한 것으로 보임)
 - ETF → 연금 섹션으로 교체 (구상 중)
 - 카카오톡 알림 (검토 중)
+- **Supadata 플랜 결정 대기** (아래 참고)
+
+---
+
+## Supadata 자막 API — 크레딧 이슈 (2026-06-18)
+
+- 기존 Google Apps Script(YT_sumbot)가 매시간(24회/일) × 6채널로 Supadata를 호출해 Free플랜(월100크레딧) 소진
+- 호출 테스트 결과 `429 limit-exceeded`, **리셋일: 2026-07-13**
+- Apps Script 트리거 비활성화 권장 (크레딧 회복은 안 되지만, 리셋 후 invest-dash와 중복 소모 방지)
+  - 비활성화: 스크립트 에디터 → 시계 아이콘(트리거) → `runScheduled` 옆 ⋮ → 삭제
+  - **복구 방법**: 스크립트 에디터에서 함수 선택창에 `setupTrigger` 선택 → 실행(▶) → 매시간 트리거 자동 재생성됨 (코드에 이미 있는 함수, 별도 기억 불필요)
+- youtube.py에 중복호출 방지 추가됨(위 참고) → 실제 소모량은 "워크플로 실행횟수"가 아니라 "신규 영상 개수"에 비례
+- 플랜 선택 보류 중 (Basic $/월 300크레딧 vs Pro 3000크레딧) — 중복방지 적용 후 실사용량 보고 결정 예정
 
 ---
 

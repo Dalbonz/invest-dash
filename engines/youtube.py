@@ -199,7 +199,8 @@ def _summarize_title_only(name, title):
         print(f'  AI 요약 오류 ({name}): {e}')
     return title
 
-def run(yt_only=False):
+def run(yt_only=False, existing=None):
+    existing = existing or {}
     channels = [ch for ch in CHANNELS if ch['type'] == 'yt'] if yt_only else CHANNELS
     result = []
     for ch in channels:
@@ -210,6 +211,19 @@ def run(yt_only=False):
             continue
         if ch['type'] == 'yt' and not _is_today_kst(video.get('published', '')):
             print('  → 오늘 영상 없음 (스킵)')
+            continue
+
+        prev = existing.get(ch['name'])
+        if prev and prev.get('videoId') == video['videoId'] and prev.get('summary'):
+            print('  → 기존과 동일한 영상 (자막 재호출 스킵, 기존 요약 재사용)')
+            result.append({
+                'name':    ch['name'],
+                'type':    ch['type'],
+                'videoId': video['videoId'],
+                'title':   video['title'],
+                'updated': video['published'],
+                'summary': prev['summary'],
+            })
             continue
 
         transcript = get_transcript(video['videoId']) if video['videoId'] else None

@@ -33,7 +33,7 @@ def run_yt_only():
     existing_yt = {v['name']: v for v in (existing.get('youtube') or [])}
 
     print('유튜브 개인채널 체크...')
-    new_videos = youtube.run(yt_only=True)
+    new_videos = youtube.run(yt_only=True, existing=existing_yt)
 
     notified = False
     for v in new_videos:
@@ -68,7 +68,9 @@ def run_full(send_morning=False):
     ai_data = ai_summary.run(market_data, portfolio_data)
 
     print('5. 유튜브 채널 수집...')
-    youtube_data = youtube.run()
+    existing = load_existing()
+    existing_yt = {v['name']: v for v in (existing.get('youtube') or [])}
+    youtube_data = youtube.run(existing=existing_yt)
 
     data = {
         'updated': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
