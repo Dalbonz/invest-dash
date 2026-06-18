@@ -9,6 +9,11 @@ on:
     - cron: '7 6 * * *'    # KST 15:07 (전체 실행 + 이메일, 12시에 만나요 처리 후)
     - cron: '14 9 * * *'   # KST 18:14 (전체 실행)
   workflow_dispatch:
+    inputs:
+      force_email:
+        description: '이메일 강제 발송 테스트 (true/false)'
+        required: false
+        default: 'false'
 
 jobs:
   update:
@@ -37,6 +42,7 @@ jobs:
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
           GITHUB_SCHEDULE: ${{ github.event.schedule }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
+          FORCE_EMAIL: ${{ github.event.inputs.force_email }}
         run: python run.py
 
       - name: Commit data.json

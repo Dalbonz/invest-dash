@@ -18,6 +18,8 @@ MORNING_SCHEDULE = '22 23 * * *'
 EMAIL_SCHEDULE = '7 6 * * *'
 
 def get_mode():
+    if os.environ.get('FORCE_EMAIL', '').lower() == 'true':
+        return 'email'
     s = os.environ.get('GITHUB_SCHEDULE', '')
     if s in YT_SCHEDULES:
         return 'yt'
