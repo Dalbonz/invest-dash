@@ -168,7 +168,7 @@ def send_email(ai_data, news_data, market_data, youtube_data):
 
     html = (
         '<html><body style="font-family:Arial;max-width:680px;margin:0 auto;padding:20px;color:#222">'
-        f'<h2 style="border-bottom:2px solid #1a73e8;padding-bottom:8px">{today} Invest Dash 브리핑</h2>'
+        f'<h2 style="border-bottom:2px solid #1a73e8;padding-bottom:8px">{today} 투자브리핑</h2>'
         '<div style="background:#f0f7ff;padding:15px;border-radius:10px;margin:16px 0;line-height:1.8">'
         f'<b>AI 시황 분석</b><br><br>{ai_html}'
         '</div>'
@@ -183,7 +183,7 @@ def send_email(ai_data, news_data, market_data, youtube_data):
     )
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = f'{today} Invest Dash 브리핑'
+    msg['Subject'] = f'{today} 투자브리핑'
     msg['From'] = GMAIL_USER
     msg['To'] = ', '.join(EMAIL_RECIPIENTS)
     msg.attach(MIMEText(html, 'html'))
