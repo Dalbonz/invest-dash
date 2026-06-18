@@ -18,7 +18,7 @@ CHANNELS = [
     {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment'},
     {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment'},
     {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment'},
-    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment'},
+    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요'},
     {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free'},
     {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free'},
 ]
@@ -60,26 +60,35 @@ def _resolve_handle(handle):
             continue
     return None
 
-def _parse_xml(text):
+def _entry_to_dict(entry):
+    return {
+        'videoId':     getattr(entry.find('yt:videoId', NS),           'text', '') or '',
+        'title':       getattr(entry.find('atom:title', NS),           'text', '') or '',
+        'description': (getattr(entry.find('.//media:description', NS),'text', '') or '')[:600],
+        'published':   getattr(entry.find('atom:published', NS),       'text', '') or '',
+    }
+
+def _parse_xml(text, title_keyword=None):
     try:
         root = ET.fromstring(text)
-        entry = root.find('atom:entry', NS)
-        if not entry:
+        entries = root.findall('atom:entry', NS)
+        if not entries:
             return None
-        return {
-            'videoId':     getattr(entry.find('yt:videoId', NS),           'text', '') or '',
-            'title':       getattr(entry.find('atom:title', NS),           'text', '') or '',
-            'description': (getattr(entry.find('.//media:description', NS),'text', '') or '')[:600],
-            'published':   getattr(entry.find('atom:published', NS),       'text', '') or '',
-        }
+        if title_keyword:
+            for entry in entries:
+                title = getattr(entry.find('atom:title', NS), 'text', '') or ''
+                if title_keyword in title:
+                    return _entry_to_dict(entry)
+            return None
+        return _entry_to_dict(entries[0])
     except Exception:
         return None
 
-def fetch_latest(handle):
+def fetch_latest(handle, title_keyword=None):
     try:
         r = requests.get(_rss_url(handle), headers=HEADERS, timeout=10)
         if r.status_code == 200:
-            return _parse_xml(r.text)
+            return _parse_xml(r.text, title_keyword)
     except Exception:
         pass
 
@@ -92,7 +101,7 @@ def fetch_latest(handle):
                     headers=HEADERS, timeout=10
                 )
                 if r.status_code == 200:
-                    return _parse_xml(r.text)
+                    return _parse_xml(r.text, title_keyword)
             except Exception:
                 pass
     return None
@@ -205,9 +214,9 @@ def run(yt_only=False, existing=None):
     result = []
     for ch in channels:
         print(f'YouTube: {ch["name"]} 수집 중...')
-        video = fetch_latest(ch['handle'])
+        video = fetch_latest(ch['handle'], ch.get('titleKeyword'))
         if not video:
-            print('  → 데이터 없음 (스킵)')
+            print('  → 데이터 없음 (스킵)' + (f" - '{ch['titleKeyword']}' 포함 영상 못 찾음" if ch.get('titleKeyword') else ''))
             continue
         if ch['type'] == 'yt' and not _is_today_kst(video.get('published', '')):
             print('  → 오늘 영상 없음 (스킵)')
