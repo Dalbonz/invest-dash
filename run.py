@@ -36,6 +36,9 @@ def load_existing():
 
 def notify_new_videos(videos, existing_yt):
     from engines import notify
+    if os.environ.get('GITHUB_EVENT_NAME', '') == 'workflow_dispatch':
+        print('  수동 실행(workflow_dispatch) - 신규영상 알림 보류 (data.json만 갱신)')
+        return
     if notify.in_quiet_hours():
         print('  무음시간(22~07시) - 신규영상 알림 보류 (data.json만 갱신)')
         return

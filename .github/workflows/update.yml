@@ -36,6 +36,7 @@ jobs:
           GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
           GITHUB_SCHEDULE: ${{ github.event.schedule }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
         run: python run.py
 
       - name: Commit data.json
