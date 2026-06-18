@@ -49,9 +49,13 @@ def morning_brief(ai_data, news_data, market_data):
     lines.append(f'\n{DASH_URL}')
     return '\n'.join(lines)
 
-def yt_new_video(name, title, video_id):
-    return (
-        f'<b>[유튜브] {name}</b>\n'
-        f'{title}\n'
-        f'https://youtube.com/watch?v={video_id}'
-    )
+def yt_new_video(name, title, video_id, summary=''):
+    lines = [
+        f'<b>[유튜브] {name}</b>',
+        title,
+        f'https://youtube.com/watch?v={video_id}',
+    ]
+    if summary:
+        lines.append('')
+        lines.append(summary)
+    return '\n'.join(lines)

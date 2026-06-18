@@ -12,14 +12,15 @@ def _is_today_kst(published_str):
         return True
 
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
+SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media'},
-    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media'},
-    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media'},
-    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt'},
-    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt'},
-    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt'},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment'},
+    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment'},
+    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment'},
+    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment'},
+    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free'},
+    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free'},
 ]
 
 NS = {
@@ -96,39 +97,55 @@ def fetch_latest(handle):
                 pass
     return None
 
-def _summarize(name, title, description):
+def get_transcript(video_id):
+    if not SUPADATA_API_KEY or not video_id:
+        return None
+    video_url = requests.utils.quote(f'https://www.youtube.com/watch?v={video_id}', safe='')
+    url = f'https://api.supadata.ai/v1/youtube/transcript?url={video_url}&text=true&lang=ko'
+    try:
+        r = requests.get(url, headers={'x-api-key': SUPADATA_API_KEY}, timeout=20)
+        if r.status_code != 200:
+            return None
+        data = r.json()
+        content = data.get('content')
+        if isinstance(content, str):
+            return content
+        if isinstance(content, list):
+            return ' '.join(i.get('text', '') for i in content)
+    except Exception as e:
+        print(f'  자막 조회 오류: {e}')
+    return None
+
+COMMON_RULES = (
+    '당신은 최고의 투자 분석가입니다.\n'
+    '아래는 [{name}] 채널의 한국어 유튜브 자막입니다.\n'
+    '광고/홍보 구간은 무시하세요.\n\n'
+    '규칙:\n'
+    '- 한국어로만 작성\n'
+    '- 이모지/마크다운 금지\n'
+    '- 섹션 헤더는 [ 섹션명 ] 형식\n'
+    "- 항목은 '- '로 시작\n\n"
+)
+
+FORMAT_INVESTMENT = (
+    '[ 핵심 메시지 ]\n\n- 핵심 포인트 (최대 3개)\n\n'
+    '[ 주목 섹터/종목 ]\n\n- 종목/섹터 - 이유 (최대 3개)\n\n'
+    '[ 매수 시그널 ]\n\n- 조건 또는 타이밍\n\n'
+    '[ 매도/주의 ]\n\n- 리스크 요인\n\n'
+    '[ 오늘 액션 ]\n\n- 행동 지침 (최대 4개)'
+)
+FORMAT_FREE = (
+    '[ 핵심 요약 ]\n\n- 핵심 포인트 (최대 3개)\n\n'
+    '[ 주요 내용 ]\n\n- 세부 포인트 (최대 4개)'
+)
+
+def _summarize_transcript(name, transcript, fmt):
     api_key = os.environ.get('ANTHROPIC_API_KEY', '')
     if not api_key:
-        return title
-
-    has_desc = len(description.strip()) >= 50
-
-    if has_desc:
-        prompt = (
-            f'채널: {name}\n'
-            f'제목: {title}\n'
-            f'설명: {description}\n\n'
-            '위 정보만 바탕으로 투자자 관점에서 한국어로 요약하세요.\n'
-            '형식:\n'
-            '핵심 주제: [제목의 핵심 의미 1문장]\n'
-            '주요 내용:\n'
-            '1. [내용]\n'
-            '2. [내용]\n'
-            '3. [내용]\n'
-            '주목 키워드: [종목명/섹터/지수 등]\n\n'
-            '규칙: 제목과 설명에 있는 내용만 작성. 없는 내용 추가 금지.'
-        )
-    else:
-        prompt = (
-            f'채널: {name}\n'
-            f'제목: {title}\n\n'
-            '위 유튜브 영상 제목만을 바탕으로 투자자 관점에서 한국어로 요약하세요.\n'
-            '형식:\n'
-            '핵심 주제: [제목의 핵심 의미 1문장]\n'
-            '주목 키워드: [제목에서 추출한 종목명/섹터/키워드]\n\n'
-            '규칙: 제목에 있는 내용만 작성. 추측 금지.'
-        )
-
+        return None
+    trimmed = transcript.strip()[:6000]
+    instructions = COMMON_RULES.format(name=name) + (FORMAT_INVESTMENT if fmt == 'investment' else FORMAT_FREE)
+    prompt = instructions + '\n\n[자막]\n' + trimmed
     try:
         r = requests.post(
             'https://api.anthropic.com/v1/messages',
@@ -139,7 +156,38 @@ def _summarize(name, title, description):
             },
             json={
                 'model': 'claude-haiku-4-5-20251001',
-                'max_tokens': 300,
+                'max_tokens': 1200,
+                'temperature': 0,
+                'messages': [{'role': 'user', 'content': prompt}],
+            },
+            timeout=40,
+        )
+        if r.status_code == 200:
+            return r.json()['content'][0]['text'].strip()
+    except Exception as e:
+        print(f'  AI 요약 오류 ({name}): {e}')
+    return None
+
+def _summarize_title_only(name, title):
+    api_key = os.environ.get('ANTHROPIC_API_KEY', '')
+    if not api_key:
+        return title
+    prompt = (
+        f'채널: {name}\n제목: {title}\n\n'
+        '위 유튜브 영상 제목만을 바탕으로 투자자 관점에서 한국어로 핵심 주제 1문장과 주목 키워드를 요약하세요.\n'
+        '제목에 없는 내용은 추측하지 마세요.'
+    )
+    try:
+        r = requests.post(
+            'https://api.anthropic.com/v1/messages',
+            headers={
+                'x-api-key': api_key,
+                'anthropic-version': '2023-06-01',
+                'content-type': 'application/json',
+            },
+            json={
+                'model': 'claude-haiku-4-5-20251001',
+                'max_tokens': 200,
                 'temperature': 0,
                 'messages': [{'role': 'user', 'content': prompt}],
             },
@@ -148,7 +196,7 @@ def _summarize(name, title, description):
         if r.status_code == 200:
             return r.json()['content'][0]['text'].strip()
     except Exception as e:
-        print(f'AI 요약 오류 ({name}): {e}')
+        print(f'  AI 요약 오류 ({name}): {e}')
     return title
 
 def run(yt_only=False):
@@ -158,13 +206,20 @@ def run(yt_only=False):
         print(f'YouTube: {ch["name"]} 수집 중...')
         video = fetch_latest(ch['handle'])
         if not video:
-            print(f'  → 데이터 없음 (스킵)')
+            print('  → 데이터 없음 (스킵)')
             continue
-        # 개인채널은 오늘 영상만 사용
         if ch['type'] == 'yt' and not _is_today_kst(video.get('published', '')):
-            print(f'  → 오늘 영상 없음 (스킵)')
+            print('  → 오늘 영상 없음 (스킵)')
             continue
-        summary = _summarize(ch['name'], video['title'], video['description'])
+
+        transcript = get_transcript(video['videoId']) if video['videoId'] else None
+        if transcript and len(transcript.strip()) >= 200:
+            summary = _summarize_transcript(ch['name'], transcript, ch.get('format', 'free')) or video['title']
+            print('  → 자막 기반 요약')
+        else:
+            summary = _summarize_title_only(ch['name'], video['title'])
+            print('  → 자막 없음, 제목 기반 요약')
+
         result.append({
             'name':    ch['name'],
             'type':    ch['type'],

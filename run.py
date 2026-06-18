@@ -41,7 +41,7 @@ def run_yt_only():
         if old and old.get('videoId') == v.get('videoId'):
             print(f'  {v["name"]}: 기존 영상 (스킵)')
             continue
-        notify.send(notify.yt_new_video(v['name'], v['title'], v['videoId']))
+        notify.send(notify.yt_new_video(v['name'], v['title'], v['videoId'], v.get('summary', '')))
         print(f'  → 텔레그램 발송: {v["name"]}')
         existing_yt[v['name']] = v
         notified = True

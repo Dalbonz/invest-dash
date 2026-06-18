@@ -45,7 +45,8 @@ GitHub Pages HTML 대시보드
 |------|------|------|
 | yfinance | 시장 지수/종목 가격 | market.py |
 | RSS (매경, 한경 등) | 뉴스 | news.py |
-| YouTube RSS XML | 유튜브 최신 영상 수집 | youtube.py |
+| YouTube RSS XML | 유튜브 최신 영상 탐색 | youtube.py |
+| Supadata API | 유튜브 영상 자막 추출 | youtube.py |
 | Google Sheets | 포트폴리오 보유 현황 | portfolio.py |
 | Anthropic Claude API | 시장 해석/AI 요약/유튜브 요약 | ai_summary.py, youtube.py |
 
@@ -71,6 +72,9 @@ GitHub Pages HTML 대시보드
 ANTHROPIC_API_KEY
 GOOGLE_SHEETS_ID=1jYVXz_rJ5CiVOWl3Rts5EPXBSgib3BCvf-TDXFegC6E
 GOOGLE_SERVICE_ACCOUNT_JSON
+SUPADATA_API_KEY      (유튜브 자막 추출, youtube.py)
+TELEGRAM_BOT_TOKEN    (알림 발송, notify.py)
+TELEGRAM_CHAT_IDS     (쉼표구분, notify.py)
 ```
 
 ---
