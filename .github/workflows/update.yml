@@ -2,12 +2,12 @@ name: Update Dashboard Data
 
 on:
   schedule:
-    - cron: '0 21 * * *'   # KST 06:00 (개인채널 유튜브 체크)
-    - cron: '0 23 * * *'   # KST 08:00 (개인채널 유튜브 체크)
-    - cron: '30 23 * * *'  # KST 08:30 (전체 실행 + 아침 브리핑)
-    - cron: '0 1 * * *'    # KST 10:00 (개인채널 유튜브 체크)
-    - cron: '0 6 * * *'    # KST 15:00 (전체 실행)
-    - cron: '0 9 * * *'    # KST 18:00 (전체 실행)
+    - cron: '5 22 * * *'   # KST 07:05 (개인채널 유튜브 체크, 무음시간 종료 직후)
+    - cron: '8 23 * * *'   # KST 08:08 (개인채널 유튜브 체크)
+    - cron: '22 23 * * *'  # KST 08:22 (전체 실행 + 아침 브리핑, 장 시작 전)
+    - cron: '12 1 * * *'   # KST 10:12 (개인채널 유튜브 체크)
+    - cron: '7 6 * * *'    # KST 15:07 (전체 실행 + 이메일, 12시에 만나요 처리 후)
+    - cron: '14 9 * * *'   # KST 18:14 (전체 실행)
   workflow_dispatch:
 
 jobs:
@@ -32,6 +32,9 @@ jobs:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_IDS: ${{ secrets.TELEGRAM_CHAT_IDS }}
           SUPADATA_API_KEY: ${{ secrets.SUPADATA_API_KEY }}
+          GMAIL_USER: ${{ secrets.GMAIL_USER }}
+          GMAIL_PASSWORD: ${{ secrets.GMAIL_PASSWORD }}
+          EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
           GITHUB_SCHEDULE: ${{ github.event.schedule }}
         run: python run.py
 

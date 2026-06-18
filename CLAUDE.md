@@ -75,6 +75,9 @@ GOOGLE_SERVICE_ACCOUNT_JSON
 SUPADATA_API_KEY      (유튜브 자막 추출, youtube.py)
 TELEGRAM_BOT_TOKEN    (알림 발송, notify.py)
 TELEGRAM_CHAT_IDS     (쉼표구분, notify.py)
+GMAIL_USER            (이메일 발송 계정, notify.py)
+GMAIL_PASSWORD        (Gmail 앱 비밀번호, notify.py)
+EMAIL_RECIPIENTS      (쉼표구분 수신자, notify.py)
 ```
 
 ---
