@@ -1,4 +1,4 @@
-import os, smtplib, requests
+import os, re, smtplib, requests
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -71,6 +71,47 @@ def yt_new_video(name, title, video_id, summary=''):
         lines.append(summary)
     return '\n'.join(lines)
 
+def _color_nums(text):
+    def repl(m):
+        s = m.group(0)
+        color = '#c84a31' if s.startswith('+') else '#1261c4'
+        return f'<span style="color:{color};font-weight:600">{s}</span>'
+    return re.sub(r'[+-]\d+(?:\.\d+)?%?', repl, text)
+
+def _md_bold(text):
+    return re.sub(r'\*\*(.+?)\*\*', r'<strong>\1</strong>', text)
+
+def _fmt_ai_section(text):
+    if not text:
+        return ''
+    out = []
+    for line in text.split('\n'):
+        t = line.strip()
+        if not t:
+            continue
+        t = _color_nums(_md_bold(t))
+        if re.match(r'^\d+\.', t):
+            out.append(f'<div style="margin:5px 0 5px 16px;line-height:1.6">{t}</div>')
+        else:
+            out.append(f'<div style="font-weight:700;color:#1a73e8;margin-top:10px">{t}</div>')
+    return ''.join(out)
+
+def _fmt_yt_section(text):
+    if not text:
+        return ''
+    out = []
+    for line in text.split('\n'):
+        t = line.strip()
+        if not t:
+            continue
+        m = re.match(r'^\[\s*(.+?)\s*\]$', t)
+        if m:
+            out.append(f'<div style="font-weight:700;border-left:3px solid #1a73e8;padding-left:8px;margin-top:10px">{m.group(1)}</div>')
+        else:
+            body = _color_nums(re.sub(r'^-\s*', '', t))
+            out.append(f'<div style="margin:4px 0 4px 12px;line-height:1.6">{body}</div>')
+    return ''.join(out)
+
 def _fmt_row(m):
     p, pct = m.get('price', 0), m.get('pct', 0)
     color = '#c84a31' if pct >= 0 else '#1261c4'
@@ -95,8 +136,8 @@ def send_email(ai_data, news_data, market_data, youtube_data):
             text = ai_data.get(key, '')
             if not text:
                 continue
-            text_html = text.replace('\n', '<br>')
-            ai_html += f'<div style="margin-bottom:14px"><b>{label}</b><br>{text_html}</div>'
+            text_html = _fmt_ai_section(text)
+            ai_html += f'<div style="margin-bottom:16px"><div style="font-size:13px;font-weight:800;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px">{label}</div>{text_html}</div>'
     else:
         ai_html = '<div>AI 시황 데이터 없음</div>'
 
@@ -116,11 +157,12 @@ def send_email(ai_data, news_data, market_data, youtube_data):
 
     yt_html = ''
     for ch in youtube_data:
-        summary_html = (ch.get('summary') or '').replace('\n', '<br>')
+        summary_html = _fmt_yt_section(ch.get('summary') or '')
         yt_html += (
-            f'<div style="margin-bottom:14px;padding:10px;background:#f9f9f9;border-radius:8px">'
-            f'<b>{ch["name"]}</b> - {ch.get("title","")}<br>'
-            f'<div style="font-size:0.9em;margin-top:4px">{summary_html}</div>'
+            f'<div style="margin-bottom:14px;padding:12px;background:#f9f9f9;border-radius:8px">'
+            f'<div style="font-weight:700">{ch["name"]}</div>'
+            f'<div style="color:#555;font-size:0.92em;margin-bottom:4px">{ch.get("title","")}</div>'
+            f'<div style="font-size:0.92em">{summary_html}</div>'
             f'</div>'
         )
 
