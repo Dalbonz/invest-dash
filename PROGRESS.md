@@ -18,7 +18,10 @@
 - GitHub Actions 자동화 (KST 6/8/8:30/10/15/18시)
 - market.py: us10y(^TNX), us30y(^TYX), candles 포함 / pykrx 투자자별 순매수
 - ai_summary.py: Sonnet 4.6, 7개 섹션, **볼드** 형식 지시 포함
-- news.py: category + AI 요약(Haiku) 포함
+- news.py: 6개 RSS 소스 (속보/분석/국내/국제) + AI 요약(Haiku)
+  - HEADERS를 풀브라우저 UA로 교체 (매일경제 Cloudflare 403 차단 해결)
+  - 파이낸셜뉴스 RSS 경로 변경 대응 (`/rss/r20/fn_realnews_*.xml`)
+  - 국제뉴스 소스 추가 (fn_realnews_international.xml) → UI 필터 '미국'→'국제'로 변경
 - youtube.py: RSS로 영상탐색 + Supadata 자막 + AI 요약 (미디어채널 3개 + 개인채널 3개)
   - 개인채널은 오늘 영상만 사용 (당일 KST 기준 필터)
   - 자막 있으면 [섹션명]+불릿 구조 요약(투자/free 포맷), 자막 없으면 제목 기반 요약
@@ -177,6 +180,10 @@ invest-dash/
 | rainbow -74% 데이터 오류 | 277810.KS(KOSPI)로 잘못 설정 | 277810.KQ(KOSDAQ)으로 수정 |
 | Pages 공백 | index.html 미커밋으로 구 버전 서비스 | 전체 변경사항 수동 커밋 필요 |
 | loadETF JS 문법 오류 | `}}}}catch` 여분 중괄호 | `}}}catch`로 수정 |
+| 매일경제 RSS "not well-formed" | Cloudflare가 기본 UA 차단(403, 챌린지 HTML 반환) | 풀브라우저 User-Agent로 교체 |
+| 파이낸셜뉴스 RSS 404 | RSS 경로가 `/rss/r20/fn_realnews_*.xml`로 변경됨 | URL 갱신 |
+| 12시에만나요 영상 오매칭 | RSS 최신 1건만 사용 → 다른 시간대 프로그램 섞임 | RSS 전체 entry 순회 + titleKeyword 필터 |
+| Supadata 429 limit-exceeded | 기존 Apps Script가 매시간 호출해 Free플랜(월100) 소진 | 유료 플랜 업그레이드 + 중복호출 방지 추가 |
 
 ---
 
