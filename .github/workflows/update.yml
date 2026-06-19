@@ -10,6 +10,10 @@ on:
     - cron: '14 9 * * *'   # KST 18:14 (전체 실행)
   workflow_dispatch:
     inputs:
+      slot:
+        description: '외부cron이 지정하는 실행 슬롯 (yt1/yt2/morning/yt3/email/full), 수동테스트는 빈값'
+        required: false
+        default: ''
       force_email:
         description: '이메일 강제 발송 테스트 (true/false)'
         required: false
@@ -42,6 +46,7 @@ jobs:
           EMAIL_RECIPIENTS: ${{ secrets.EMAIL_RECIPIENTS }}
           GITHUB_SCHEDULE: ${{ github.event.schedule }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
+          SLOT: ${{ github.event.inputs.slot }}
           FORCE_EMAIL: ${{ github.event.inputs.force_email }}
         run: python run.py
 
