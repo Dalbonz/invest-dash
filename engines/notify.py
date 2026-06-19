@@ -33,7 +33,8 @@ def send(message):
             print(f'텔레그램 오류 ({chat_id}): {e}')
 
 def morning_brief(ai_data, news_data, market_data):
-    lines = ['<b>Invest Dash 아침 브리핑</b>\n']
+    today = datetime.now(KST).strftime('%Y년 %m월 %d일')
+    lines = [f'<b>{today} 투자브리핑 (B&K)</b>\n']
 
     if ai_data and not ai_data.get('error'):
         s = ai_data.get('summary', '')

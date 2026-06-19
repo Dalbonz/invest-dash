@@ -1,4 +1,4 @@
-import os, re, requests
+import os, re, time, requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 
@@ -68,42 +68,60 @@ def _entry_to_dict(entry):
         'published':   getattr(entry.find('atom:published', NS),       'text', '') or '',
     }
 
+class _NoMatch(Exception):
+    """RSS는 정상 파싱됐지만 title_keyword에 맞는 entry가 없음 (재시도 불필요)"""
+
 def _parse_xml(text, title_keyword=None):
-    try:
-        root = ET.fromstring(text)
-        entries = root.findall('atom:entry', NS)
-        if not entries:
+    root = ET.fromstring(text)  # 차단 페이지(HTML)면 여기서 ParseError -> 재시도 대상
+    entries = root.findall('atom:entry', NS)
+    if not entries:
+        raise _NoMatch()
+    if title_keyword:
+        for entry in entries:
+            title = getattr(entry.find('atom:title', NS), 'text', '') or ''
+            if title_keyword in title:
+                return _entry_to_dict(entry)
+        raise _NoMatch()
+    return _entry_to_dict(entries[0])
+
+def _fetch_rss(url, title_keyword=None, retries=1):
+    last_err = None
+    for i in range(retries):
+        try:
+            r = requests.get(url, headers=HEADERS, timeout=10)
+        except Exception as e:
+            last_err = str(e)
+            if i < retries - 1:
+                time.sleep(2)
+            continue
+        if r.status_code != 200:
+            last_err = f'status_{r.status_code}'  # 일시적 차단/지연일 수 있어 재시도 대상
+            if i < retries - 1:
+                time.sleep(2)
+            continue
+        try:
+            return _parse_xml(r.text, title_keyword)
+        except _NoMatch:
             return None
-        if title_keyword:
-            for entry in entries:
-                title = getattr(entry.find('atom:title', NS), 'text', '') or ''
-                if title_keyword in title:
-                    return _entry_to_dict(entry)
-            return None
-        return _entry_to_dict(entries[0])
-    except Exception:
-        return None
+        except Exception as e:
+            last_err = str(e)  # XML 파싱 실패 = 봇차단 페이지(HTML) 추정, 재시도
+            if i < retries - 1:
+                time.sleep(2)
+    if last_err and retries > 1:
+        print(f'  RSS 조회 실패(차단/오류 추정, {retries}회 시도): {last_err}')
+    return None
 
 def fetch_latest(handle, title_keyword=None):
-    try:
-        r = requests.get(_rss_url(handle), headers=HEADERS, timeout=10)
-        if r.status_code == 200:
-            return _parse_xml(r.text, title_keyword)
-    except Exception:
-        pass
+    # 1차: ?user= 형식 (handle이 채널ID가 아니면 보통 404 - 재시도 불필요)
+    video = _fetch_rss(_rss_url(handle), title_keyword, retries=1)
+    if video is not None:
+        return video
 
     if not re.match(r'^UC', handle):
         cid = _resolve_handle(handle)
         if cid:
-            try:
-                r = requests.get(
-                    f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}',
-                    headers=HEADERS, timeout=10
-                )
-                if r.status_code == 200:
-                    return _parse_xml(r.text, title_keyword)
-            except Exception:
-                pass
+            # 2차: 실제 channel_id URL - 일시적 차단/오류 대비 재시도
+            return _fetch_rss(f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}', title_keyword, retries=3)
     return None
 
 def get_transcript(video_id):
