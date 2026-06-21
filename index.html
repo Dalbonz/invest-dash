@@ -99,6 +99,9 @@ td{padding:5px 4px;text-align:right;border-bottom:1px solid #f4f4f4;white-space:
 td:first-child{text-align:left;font-weight:700;cursor:pointer;color:var(--accent)}
 td:first-child:hover{text-decoration:underline}
 tr:hover td{background:#f8fafc}
+.pension-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pension-tile{background:#f8fafc;border:1px solid #e8edf5;border-radius:8px;padding:10px}
+.pension-tile-title{font-weight:700;font-size:13px;margin-bottom:6px}
 .etf-grid{display:grid;gap:6px;margin-bottom:4px}
 .etfc{background:#f8fafc;border:1px solid #e8edf5;border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center}
 .etfc:hover{background:#eef3fc}
@@ -339,6 +342,19 @@ tr:hover td{background:#f8fafc}
     <div class="sec-hd"><div class="sec-title">주요 ETF</div><div class="cptabs" id="cp-etf"></div></div>
     <div class="etf-grid" id="etf-grid"></div>
   </div>
+  <div class="sec">
+    <div class="sec-hd"><div class="sec-title">연금 시세</div><button onclick="openAdminWithAuth('market')" style="background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:11px;font-weight:600;color:var(--text2);padding:3px 10px;cursor:pointer;font-family:inherit">설정</button></div>
+    <div class="pension-grid">
+      <div class="pension-tile">
+        <div class="pension-tile-title">개인연금</div>
+        <div id="pension-personal-rows"></div>
+      </div>
+      <div class="pension-tile">
+        <div class="pension-tile-title">퇴직연금</div>
+        <div id="pension-retire-rows"></div>
+      </div>
+    </div>
+  </div>
   <div class="market-updated" id="market-updated"></div>
 </div>
 </div>
@@ -547,6 +563,16 @@ tr:hover td{background:#f8fafc}
       <div id="admin-stock-us"></div>
       <button class="admin-add-btn" onclick="addStockTileRow('us')">+ 종목 추가</button>
     </div>
+    <div class="admin-section" id="admin-sec-pension-personal">
+      <div class="admin-section-title">연금 타일 (개인연금)</div>
+      <div id="admin-pension-personal"></div>
+      <button class="admin-add-btn" onclick="addPensionTileRow('personal')">+ 종목 추가</button>
+    </div>
+    <div class="admin-section" id="admin-sec-pension-retire">
+      <div class="admin-section-title">연금 타일 (퇴직연금)</div>
+      <div id="admin-pension-retire"></div>
+      <button class="admin-add-btn" onclick="addPensionTileRow('retire')">+ 종목 추가</button>
+    </div>
     <div class="admin-section" id="admin-sec-portfolio">
       <div class="admin-section-title">포트폴리오</div>
       <button class="admin-add-btn" onclick="openPortfolioFromAdmin()" style="font-size:13px;padding:10px;color:var(--text)">포트폴리오 보기</button>
@@ -596,6 +622,7 @@ const THEME_SHIP=[{n:'HD현대중공업',s:'329180.KS'},{n:'한화오션',s:'042
 const THEME_FINANCE=[{n:'KB금융',s:'105560.KS'},{n:'신한지주',s:'055550.KS'},{n:'하나금융',s:'086790.KS'},{n:'우리금융',s:'316140.KS'},{n:'메리츠금융',s:'138040.KS'}];
 const THEME_BIO=[{n:'셀트리온',s:'068270.KS'},{n:'삼성바이오',s:'207940.KS'},{n:'유한양행',s:'000100.KS'},{n:'한미약품',s:'128940.KS'},{n:'에이비엘바이오',s:'298380.KS'}];
 const ETF_LIST=[{n:'SPDR S&P500',s:'SPY',sec:'미국주식'},{n:'Invesco QQQ',s:'QQQ',sec:'기술주'},{n:'iShares 20Y',s:'TLT',sec:'미국채권'},{n:'SPDR Gold',s:'GLD',sec:'금'},{n:'iShares EM',s:'EEM',sec:'신흥국'},{n:'Energy Select',s:'XLE',sec:'에너지'}];
+let PENSION_PERSONAL=[],PENSION_RETIRE=[];
 const SYMBOL_DB=[{n:'코스피지수',s:'^KS11',m:'KR'},{n:'코스닥지수',s:'^KQ11',m:'KR'},{n:'나스닥',s:'^IXIC',m:'US'},{n:'S&P500',s:'^GSPC',m:'US'},{n:'다우존스',s:'^DJI',m:'US'},...KR50.map(s=>({n:s.n,s:s.s,m:'KR'})),{n:'NVIDIA',s:'NVDA',m:'US'},{n:'Tesla',s:'TSLA',m:'US'},{n:'Apple',s:'AAPL',m:'US'},{n:'Microsoft',s:'MSFT',m:'US'},{n:'Alphabet',s:'GOOGL',m:'US'},{n:'Amazon',s:'AMZN',m:'US'},{n:'Meta',s:'META',m:'US'},{n:'Broadcom',s:'AVGO',m:'US'},{n:'TSMC',s:'TSM',m:'US'},{n:'Palantir',s:'PLTR',m:'US'},{n:'Arm',s:'ARM',m:'US'},{n:'Coupang',s:'CPNG',m:'US'}];
 const DEFAULT_ADMIN_CFG={mediaChannels:[{name:'한국경제TV',handle:'hkwowtv'},{name:'연합뉴스경제TV',handle:'UC6kZpTl39-_SqfBrF1-N2oQ'},{name:'매일경제TV',handle:'MKeconomy_TV'}],ytChannels:[{name:'12시에 만나요',handle:'gyeomsonisnothing'},{name:'경제사냥꾼',handle:'UC7usMJDHmtbs_oegmzQKKMA'},{name:'슈페tv',handle:'supe-tv'}],tgRecipients:[{name:'달봉즈',id:'8649321702'},{name:'경',id:'8799181333'},{name:'대규',id:'8689376301'}],emailRecipients:[]};
 let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[],pendingPfTabEl=null,pendingAdminCtx='all',currentYtFilter='all',currentNewsFilter='all';
@@ -609,7 +636,7 @@ function toKST(ts,opts){return new Date(ts).toLocaleString('ko-KR',{timeZone:'As
 function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null;}catch(e){return null;}}
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
 // 관리자가 저장한 커스텀 타일 적용
-(function(){const kr=lsGet('stock_tiles_kr');if(kr&&kr.length)STOCK_KR=kr;const us=lsGet('stock_tiles_us');if(us&&us.length)STOCK_US=us;})();
+(function(){const kr=lsGet('stock_tiles_kr');if(kr&&kr.length)STOCK_KR=kr;const us=lsGet('stock_tiles_us');if(us&&us.length)STOCK_US=us;const pp=lsGet('pension_tiles_personal');if(pp&&pp.length)PENSION_PERSONAL=pp;const pr=lsGet('pension_tiles_retire');if(pr&&pr.length)PENSION_RETIRE=pr;})();
 function getEtfCols(){const w=window.innerWidth;if(w>=1024)return 3;if(w>=600)return 2;return 1;}
 function getAdminCfg(){return lsGet('admin_cfg')||DEFAULT_ADMIN_CFG;}
 // 탭 전환
@@ -680,7 +707,9 @@ function renderStockCard(list){const el=document.getElementById('m1');el.innerHT
 function switchStockCardTab(tab,btn){document.querySelectorAll('.card-subtab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');currentStockCardList=tab==='kr'?STOCK_KR:STOCK_US;renderStockCard(currentStockCardList);}
 function renderSection(mid,cbId,keys,labels){const el=document.getElementById(mid);el.innerHTML='';if(!jsonData?.market)return;keys.forEach((k,i)=>{const m=jsonData.market[k];if(!m)return;const sym=KEY_TO_YF[k]||'';const row=document.createElement('div');row.className='row';const c=cls(m.change||0);row.innerHTML=`<span class="rn">${labels[i]}</span><span class="${c}">${fmt(m.price)} <small>${sign(m.change||0)}${fmt(m.pct||0)}%</small></span>`;row.onclick=()=>openDetail(labels[i],sym);el.appendChild(row);});const fk=keys.find(k=>jsonData.market[k]?.candles?.length>1);if(fk){const m=jsonData.market[fk];const sym=KEY_TO_YF[fk]||'';const isUp=(m?.change||0)>=0;const pc=m?.price!=null&&m?.change!=null?m.price-m.change:null;cardState[cbId]={symbol:sym,isUp,currentVals:[]};setTimeout(()=>makeMiniChart(cbId,m?.candles||[],isUp,sym,pc),50);}}
 // 탭2: 주식 시세
-function renderStockSec(){buildEtfPeriodTabs();loadStockTab('kr');loadETF();}
+function renderStockSec(){buildEtfPeriodTabs();loadStockTab('kr');loadETF();loadPension();}
+function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML='<div class="no-data" style="padding:8px 0;font-size:11px">설정에서 종목을 추가하세요</div>';return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('div');row.className='row';row.innerHTML=`<span class="rn">${item.l}</span><span class="flat" id="${elId}-v${i}">로딩...</span>`;row.onclick=()=>openDetail(item.l,item.s);el.appendChild(row);});Promise.all(list.map(item=>yfetch(item.s,'5m','1d'))).then(results=>{results.forEach((data,i)=>{const span=document.getElementById(elId+'-v'+i);if(!span)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;span.className=cls(chg);span.innerHTML=`${fmt(price,2)} <small>${sign(chg)}${fmt(pct,2)}%</small>`;}catch(e){span.textContent='--';}});});}
+function loadPension(){renderPensionRows('pension-personal-rows',PENSION_PERSONAL);renderPensionRows('pension-retire-rows',PENSION_RETIRE);}
 async function switchStockTab(tab,btn){document.querySelectorAll('.stock-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('stock-scroll-wrap').style.maxHeight=tab==='mine'?'none':'240px';await loadStockTab(tab);}
 function fmtInv(v){if(v==null)return'<td class="inv-col" style="color:#bbb">-</td>';const c=v>0?'up':v<0?'down':'flat';return`<td class="inv-col ${c}">${sign(v)}${Math.abs(v)}억</td>`;}
 async function loadStockTab(tab){const tbody=document.getElementById('stb');tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">로딩 중...</td></tr>';let list=[];if(tab==='mine'){const h=lsGet('pf_bong_holdings')||[];list=h.map(x=>({n:x.name,s:x.symbol}));if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">포트폴리오에 종목을 추가하세요</td></tr>';return;}}else if(tab==='kr')list=KR50;else if(tab==='us')list=US50;else if(tab==='semicon')list=THEME_SEMICON;else if(tab==='ai')list=THEME_AI;else if(tab==='sobujang')list=THEME_SOBUJANG;else if(tab==='robot')list=THEME_ROBOT;else if(tab==='ship')list=THEME_SHIP;else if(tab==='finance')list=THEME_FINANCE;else if(tab==='bio')list=THEME_BIO;
@@ -765,6 +794,9 @@ function openAdminFromMedia(){openAdminWithAuth('media');}
 function renderStockTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.k)}" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function addStockTileRow(mkt){const elId=mkt==='kr'?'admin-stock-kr':'admin-stock-us';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
 function collectStockTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const k=inp[0]?.value.trim();const l=inp[1]?.value.trim();if(k&&l)result.push({k,l});});return result;}
+function renderPensionTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><input class="admin-input" value="${escHtml(t.s)}" placeholder="티커(예:069500.KS)" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
+function addPensionTileRow(type){const elId=type==='personal'?'admin-pension-personal':'admin-pension-retire';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="표시명"><input class="admin-input" placeholder="티커(예:069500.KS)" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
+function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();if(l&&s)result.push({l,s});});return result;}
 function openAdminModal(ctx='all'){
 const cfg=getAdminCfg();
 const sm=ctx==='market',sd=ctx==='media',sp=ctx==='portfolio',sa=ctx==='all';
@@ -772,12 +804,13 @@ const show=(id,vis)=>{const e=document.getElementById(id);if(e)e.style.display=v
 show('admin-sec-media',sa||sd);show('admin-sec-yt',sa||sd);
 show('admin-sec-tg',sa||sp);show('admin-sec-email',sa||sp);
 show('admin-sec-kr',sa||sm);show('admin-sec-us',sa||sm);
+show('admin-sec-pension-personal',sa||sm);show('admin-sec-pension-retire',sa||sm);
 show('admin-sec-portfolio',sa);
-const titles={market:'주식 타일 설정',media:'미디어 채널 설정',portfolio:'알림 설정',all:'관리자 메뉴'};
+const titles={market:'주식/연금 타일 설정',media:'미디어 채널 설정',portfolio:'알림 설정',all:'관리자 메뉴'};
 document.getElementById('admin-modal-title').textContent=titles[ctx]||'관리자 메뉴';
 if(sa||sd){renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');}
 if(sa||sp){renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);}
-if(sa||sm){renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);}
+if(sa||sm){renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);renderPensionTileRows('admin-pension-personal',PENSION_PERSONAL);renderPensionTileRows('admin-pension-retire',PENSION_RETIRE);}
 document.getElementById('admin-overlay').classList.add('show');}
 function closeAdminModal(){document.getElementById('admin-overlay').classList.remove('show');}
 function openPortfolioFromAdmin(){closeAdminModal();sessionStorage.setItem('portfolio_view_auth','1');document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById('page-portfolio').classList.add('active');initPortfolio();}
@@ -796,6 +829,9 @@ if(vis('admin-sec-email'))cfg.emailRecipients=collectAdminRows('admin-email','em
 lsSet('admin_cfg',cfg);
 if(vis('admin-sec-kr')){const r=collectStockTileRows('admin-stock-kr');if(r.length){STOCK_KR=r;lsSet('stock_tiles_kr',r);}}
 if(vis('admin-sec-us')){const r=collectStockTileRows('admin-stock-us');if(r.length){STOCK_US=r;lsSet('stock_tiles_us',r);}}
+if(vis('admin-sec-pension-personal')){PENSION_PERSONAL=collectPensionTileRows('admin-pension-personal');lsSet('pension_tiles_personal',PENSION_PERSONAL);}
+if(vis('admin-sec-pension-retire')){PENSION_RETIRE=collectPensionTileRows('admin-pension-retire');lsSet('pension_tiles_retire',PENSION_RETIRE);}
+if(vis('admin-sec-pension-personal')||vis('admin-sec-pension-retire'))loadPension();
 closeAdminModal();
 if(jsonData?.youtube)renderYtAll();
 const isUs=document.querySelector('.card-subtab.on')?.textContent.trim()==='미국';
