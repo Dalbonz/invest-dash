@@ -34,7 +34,7 @@ def send(message):
 
 def morning_brief(ai_data, news_data, market_data):
     today = datetime.now(KST).strftime('%Y년 %m월 %d일')
-    lines = [f'<b>{today} 투자브리핑 (B&K)</b>\n']
+    lines = [f'<b>{today} B&K 투자리포트</b>\n']
 
     if ai_data and not ai_data.get('error'):
         s = ai_data.get('summary', '')
