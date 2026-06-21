@@ -104,6 +104,12 @@ tr:hover td{background:#f8fafc}
 .pension-tile-title{font-weight:700;font-size:13px}
 .pension-subtab{background:transparent;border:1px solid #e0e0e0;border-radius:10px;font-size:10px;font-weight:700;color:#888;padding:2px 8px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .pension-subtab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.pension-tbl{width:100%;border-collapse:collapse;font-size:11px}
+.pension-tbl th{text-align:right;color:var(--text3);font-weight:600;font-size:10px;padding:3px 2px;border-bottom:1px solid #e8edf5}
+.pension-tbl th:first-child{text-align:left}
+.pension-tbl td{text-align:right;padding:4px 2px;border-bottom:1px solid #f4f4f4;cursor:pointer}
+.pension-tbl td:first-child{text-align:left;font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
+.pension-tbl tr:last-child td{border-bottom:none}
 .etf-grid{display:grid;gap:6px;margin-bottom:4px}
 .etfc{background:#f8fafc;border:1px solid #e8edf5;border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center}
 .etfc:hover{background:#eef3fc}
@@ -353,7 +359,7 @@ tr:hover td{background:#f8fafc}
           <button class="pension-subtab on" onclick="switchPensionSub('personal','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('personal','company',this)">회사 지원</button>
         </div>
-        <div id="pension-personal-rows"></div>
+        <table class="pension-tbl"><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-personal-rows"></tbody></table>
       </div>
       <div class="pension-tile">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
@@ -361,7 +367,7 @@ tr:hover td{background:#f8fafc}
           <button class="pension-subtab on" onclick="switchPensionSub('retire','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('retire','company',this)">회사 지원</button>
         </div>
-        <div id="pension-retire-rows"></div>
+        <table class="pension-tbl"><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-retire-rows"></tbody></table>
       </div>
     </div>
   </div>
@@ -731,7 +737,7 @@ function renderSection(mid,cbId,keys,labels){const el=document.getElementById(mi
 function renderStockSec(){buildEtfPeriodTabs();loadStockTab('kr');loadETF();loadPension();}
 function getPensionList(tile,sub){const map={personal:{mine:PENSION_PERSONAL_MINE,company:PENSION_PERSONAL_COMPANY},retire:{mine:PENSION_RETIRE_MINE,company:PENSION_RETIRE_COMPANY}};return map[tile][sub];}
 function switchPensionSub(tile,sub,btn){currentPensionSub[tile]=sub;btn.parentElement.querySelectorAll('.pension-subtab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPensionRows(tile==='personal'?'pension-personal-rows':'pension-retire-rows',getPensionList(tile,sub));}
-function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML='<div class="no-data" style="padding:8px 0;font-size:11px">설정에서 종목을 추가하세요</div>';return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('div');row.className='row';row.innerHTML=`<span class="rn">${item.l}</span><span class="flat" id="${elId}-v${i}">로딩...</span>`;row.onclick=()=>openDetail(item.l,item.s);el.appendChild(row);});Promise.all(list.map(item=>yfetch(item.s,'5m','1d'))).then(results=>{results.forEach((data,i)=>{const span=document.getElementById(elId+'-v'+i);if(!span)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;span.className=cls(chg);span.innerHTML=`${fmt(price,2)} <small>${sign(chg)}${fmt(pct,2)}%</small>`;}catch(e){span.textContent='--';}});});}
+function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#bbb;padding:8px 0;cursor:default">설정에서 종목을 추가하세요</td></tr>`;return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('tr');row.innerHTML=`<td>${item.l}</td><td id="${elId}-p${i}">--</td><td id="${elId}-c${i}">--</td><td id="${elId}-pct${i}">--</td>`;row.onclick=()=>openDetail(item.l,item.s);el.appendChild(row);});Promise.all(list.map(item=>yfetch(item.s,'5m','1d'))).then(results=>{results.forEach((data,i)=>{const tp=document.getElementById(elId+'-p'+i),tc=document.getElementById(elId+'-c'+i),tpct=document.getElementById(elId+'-pct'+i);if(!tp)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;const c=cls(chg);tp.textContent=fmt(price,2);tc.textContent=sign(chg)+fmt(chg,2);tc.className=c;tpct.textContent=sign(chg)+fmt(pct,2)+'%';tpct.className=c;}catch(e){}});});}
 function loadPension(){renderPensionRows('pension-personal-rows',getPensionList('personal',currentPensionSub.personal));renderPensionRows('pension-retire-rows',getPensionList('retire',currentPensionSub.retire));}
 async function switchStockTab(tab,btn){document.querySelectorAll('.stock-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('stock-scroll-wrap').style.maxHeight=tab==='mine'?'none':'240px';await loadStockTab(tab);}
 function fmtInv(v){if(v==null)return'<td class="inv-col" style="color:#bbb">-</td>';const c=v>0?'up':v<0?'down':'flat';return`<td class="inv-col ${c}">${sign(v)}${Math.abs(v)}억</td>`;}
