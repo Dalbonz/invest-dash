@@ -104,12 +104,6 @@ tr:hover td{background:#f8fafc}
 .pension-tile-title{font-weight:700;font-size:13px}
 .pension-subtab{background:transparent;border:1px solid #e0e0e0;border-radius:10px;font-size:10px;font-weight:700;color:#888;padding:2px 8px;cursor:pointer;font-family:inherit;white-space:nowrap}
 .pension-subtab.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-.pension-tbl{width:100%;border-collapse:collapse;font-size:11px}
-.pension-tbl th{text-align:right;color:var(--text3);font-weight:600;font-size:10px;padding:3px 2px;border-bottom:1px solid #e8edf5}
-.pension-tbl th:first-child{text-align:left}
-.pension-tbl td{text-align:right;padding:4px 2px;border-bottom:1px solid #f4f4f4;cursor:pointer}
-.pension-tbl td:first-child{text-align:left;font-weight:600;color:var(--accent);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:90px}
-.pension-tbl tr:last-child td{border-bottom:none}
 .etf-grid{display:grid;gap:6px;margin-bottom:4px}
 .etfc{background:#f8fafc;border:1px solid #e8edf5;border-radius:8px;padding:8px 10px;cursor:pointer;transition:background .1s;display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center}
 .etfc:hover{background:#eef3fc}
@@ -359,7 +353,7 @@ tr:hover td{background:#f8fafc}
           <button class="pension-subtab on" onclick="switchPensionSub('personal','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('personal','company',this)">회사 지원</button>
         </div>
-        <table class="pension-tbl"><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-personal-rows"></tbody></table>
+        <div class="tw"><table><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-personal-rows"></tbody></table></div>
       </div>
       <div class="pension-tile">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
@@ -367,7 +361,7 @@ tr:hover td{background:#f8fafc}
           <button class="pension-subtab on" onclick="switchPensionSub('retire','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('retire','company',this)">회사 지원</button>
         </div>
-        <table class="pension-tbl"><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-retire-rows"></tbody></table>
+        <div class="tw"><table><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-retire-rows"></tbody></table></div>
       </div>
     </div>
   </div>
@@ -543,6 +537,7 @@ tr:hover td{background:#f8fafc}
 </div>
 
 <!-- 관리자 메뉴 모달 -->
+<datalist id="pension-name-list"></datalist>
 <div class="admin-overlay" id="admin-overlay">
   <div class="admin-modal">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
@@ -651,6 +646,7 @@ const ETF_LIST=[{n:'SPDR S&P500',s:'SPY',sec:'미국주식'},{n:'Invesco QQQ',s:
 let PENSION_PERSONAL_MINE=[],PENSION_PERSONAL_COMPANY=[],PENSION_RETIRE_MINE=[],PENSION_RETIRE_COMPANY=[];
 let currentPensionSub={personal:'mine',retire:'mine'};
 const SYMBOL_DB=[{n:'코스피지수',s:'^KS11',m:'KR'},{n:'코스닥지수',s:'^KQ11',m:'KR'},{n:'나스닥',s:'^IXIC',m:'US'},{n:'S&P500',s:'^GSPC',m:'US'},{n:'다우존스',s:'^DJI',m:'US'},...KR50.map(s=>({n:s.n,s:s.s,m:'KR'})),{n:'NVIDIA',s:'NVDA',m:'US'},{n:'Tesla',s:'TSLA',m:'US'},{n:'Apple',s:'AAPL',m:'US'},{n:'Microsoft',s:'MSFT',m:'US'},{n:'Alphabet',s:'GOOGL',m:'US'},{n:'Amazon',s:'AMZN',m:'US'},{n:'Meta',s:'META',m:'US'},{n:'Broadcom',s:'AVGO',m:'US'},{n:'TSMC',s:'TSM',m:'US'},{n:'Palantir',s:'PLTR',m:'US'},{n:'Arm',s:'ARM',m:'US'},{n:'Coupang',s:'CPNG',m:'US'}];
+const PENSION_NAME_DB=(()=>{const all=[...SYMBOL_DB,...ETF_LIST,...US50,...THEME_SEMICON,...THEME_AI,...THEME_SOBUJANG,...THEME_ROBOT,...THEME_SHIP,...THEME_FINANCE,...THEME_BIO];const seen=new Set();return all.filter(x=>{if(seen.has(x.s))return false;seen.add(x.s);return true;});})();
 const DEFAULT_ADMIN_CFG={mediaChannels:[{name:'한국경제TV',handle:'hkwowtv'},{name:'연합뉴스경제TV',handle:'UC6kZpTl39-_SqfBrF1-N2oQ'},{name:'매일경제TV',handle:'MKeconomy_TV'}],ytChannels:[{name:'12시에 만나요',handle:'gyeomsonisnothing'},{name:'경제사냥꾼',handle:'UC7usMJDHmtbs_oegmzQKKMA'},{name:'슈페tv',handle:'supe-tv'}],tgRecipients:[{name:'달봉즈',id:'8649321702'},{name:'경',id:'8799181333'},{name:'대규',id:'8689376301'}],emailRecipients:[]};
 let jsonData=null,allNews=[],ytData=null,detailChartInst=null,currentDetailSymbol='',currentStockCardList=STOCK_KR,cardState={},currentOwner='total',gsDataCache=null,pfEditData=[],pfCashEditData=[],pfSavingsEditData=[],pendingPfTabEl=null,pendingAdminCtx='all',currentYtFilter='all',currentNewsFilter='all';
 const cls=v=>v>0?'up':v<0?'down':'flat';
@@ -737,7 +733,7 @@ function renderSection(mid,cbId,keys,labels){const el=document.getElementById(mi
 function renderStockSec(){buildEtfPeriodTabs();loadStockTab('kr');loadETF();loadPension();}
 function getPensionList(tile,sub){const map={personal:{mine:PENSION_PERSONAL_MINE,company:PENSION_PERSONAL_COMPANY},retire:{mine:PENSION_RETIRE_MINE,company:PENSION_RETIRE_COMPANY}};return map[tile][sub];}
 function switchPensionSub(tile,sub,btn){currentPensionSub[tile]=sub;btn.parentElement.querySelectorAll('.pension-subtab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPensionRows(tile==='personal'?'pension-personal-rows':'pension-retire-rows',getPensionList(tile,sub));}
-function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#bbb;padding:8px 0;cursor:default">설정에서 종목을 추가하세요</td></tr>`;return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('tr');row.innerHTML=`<td>${item.l}</td><td id="${elId}-p${i}">--</td><td id="${elId}-c${i}">--</td><td id="${elId}-pct${i}">--</td>`;row.onclick=()=>openDetail(item.l,item.s);el.appendChild(row);});Promise.all(list.map(item=>yfetch(item.s,'5m','1d'))).then(results=>{results.forEach((data,i)=>{const tp=document.getElementById(elId+'-p'+i),tc=document.getElementById(elId+'-c'+i),tpct=document.getElementById(elId+'-pct'+i);if(!tp)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;const c=cls(chg);tp.textContent=fmt(price,2);tc.textContent=sign(chg)+fmt(chg,2);tc.className=c;tpct.textContent=sign(chg)+fmt(pct,2)+'%';tpct.className=c;}catch(e){}});});}
+function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#bbb;padding:8px 0;cursor:default">설정에서 종목을 추가하세요</td></tr>`;return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('tr');if(item.s){row.innerHTML=`<td>${item.l}</td><td id="${elId}-p${i}">--</td><td id="${elId}-c${i}">--</td><td id="${elId}-pct${i}">--</td>`;row.onclick=()=>openDetail(item.l,item.s);}else{row.innerHTML=`<td>${item.l}</td><td>${fmtMan(item.amt||0)}</td><td>-</td><td>-</td>`;row.style.cursor='default';}el.appendChild(row);});const withTicker=list.map((item,i)=>({item,i})).filter(x=>x.item.s);Promise.all(withTicker.map(x=>yfetch(x.item.s,'5m','1d'))).then(results=>{results.forEach((data,j)=>{const i=withTicker[j].i;const tp=document.getElementById(elId+'-p'+i),tc=document.getElementById(elId+'-c'+i),tpct=document.getElementById(elId+'-pct'+i);if(!tp)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;const c=cls(chg);tp.textContent=fmt(price,2);tc.textContent=sign(chg)+fmt(chg,2);tc.className=c;tpct.textContent=sign(chg)+fmt(pct,2)+'%';tpct.className=c;}catch(e){}});});}
 function loadPension(){renderPensionRows('pension-personal-rows',getPensionList('personal',currentPensionSub.personal));renderPensionRows('pension-retire-rows',getPensionList('retire',currentPensionSub.retire));}
 async function switchStockTab(tab,btn){document.querySelectorAll('.stock-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('stock-scroll-wrap').style.maxHeight=tab==='mine'?'none':'240px';await loadStockTab(tab);}
 function fmtInv(v){if(v==null)return'<td class="inv-col" style="color:#bbb">-</td>';const c=v>0?'up':v<0?'down':'flat';return`<td class="inv-col ${c}">${sign(v)}${Math.abs(v)}억</td>`;}
@@ -823,9 +819,11 @@ function openAdminFromMedia(){openAdminWithAuth('media');}
 function renderStockTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.k)}" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
 function addStockTileRow(mkt){const elId=mkt==='kr'?'admin-stock-kr':'admin-stock-us';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
 function collectStockTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const k=inp[0]?.value.trim();const l=inp[1]?.value.trim();if(k&&l)result.push({k,l});});return result;}
-function renderPensionTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><input class="admin-input" value="${escHtml(t.s)}" placeholder="티커(예:069500.KS)" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
-function addPensionTileRow(type){const elId='admin-pension-'+type;const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="표시명"><input class="admin-input" placeholder="티커(예:069500.KS)" style="flex:1.2"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
-function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();if(l&&s)result.push({l,s});});return result;}
+function pensionRowHtml(name,ticker,amt){return `<input class="admin-input" value="${escHtml(name||'')}" placeholder="표시명" list="pension-name-list" oninput="pensionAutoFillTicker(this)" style="flex:1"><input class="admin-input" value="${escHtml(ticker||'')}" placeholder="티커(예:069500.KS)" style="flex:1"><input class="admin-input" value="${amt!=null?amt:''}" placeholder="금액(티커 없을 때, MMF/현금)" style="flex:1" type="number"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}
+function pensionAutoFillTicker(inp){const tickerInp=inp.nextElementSibling;if(!tickerInp||tickerInp.value.trim())return;const match=PENSION_NAME_DB.find(x=>x.n===inp.value.trim());if(match)tickerInp.value=match.s;}
+function renderPensionTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=pensionRowHtml(t.l,t.s,t.amt);el.appendChild(row);});}
+function addPensionTileRow(type){const elId='admin-pension-'+type;const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=pensionRowHtml();el.appendChild(row);}
+function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
 function openAdminModal(ctx='all'){
 const cfg=getAdminCfg();
 const sm=ctx==='market',sd=ctx==='media',sp=ctx==='portfolio',sa=ctx==='all';
@@ -876,7 +874,7 @@ function openAdminPwModal(){document.getElementById('admin-pw-overlay').classLis
 function closeAdminPwModal(){document.getElementById('admin-pw-overlay').classList.remove('show');}
 async function submitAdminPw(){const pw=document.getElementById('admin-pw-input').value;if(await hashPw(pw)===ADMIN_PW_HASH){sessionStorage.setItem('admin_auth','1');closeAdminPwModal();document.getElementById('admin-btn').classList.add('visible');openAdminModal(pendingAdminCtx);}else{document.getElementById('admin-pw-err').style.display='block';document.getElementById('admin-pw-input').select();}}
 // 초기화
-async function init(){if(!localStorage.getItem('pf_apps_script_url_bong'))localStorage.setItem('pf_apps_script_url_bong',BONG_GS_URL);await loadData();}
+async function init(){if(!localStorage.getItem('pf_apps_script_url_bong'))localStorage.setItem('pf_apps_script_url_bong',BONG_GS_URL);document.getElementById('pension-name-list').innerHTML=PENSION_NAME_DB.map(x=>`<option value="${escHtml(x.n)}">`).join('');await loadData();}
 init();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js').catch(()=>{});});}
 </script>
