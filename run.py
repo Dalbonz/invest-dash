@@ -100,8 +100,11 @@ def run_full(send_morning=False, send_email=False):
     print('5. 유튜브 채널 수집...')
     existing = load_existing()
     existing_yt = {v['name']: v for v in (existing.get('youtube') or [])}
-    youtube_data = youtube.run(existing=existing_yt)
-    notify_new_videos(youtube_data, existing_yt)
+    fetched = youtube.run(existing=existing_yt)
+    notify_new_videos(fetched, existing_yt)
+    # RSS 차단 등으로 일부/전체 채널 수집이 실패해도 기존 데이터를 지우지 않고 유지
+    merged_yt = {**existing_yt, **{v['name']: v for v in fetched}}
+    youtube_data = list(merged_yt.values())
 
     data = {
         'updated': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),

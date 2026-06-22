@@ -75,9 +75,6 @@ def fetch_price(symbol):
         d = r.json()['chart']['result'][0]
         meta = d['meta']
         price = meta['regularMarketPrice']
-        prev = meta.get('chartPreviousClose', price)
-        chg = price - prev
-        pct = round(chg / prev * 100, 2) if prev else 0
 
         candles = []
         ts = d.get('timestamp', [])
@@ -98,6 +95,15 @@ def fetch_price(symbol):
                 'close': round(closes[i] or 0, 4),
                 'vol':   int(vols[i] or 0) if i < len(vols) else 0,
             })
+
+        # 야후 meta.chartPreviousClose가 한국 종목 등에서 종종 부정확함(검증됨: SK하이닉스 사례)
+        # → 캔들의 전일 종가를 우선 사용, 캔들이 부족할 때만 메타필드로 폴백
+        if len(candles) >= 2:
+            prev = candles[-2]['close']
+        else:
+            prev = meta.get('chartPreviousClose', price)
+        chg = price - prev
+        pct = round(chg / prev * 100, 2) if prev else 0
 
         return {
             'price':   round(price, 4),
