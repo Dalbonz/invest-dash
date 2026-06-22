@@ -71,20 +71,25 @@ def _entry_to_dict(entry):
 class _NoMatch(Exception):
     """RSS는 정상 파싱됐지만 title_keyword에 맞는 entry가 없음 (재시도 불필요)"""
 
-def _parse_xml(text, title_keyword=None):
+def _parse_xml_all(text, title_keyword=None):
+    """오늘(KST) 발행된 entry를 전부 반환 (채널당 1개만 보던 기존 동작 대체)"""
     root = ET.fromstring(text)  # 차단 페이지(HTML)면 여기서 ParseError -> 재시도 대상
     entries = root.findall('atom:entry', NS)
     if not entries:
         raise _NoMatch()
-    if title_keyword:
-        for entry in entries:
-            title = getattr(entry.find('atom:title', NS), 'text', '') or ''
-            if title_keyword in title:
-                return _entry_to_dict(entry)
+    videos = []
+    for entry in entries:
+        title = getattr(entry.find('atom:title', NS), 'text', '') or ''
+        if title_keyword and title_keyword not in title:
+            continue
+        v = _entry_to_dict(entry)
+        if _is_today_kst(v.get('published', '')):
+            videos.append(v)
+    if not videos:
         raise _NoMatch()
-    return _entry_to_dict(entries[0])
+    return videos
 
-def _fetch_rss(url, title_keyword=None, retries=1):
+def _fetch_rss_all(url, title_keyword=None, retries=1):
     last_err = None
     for i in range(retries):
         try:
@@ -100,29 +105,30 @@ def _fetch_rss(url, title_keyword=None, retries=1):
                 time.sleep(2)
             continue
         try:
-            return _parse_xml(r.text, title_keyword)
+            return _parse_xml_all(r.text, title_keyword)
         except _NoMatch:
-            return None
+            return []
         except Exception as e:
             last_err = str(e)  # XML 파싱 실패 = 봇차단 페이지(HTML) 추정, 재시도
             if i < retries - 1:
                 time.sleep(2)
     if last_err and retries > 1:
         print(f'  RSS 조회 실패(차단/오류 추정, {retries}회 시도): {last_err}')
-    return None
+    return []
 
-def fetch_latest(handle, title_keyword=None):
+def fetch_today(handle, title_keyword=None):
+    """오늘(KST) 올라온 영상 전체 리스트 반환 (채널당 여러 개 가능)"""
     # 1차: ?user= 형식 (handle이 채널ID가 아니면 보통 404 - 재시도 불필요)
-    video = _fetch_rss(_rss_url(handle), title_keyword, retries=1)
-    if video is not None:
-        return video
+    videos = _fetch_rss_all(_rss_url(handle), title_keyword, retries=1)
+    if videos:
+        return videos
 
     if not re.match(r'^UC', handle):
         cid = _resolve_handle(handle)
         if cid:
             # 2차: 실제 channel_id URL - 일시적 차단/오류 대비 재시도
-            return _fetch_rss(f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}', title_keyword, retries=3)
-    return None
+            return _fetch_rss_all(f'https://www.youtube.com/feeds/videos.xml?channel_id={cid}', title_keyword, retries=3)
+    return []
 
 def get_transcript(video_id):
     if not SUPADATA_API_KEY or not video_id:
@@ -227,47 +233,46 @@ def _summarize_title_only(name, title):
     return title
 
 def run(yt_only=False, existing=None):
+    """
+    existing: {videoId: 기존 영상 dict} — 호출 측(run.py)에서 '오늘(KST) 영상만' 미리 걸러서 넘겨줌.
+    반환값: 오늘 올라온 영상 전체 리스트(채널당 여러 개 가능). 기존에 있던 videoId는 isNew=False로
+    요약을 재사용하고, 새로 발견된 videoId만 자막조회/AI요약을 새로 수행해 isNew=True로 표시.
+    """
     existing = existing or {}
     channels = [ch for ch in CHANNELS if ch['type'] == 'yt'] if yt_only else CHANNELS
     result = []
     for ch in channels:
         print(f'YouTube: {ch["name"]} 수집 중...')
-        video = fetch_latest(ch['handle'], ch.get('titleKeyword'))
-        if not video:
-            print('  → 데이터 없음 (스킵)' + (f" - '{ch['titleKeyword']}' 포함 영상 못 찾음" if ch.get('titleKeyword') else ''))
-            continue
-        if ch['type'] == 'yt' and not _is_today_kst(video.get('published', '')):
-            print('  → 오늘 영상 없음 (스킵)')
+        videos = fetch_today(ch['handle'], ch.get('titleKeyword'))
+        if not videos:
+            print('  → 오늘 영상 없음/조회 실패 (스킵)' + (f" - '{ch['titleKeyword']}' 포함 영상 못 찾음" if ch.get('titleKeyword') else ''))
             continue
 
-        prev = existing.get(ch['name'])
-        if prev and prev.get('videoId') == video['videoId'] and prev.get('summary'):
-            print('  → 기존과 동일한 영상 (자막 재호출 스킵, 기존 요약 재사용)')
+        for video in videos:
+            prev = existing.get(video['videoId'])
+            if prev and prev.get('summary'):
+                print(f'  → 기존 영상(요약 재사용): {video["title"][:40]}')
+                result.append({**prev, 'name': ch['name'], 'type': ch['type'],
+                               'videoId': video['videoId'], 'title': video['title'],
+                               'updated': video['published'], 'isNew': False})
+                continue
+
+            transcript = get_transcript(video['videoId']) if video['videoId'] else None
+            if transcript and len(transcript.strip()) >= 200:
+                summary = _summarize_transcript(ch['name'], transcript, ch.get('format', 'free')) or video['title']
+                print('  → 자막 기반 요약')
+            else:
+                summary = _summarize_title_only(ch['name'], video['title'])
+                print('  → 자막 없음, 제목 기반 요약')
+
             result.append({
                 'name':    ch['name'],
                 'type':    ch['type'],
                 'videoId': video['videoId'],
                 'title':   video['title'],
                 'updated': video['published'],
-                'summary': prev['summary'],
+                'summary': summary,
+                'isNew':   True,
             })
-            continue
-
-        transcript = get_transcript(video['videoId']) if video['videoId'] else None
-        if transcript and len(transcript.strip()) >= 200:
-            summary = _summarize_transcript(ch['name'], transcript, ch.get('format', 'free')) or video['title']
-            print('  → 자막 기반 요약')
-        else:
-            summary = _summarize_title_only(ch['name'], video['title'])
-            print('  → 자막 없음, 제목 기반 요약')
-
-        result.append({
-            'name':    ch['name'],
-            'type':    ch['type'],
-            'videoId': video['videoId'],
-            'title':   video['title'],
-            'updated': video['published'],
-            'summary': summary,
-        })
-        print(f'  → {video["title"][:60]}')
+            print(f'  → {video["title"][:60]}')
     return result
