@@ -684,7 +684,12 @@ function drawSparkSVG(el,values,isUp,h,prevClose){
   const w=el.clientWidth||200;h=h||80;
   const showLbl=h>=70&&prevClose!=null;
   const lw=showLbl?34:0,cw=w-lw;
-  const mn=Math.min(...values),mx=Math.max(...values),rng=mx-mn||mx*0.02||1;
+  let mn=Math.min(...values),mx=Math.max(...values);
+  if(prevClose!=null){
+    const dev=Math.max(mx-prevClose,prevClose-mn,Math.abs(prevClose)*0.001||1);
+    mn=prevClose-dev;mx=prevClose+dev;
+  }
+  const rng=mx-mn||mx*0.02||1;
   const px=2,py=5;
   const yAt=v=>py+(1-(v-mn)/rng)*(h-py*2);
   const pts=values.map((v,i)=>[px+(i/(values.length-1))*(cw-px*2),yAt(v)]);
