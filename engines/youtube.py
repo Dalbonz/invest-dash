@@ -14,13 +14,17 @@ def _is_today_kst(published_str):
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
 SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 
+# summaryMode: 'full'(자막분석+AI요약, 비용 높음) / 'title'(제목만 AI요약, 자막조회 안함 - 비용 최소화)
+# fullKeywords: summaryMode가 'title'이어도 제목에 이 키워드가 있으면 그 영상만 'full'로 승격
+# (예: 한국경제TV는 하루 수백개라 기본 제목요약이지만, 아침방송 "당신이 잠든사이"는 중요해서 전체분석)
+# → 채널을 새로 추가/수정할 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 같이 정해야 함
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment'},
-    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment'},
-    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment'},
-    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요'},
-    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free'},
-    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free'},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'fullKeywords': ['당신이 잠든사이']},
+    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
+    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
+    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full'},
+    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
+    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
 ]
 
 NS = {
@@ -257,13 +261,21 @@ def run(yt_only=False, existing=None):
                                'updated': video['published'], 'isNew': False})
                 continue
 
-            transcript = get_transcript(video['videoId']) if video['videoId'] else None
-            if transcript and len(transcript.strip()) >= 200:
-                summary = _summarize_transcript(ch['name'], transcript, ch.get('format', 'free')) or video['title']
-                print('  → 자막 기반 요약')
+            mode = ch.get('summaryMode', 'full')
+            if mode == 'title' and any(kw in video['title'] for kw in ch.get('fullKeywords', [])):
+                mode = 'full'  # 채널 기본은 제목요약이지만 중요 코너는 전체분석으로 승격
+
+            if mode == 'full':
+                transcript = get_transcript(video['videoId']) if video['videoId'] else None
+                if transcript and len(transcript.strip()) >= 200:
+                    summary = _summarize_transcript(ch['name'], transcript, ch.get('format', 'free')) or video['title']
+                    print('  → 자막 기반 요약')
+                else:
+                    summary = _summarize_title_only(ch['name'], video['title'])
+                    print('  → 자막 없음, 제목 기반 요약')
             else:
                 summary = _summarize_title_only(ch['name'], video['title'])
-                print('  → 자막 없음, 제목 기반 요약')
+                print('  → 제목 기반 요약(비용 절감 모드)')
 
             result.append({
                 'name':    ch['name'],
