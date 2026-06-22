@@ -1,4 +1,4 @@
-import os, json, requests
+import os, json, ast, re, requests
 from datetime import datetime, timedelta
 
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
@@ -67,6 +67,65 @@ KR_CODES = {
     'samsungbio': '207940',
     'celltrion':  '068270',
 }
+
+# 국내 지수/종목은 야후 대신 네이버금융(한국거래소 데이터 직접 미러링, 로그인 불필요)을 1차 소스로 사용.
+# 야후는 한국 종목 데이터 품질이 떨어짐(검증됨: meta.chartPreviousClose 오류로 등락률이 실제와 5배 차이).
+NAVER_INDEX_CODES = {'kospi': 'KOSPI', 'kosdaq': 'KOSDAQ'}
+NAVER_STOCK_CODES = KR_CODES  # 동일 매핑 재사용
+
+def fetch_naver(item_code, is_index=False):
+    kind = 'index' if is_index else 'stock'
+    def num(s):
+        # "377195천주"처럼 단위 텍스트가 붙는 경우(주로 지수 거래량)가 있어 숫자/소수점/마이너스만 남기고,
+        # "천"이 붙으면 1000배로 환산
+        s = str(s)
+        unit = 1000 if '천' in s else 1
+        cleaned = re.sub(r'[^0-9.\-]', '', s)
+        return (float(cleaned) if cleaned else 0.0) * unit
+    try:
+        r = requests.get(
+            f'https://polling.finance.naver.com/api/realtime/domestic/{kind}/{item_code}',
+            headers=HEADERS, timeout=10,
+        )
+        d = r.json()['datas'][0]
+        price = num(d['closePrice'])
+        chg = num(d['compareToPreviousClosePrice'])
+        pct = num(d['fluctuationsRatio'])
+        high = num(d['highPrice'])
+        low = num(d['lowPrice'])
+        vol = int(num(d['accumulatedTradingVolume']))
+    except Exception as e:
+        print(f'네이버 시세 오류({item_code}): {e}')
+        return None
+
+    candles = []
+    try:
+        end = datetime.now()
+        start = end - timedelta(days=10)
+        url = (
+            f'https://api.finance.naver.com/siseJson.naver?symbol={item_code}'
+            f'&requestType=1&startTime={start:%Y%m%d}&endTime={end:%Y%m%d}&timeframe=day'
+        )
+        rr = requests.get(url, headers=HEADERS, timeout=10)
+        rows = ast.literal_eval(rr.text.strip())[1:]
+        for row in rows:
+            if len(row) < 6:
+                continue
+            date_str, o, h, l, c, v = row[:6]
+            ts = int(datetime.strptime(date_str, '%Y%m%d').timestamp())
+            candles.append({'time': ts, 'open': float(o), 'high': float(h), 'low': float(l), 'close': float(c), 'vol': int(v)})
+    except Exception as e:
+        print(f'네이버 캔들 오류({item_code}): {e}')
+
+    return {
+        'price':   round(price, 4),
+        'change':  round(chg, 4),
+        'pct':     round(pct, 2),
+        'high':    round(high, 4),
+        'low':     round(low, 4),
+        'vol':     vol,
+        'candles': candles[-5:],
+    }
 
 def fetch_price(symbol):
     url = f'https://query1.finance.yahoo.com/v8/finance/chart/{symbol}?interval=1d&range=5d'
@@ -151,7 +210,12 @@ def fetch_investor(krx_code):
 def run():
     result = {}
     for key, sym in SYMBOLS.items():
-        data = fetch_price(sym)
+        if key in NAVER_INDEX_CODES:
+            data = fetch_naver(NAVER_INDEX_CODES[key], is_index=True) or fetch_price(sym)
+        elif key in NAVER_STOCK_CODES:
+            data = fetch_naver(NAVER_STOCK_CODES[key], is_index=False) or fetch_price(sym)
+        else:
+            data = fetch_price(sym)
         if data:
             result[key] = data
             print(f'{key}: {data["price"]} ({data["pct"]}%)')
