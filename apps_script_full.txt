@@ -1,0 +1,211 @@
+/**
+ * Investment Dashboard — Google Apps Script Web App (1인용)
+ *
+ * 편집은 Stocks/Cash/Savings 탭(웹사이트가 관리)에 저장하고,
+ * 동시에 주식현황상세/예적금내역/입출금통장(직접 정리하는 시트)도 참고용으로 같이 보냅니다.
+ * 두 값이 다르면 웹사이트에서 빨갛게 표시됩니다 (시트를 덮어쓰지 않음).
+ *
+ * doGet에 ?diag=1 을 붙여서 호출하면 시트별 데이터 사용량(주가트렌드_RAW/환율트렌드_RAW)을 반환합니다.
+ * doGet에 ?trim=1 을 붙여서 호출하면 위 두 RAW 탭의 빈 칸(데이터 없는 여분 행/열)을 정리합니다.
+ */
+
+const OWNER = 'bong';
+const SHEET_ID = '1jYVXz_rJ5CiVOWl3Rts5EPXBSgib3BCvf-TDXFegC6E';
+
+const EDIT_HEADERS = {
+  stocks:  ['name', 'symbol', 'market', 'qty', 'avg_price', 'currency', 'locked'],
+  cash:    ['bank', 'currency', 'amount'],
+  savings: ['type', 'bank', 'maturity', 'rate_pct', 'maturity_amount', 'currency'],
+};
+
+function doGet(_e) {
+  try {
+    if (_e && _e.parameter && _e.parameter.diag === '1') {
+      return jsonResponse({ diag: diagnoseSheetCells() });
+    }
+    if (_e && _e.parameter && _e.parameter.trim === '1') {
+      return jsonResponse(trimRawSheets());
+    }
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const stocks  = readEditable(ss, 'Stocks',  EDIT_HEADERS.stocks);
+    const cash    = readEditable(ss, 'Cash',    EDIT_HEADERS.cash);
+    const savings = readEditable(ss, 'Savings', EDIT_HEADERS.savings);
+    const meta    = readEditable(ss, 'Meta', ['key', 'value']);
+    const realized = Number((meta.find(r => r.key === OWNER + '_realized_pnl_2025') || {}).value || 0);
+    const ref = {
+      stocks:  readStocksRef(ss, '주식현황상세'),
+      savings: readSavingsRef(ss, '예적금내역'),
+      cash:    readCashRef(ss, '입출금통장'),
+    };
+    return jsonResponse({ stocks, cash, savings, realized_pnl_2025_krw: realized, ref });
+  } catch (err) {
+    return jsonResponse({ error: err.toString() });
+  }
+}
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    if (data.stocks !== undefined)  writeSheet(ss, 'Stocks',  EDIT_HEADERS.stocks,  data.stocks);
+    if (data.cash !== undefined)    writeSheet(ss, 'Cash',    EDIT_HEADERS.cash,    data.cash);
+    if (data.savings !== undefined) writeSheet(ss, 'Savings', EDIT_HEADERS.savings, data.savings);
+    return jsonResponse({ ok: true });
+  } catch (err) {
+    return jsonResponse({ error: err.toString() });
+  }
+}
+
+function readEditable(ss, sheetName, headers) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 1) return [];
+  return data.slice(1)
+    .filter(row => row[0] !== '' && row[0] !== null)
+    .map(row => {
+      const obj = {};
+      headers.forEach((h, i) => { obj[h] = row[i] !== undefined ? row[i] : ''; });
+      ['qty', 'avg_price', 'amount', 'rate_pct', 'maturity_amount'].forEach(f => {
+        if (obj[f] !== undefined && obj[f] !== '') obj[f] = Number(obj[f]);
+      });
+      if (obj.locked !== undefined)
+        obj.locked = obj.locked === true || obj.locked === 'TRUE' || obj.locked === 1;
+      return obj;
+    });
+}
+
+// 주식현황상세: 2행 헤더, 시장에 따라 평단가 컬럼이 다름(미국=달러, 국내=원화)
+function readStocksRef(ss, sheetName) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 2) return [];
+  const headers = data[1].map(h => String(h).trim());
+  const idx = name => headers.indexOf(name);
+  const iMarket = idx('시장'), iName = idx('종목명'), iCode = idx('코드'), iQty = idx('보유량');
+  const iAvgUsd = idx('매수평단가'), iAvgKrw = idx('매수평단가(원)');
+  return data.slice(2)
+    .filter(row => iName >= 0 && row[iName] !== '' && row[iName] !== null)
+    .map(row => {
+      const marketRaw = String(row[iMarket] || '');
+      const isUS = marketRaw.includes('미국') || marketRaw.toUpperCase().includes('US');
+      return {
+        name: row[iName],
+        symbol: iCode >= 0 ? row[iCode] : '',
+        market: isUS ? 'US' : 'KR',
+        currency: isUS ? 'USD' : 'KRW',
+        qty: Number(row[iQty]) || 0,
+        avg_price: Number(isUS ? row[iAvgUsd] : row[iAvgKrw]) || 0,
+      };
+    });
+}
+
+// 예적금내역: 2행 헤더
+function readSavingsRef(ss, sheetName) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length <= 2) return [];
+  const headers = data[1].map(h => String(h).trim());
+  const idx = name => headers.indexOf(name);
+  const iType = idx('구분'), iBank = idx('은행'), iMaturity = idx('만기일'), iRate = idx('이율'),
+        iAmt = idx('만기수령액(통화)'), iCur = idx('통화');
+  return data.slice(2)
+    .filter(row => iBank >= 0 && row[iBank] !== '' && row[iBank] !== null)
+    .map(row => ({
+      type: iType >= 0 ? row[iType] : '',
+      bank: row[iBank],
+      maturity: iMaturity >= 0 ? row[iMaturity] : '',
+      rate_pct: Number(iRate >= 0 ? row[iRate] : 0) || 0,
+      maturity_amount: Number(iAmt >= 0 ? row[iAmt] : 0) || 0,
+      currency: iCur >= 0 ? (row[iCur] || 'KRW') : 'KRW',
+    }));
+}
+
+// 입출금통장: 은행별 컬럼 + 날짜별 행(스냅샷). 가장 최근 날짜 행을 현재 잔액으로 사용
+function readCashRef(ss, sheetName) {
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const data = sheet.getDataRange().getValues();
+  if (data.length < 4) return [];
+  const bankRow = data[1];   // 2행: 은행명
+  const curRow = data[2];    // 3행: 통화
+  let lastRow = null;
+  for (let r = data.length - 1; r >= 3; r--) {
+    if (data[r][0] !== '' && data[r][0] !== null) { lastRow = data[r]; break; }
+  }
+  if (!lastRow) return [];
+  const result = [];
+  for (let c = 2; c < bankRow.length; c++) { // A=날짜, B=총합계 제외
+    const bank = String(bankRow[c] || '').trim();
+    if (!bank) continue;
+    result.push({
+      bank,
+      currency: String(curRow[c] || 'KRW').trim() || 'KRW',
+      amount: Number(lastRow[c]) || 0,
+    });
+  }
+  return result;
+}
+
+function writeSheet(ss, sheetName, headers, rows) {
+  let sheet = ss.getSheetByName(sheetName);
+  if (!sheet) sheet = ss.insertSheet(sheetName);
+  sheet.clearContents();
+  sheet.appendRow(headers);
+  rows.forEach(row => {
+    sheet.appendRow(headers.map(h => row[h] !== undefined ? row[h] : ''));
+  });
+}
+
+function diagnoseSheetCells() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const names = ['주가트렌드_RAW', '환율트렌드_RAW'];
+  const result = names.map(name => {
+    const sh = ss.getSheetByName(name);
+    if (!sh) return { name, error: 'not found' };
+    return {
+      name,
+      maxRows: sh.getMaxRows(),
+      maxCols: sh.getMaxColumns(),
+      lastRow: sh.getLastRow(),
+      lastCol: sh.getLastColumn(),
+    };
+  });
+  return { sheets: result };
+}
+
+function trimRawSheets() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  const targets = [
+    { name: '주가트렌드_RAW', rowBuffer: 100, colBuffer: 10 },
+    { name: '환율트렌드_RAW', rowBuffer: 50, colBuffer: 5 },
+  ];
+  const result = [];
+  targets.forEach(t => {
+    const sh = ss.getSheetByName(t.name);
+    if (!sh) { result.push({ name: t.name, error: 'not found' }); return; }
+    const lastRow = sh.getLastRow(), lastCol = sh.getLastColumn();
+    const maxRows = sh.getMaxRows(), maxCols = sh.getMaxColumns();
+    const keepRows = lastRow + t.rowBuffer;
+    const keepCols = lastCol + t.colBuffer;
+    let deletedRows = 0, deletedCols = 0;
+    if (maxRows > keepRows) {
+      sh.deleteRows(keepRows + 1, maxRows - keepRows);
+      deletedRows = maxRows - keepRows;
+    }
+    if (maxCols > keepCols) {
+      sh.deleteColumns(keepCols + 1, maxCols - keepCols);
+      deletedCols = maxCols - keepCols;
+    }
+    result.push({ name: t.name, before: { maxRows, maxCols }, after: { maxRows: sh.getMaxRows(), maxCols: sh.getMaxColumns() }, deletedRows, deletedCols });
+  });
+  return { result };
+}
+
+function jsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}
