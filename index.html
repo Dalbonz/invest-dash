@@ -660,7 +660,7 @@ function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):nul
 function lsSet(k,v){localStorage.setItem(k,JSON.stringify(v));}
 // 관리자가 저장한 커스텀 타일 적용
 (function(){const kr=lsGet('stock_tiles_kr');if(kr&&kr.length)STOCK_KR=kr;const us=lsGet('stock_tiles_us');if(us&&us.length)STOCK_US=us;const ppm=lsGet('pension_tiles_personal_mine');if(ppm&&ppm.length)PENSION_PERSONAL_MINE=ppm;const ppc=lsGet('pension_tiles_personal_company');if(ppc&&ppc.length)PENSION_PERSONAL_COMPANY=ppc;const prm=lsGet('pension_tiles_retire_mine');if(prm&&prm.length)PENSION_RETIRE_MINE=prm;const prc=lsGet('pension_tiles_retire_company');if(prc&&prc.length)PENSION_RETIRE_COMPANY=prc;})();
-function getEtfCols(){const w=window.innerWidth;if(w>=1024)return 3;if(w>=600)return 2;return 1;}
+function getEtfCols(){const w=window.innerWidth;if(w>=1024)return 3;return 2;}
 function getAdminCfg(){return lsGet('admin_cfg')||DEFAULT_ADMIN_CFG;}
 // 탭 전환
 function switchTab(id,el){if(id==='portfolio'&&sessionStorage.getItem('portfolio_view_auth')!=='1'){pendingPfTabEl=el;document.getElementById('pf-view-overlay').classList.add('show');document.getElementById('pf-view-input').value='';document.getElementById('pf-view-err').style.display='none';setTimeout(()=>document.getElementById('pf-view-input').focus(),120);return;}document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));el.classList.add('active');document.getElementById('page-'+id).classList.add('active');if(id==='portfolio')initPortfolio();if(id==='media'){renderNewsTo('media','all');renderYtAll();}if(id==='market'&&jsonData)renderMarketCards();}
