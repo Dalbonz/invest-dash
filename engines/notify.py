@@ -1,4 +1,4 @@
-import os, re, smtplib, requests
+import os, re, html, smtplib, requests
 from datetime import datetime, timezone, timedelta
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
@@ -63,8 +63,8 @@ def morning_brief(ai_data, news_data, market_data):
 
 def yt_new_video(name, title, video_id, summary=''):
     lines = [
-        f'<b>[유튜브] {name}</b>',
-        title,
+        f'<b>[유튜브] {html.escape(name)}</b>',
+        html.escape(title),
         f'https://youtube.com/watch?v={video_id}',
     ]
     if summary:
@@ -79,9 +79,9 @@ def yt_media_digest(videos):
     for v in videos:
         by_channel.setdefault(v['name'], []).append(v)
     for name, vids in by_channel.items():
-        lines.append(f'<b>{name}</b> ({len(vids)}건)')
+        lines.append(f'<b>{html.escape(name)}</b> ({len(vids)}건)')
         for v in vids:
-            lines.append(f"• {v['title']}")
+            lines.append(f"• <a href=\"https://youtube.com/watch?v={v['videoId']}\">{html.escape(v['title'])}</a>")
         lines.append('')
     return '\n'.join(lines).strip()
 
