@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       slot:
-        description: '외부cron이 지정하는 실행 슬롯 (yt1/yt2/morning/yt3/email/full), 수동테스트는 빈값'
+        description: '외부cron이 지정하는 실행 슬롯 (yt1/yt2/morning/yt3/email/full/market), 수동테스트는 빈값'
         required: false
         default: ''
       force_email:

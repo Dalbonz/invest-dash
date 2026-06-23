@@ -19,7 +19,7 @@ SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 # (예: 한국경제TV는 하루 수백개라 기본 제목요약이지만, 아침방송 "당신이 잠든사이"는 중요해서 전체분석)
 # → 채널을 새로 추가/수정할 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 같이 정해야 함
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'fullKeywords': ['당신이 잠든사이']},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'fullKeywords': ['당신이 잠든사이', '당잠사']},
     {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
     {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
     {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full'},

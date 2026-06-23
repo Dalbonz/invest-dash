@@ -5,6 +5,7 @@
   morning : 전체 실행 + 텔레그램 아침 브리핑 (KST 08:22, 장 시작 전)
   email   : 전체 실행 + 이메일 발송 (KST 15:07, 12시에 만나요 처리 후)
   full    : 전체 실행 (알림 없음)
+  market  : 시세만 가볍게 갱신 (장중 추가호출용, 알림 없음, 뉴스/포트폴리오/AI/유튜브는 그대로 유지)
 
 SLOT이 없으면 GITHUB_SCHEDULE(진짜 GitHub schedule: 트리거, 지연될 수 있음)로 폴백,
 둘 다 없으면 사람이 그냥 "Run workflow" 누른 테스트 실행으로 간주 (알림 보류).
@@ -35,7 +36,7 @@ def _merge_today(existing_today, fetched):
     carried = [v for vid, v in existing_today.items() if vid not in fetched_ids]
     return carried + fetched
 
-SLOT_TO_MODE = {'yt1': 'yt', 'yt2': 'yt', 'yt3': 'yt', 'morning': 'morning', 'email': 'email', 'full': 'full'}
+SLOT_TO_MODE = {'yt1': 'yt', 'yt2': 'yt', 'yt3': 'yt', 'morning': 'morning', 'email': 'email', 'full': 'full', 'market': 'market'}
 YT_SCHEDULES = {'5 22 * * *', '8 23 * * *', '12 1 * * *'}
 MORNING_SCHEDULE = '22 23 * * *'
 EMAIL_SCHEDULE = '7 6 * * *'
@@ -78,11 +79,16 @@ def notify_new_videos(videos):
     if notify.in_quiet_hours():
         print('  무음시간(22~07시) - 신규영상 알림 보류 (data.json만 갱신)')
         return
-    for v in videos:
-        if not v.get('isNew'):
-            continue
+    new_videos = [v for v in videos if v.get('isNew')]
+    # 개인채널(yt)은 영상마다 개별 발송, 미디어채널(media)은 하루 수십건이라 한 건으로 묶어서 발송
+    personal = [v for v in new_videos if v.get('type') != 'media']
+    media = [v for v in new_videos if v.get('type') == 'media']
+    for v in personal:
         notify.send(notify.yt_new_video(v['name'], v['title'], v['videoId'], v.get('summary', '')))
         print(f'  → 텔레그램 발송: {v["name"]}')
+    if media:
+        notify.send(notify.yt_media_digest(media))
+        print(f'  → 텔레그램 발송(미디어 다이제스트): {len(media)}건')
 
 def run_yt_only():
     existing = load_existing()
@@ -100,6 +106,17 @@ def run_yt_only():
         print('data.json youtube 갱신')
     else:
         print('새 영상 없음 - data.json 유지')
+
+def run_market_only():
+    """장중 시세만 가볍게 갱신(뉴스/포트폴리오/AI/유튜브는 그대로 유지) - 알림 없음"""
+    print('시장 데이터만 갱신(market-only slot)...')
+    market_data = market.run()
+    existing = load_existing()
+    existing['market'] = market_data
+    existing['updated'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+    with open('data.json', 'w', encoding='utf-8') as f:
+        json.dump(existing, f, ensure_ascii=False, indent=2)
+    print('data.json market 필드만 갱신 완료')
 
 def run_full(send_morning=False, send_email=False):
     print('1. 시장 데이터 수집...')
@@ -153,6 +170,8 @@ def main():
 
     if mode == 'yt':
         run_yt_only()
+    elif mode == 'market':
+        run_market_only()
     elif mode == 'morning':
         run_full(send_morning=True)
     elif mode == 'email':
