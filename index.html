@@ -351,7 +351,8 @@ tr:hover td{background:#f8fafc}
       <div class="pension-tile">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
           <div class="pension-tile-title">개인</div>
-          <button class="pension-subtab on" onclick="switchPensionSub('personal','mine',this)">내 개인</button>
+          <button class="pension-subtab on" onclick="switchPensionSub('personal','total',this)">전체</button>
+          <button class="pension-subtab" onclick="switchPensionSub('personal','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('personal','company',this)">회사 지원</button>
         </div>
         <div class="tw"><table><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-personal-rows"></tbody></table></div>
@@ -359,7 +360,8 @@ tr:hover td{background:#f8fafc}
       <div class="pension-tile">
         <div style="display:flex;align-items:center;gap:5px;margin-bottom:6px">
           <div class="pension-tile-title">퇴직</div>
-          <button class="pension-subtab on" onclick="switchPensionSub('retire','mine',this)">내 개인</button>
+          <button class="pension-subtab on" onclick="switchPensionSub('retire','total',this)">전체</button>
+          <button class="pension-subtab" onclick="switchPensionSub('retire','mine',this)">내 개인</button>
           <button class="pension-subtab" onclick="switchPensionSub('retire','company',this)">회사 지원</button>
         </div>
         <div class="tw"><table><thead><tr><th>종목</th><th>현재가</th><th>전일비</th><th>등락률</th></tr></thead><tbody id="pension-retire-rows"></tbody></table></div>
@@ -644,7 +646,7 @@ const THEME_FINANCE=[{n:'KB금융',s:'105560.KS'},{n:'신한지주',s:'055550.KS
 const THEME_BIO=[{n:'셀트리온',s:'068270.KS'},{n:'삼성바이오',s:'207940.KS'},{n:'유한양행',s:'000100.KS'},{n:'한미약품',s:'128940.KS'},{n:'에이비엘바이오',s:'298380.KS'}];
 const ETF_LIST=[{n:'SPDR S&P500',s:'SPY',sec:'미국주식'},{n:'Invesco QQQ',s:'QQQ',sec:'기술주'},{n:'iShares 20Y',s:'TLT',sec:'미국채권'},{n:'SPDR Gold',s:'GLD',sec:'금'},{n:'iShares EM',s:'EEM',sec:'신흥국'},{n:'Energy Select',s:'XLE',sec:'에너지'}];
 let PENSION_PERSONAL_MINE=[],PENSION_PERSONAL_COMPANY=[],PENSION_RETIRE_MINE=[],PENSION_RETIRE_COMPANY=[];
-let currentPensionSub={personal:'mine',retire:'mine'};
+let currentPensionSub={personal:'total',retire:'total'};
 const SYMBOL_DB=[{n:'코스피지수',s:'^KS11',m:'KR'},{n:'코스닥지수',s:'^KQ11',m:'KR'},{n:'나스닥',s:'^IXIC',m:'US'},{n:'S&P500',s:'^GSPC',m:'US'},{n:'다우존스',s:'^DJI',m:'US'},...KR50.map(s=>({n:s.n,s:s.s,m:'KR'})),{n:'NVIDIA',s:'NVDA',m:'US'},{n:'Tesla',s:'TSLA',m:'US'},{n:'Apple',s:'AAPL',m:'US'},{n:'Microsoft',s:'MSFT',m:'US'},{n:'Alphabet',s:'GOOGL',m:'US'},{n:'Amazon',s:'AMZN',m:'US'},{n:'Meta',s:'META',m:'US'},{n:'Broadcom',s:'AVGO',m:'US'},{n:'TSMC',s:'TSM',m:'US'},{n:'Palantir',s:'PLTR',m:'US'},{n:'Arm',s:'ARM',m:'US'},{n:'Coupang',s:'CPNG',m:'US'}];
 const PENSION_NAME_DB=(()=>{const all=[...SYMBOL_DB,...ETF_LIST,...US50,...THEME_SEMICON,...THEME_AI,...THEME_SOBUJANG,...THEME_ROBOT,...THEME_SHIP,...THEME_FINANCE,...THEME_BIO];const seen=new Set();return all.filter(x=>{if(seen.has(x.s))return false;seen.add(x.s);return true;});})();
 const DEFAULT_ADMIN_CFG={mediaChannels:[{name:'한국경제TV',handle:'hkwowtv'},{name:'연합뉴스경제TV',handle:'UC6kZpTl39-_SqfBrF1-N2oQ'},{name:'매일경제TV',handle:'MKeconomy_TV'}],ytChannels:[{name:'12시에 만나요',handle:'gyeomsonisnothing'},{name:'경제사냥꾼',handle:'UC7usMJDHmtbs_oegmzQKKMA'},{name:'슈페tv',handle:'supe-tv'}],tgRecipients:[{name:'달봉즈',id:'8649321702'},{name:'경',id:'8799181333'},{name:'대규',id:'8689376301'}],emailRecipients:[]};
@@ -740,7 +742,7 @@ function switchStockCardTab(tab,btn){document.querySelectorAll('.card-subtab').f
 function renderSection(mid,cbId,keys,labels){const el=document.getElementById(mid);el.innerHTML='';if(!jsonData?.market)return;keys.forEach((k,i)=>{const m=jsonData.market[k];if(!m)return;const sym=KEY_TO_YF[k]||'';const row=document.createElement('div');row.className='row';const c=cls(m.change||0);row.innerHTML=`<span class="rn">${labels[i]}</span><span class="${c}">${fmt(m.price)} <small>${sign(m.change||0)}${fmt(m.pct||0)}%</small></span>`;row.onclick=()=>openDetail(labels[i],sym);el.appendChild(row);});const fk=keys.find(k=>jsonData.market[k]?.candles?.length>1);if(fk){const m=jsonData.market[fk];const sym=KEY_TO_YF[fk]||'';const isUp=(m?.change||0)>=0;const pc=m?.price!=null&&m?.change!=null?m.price-m.change:null;cardState[cbId]={symbol:sym,isUp,currentVals:[]};setTimeout(()=>makeMiniChart(cbId,m?.candles||[],isUp,sym,pc),50);}}
 // 탭2: 주식 시세
 function renderStockSec(){buildEtfPeriodTabs();loadStockTab('kr');loadETF();loadPension();}
-function getPensionList(tile,sub){const map={personal:{mine:PENSION_PERSONAL_MINE,company:PENSION_PERSONAL_COMPANY},retire:{mine:PENSION_RETIRE_MINE,company:PENSION_RETIRE_COMPANY}};return map[tile][sub];}
+function getPensionList(tile,sub){const map={personal:{mine:PENSION_PERSONAL_MINE,company:PENSION_PERSONAL_COMPANY},retire:{mine:PENSION_RETIRE_MINE,company:PENSION_RETIRE_COMPANY}};if(sub==='total')return [...map[tile].mine,...map[tile].company];return map[tile][sub];}
 function switchPensionSub(tile,sub,btn){currentPensionSub[tile]=sub;btn.parentElement.querySelectorAll('.pension-subtab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderPensionRows(tile==='personal'?'pension-personal-rows':'pension-retire-rows',getPensionList(tile,sub));}
 function renderPensionRows(elId,list){const el=document.getElementById(elId);if(!list.length){el.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#bbb;padding:8px 0;cursor:default">설정에서 종목을 추가하세요</td></tr>`;return;}el.innerHTML='';list.forEach((item,i)=>{const row=document.createElement('tr');if(item.s){row.innerHTML=`<td>${item.l}</td><td id="${elId}-p${i}">--</td><td id="${elId}-c${i}">--</td><td id="${elId}-pct${i}">--</td>`;row.onclick=()=>openDetail(item.l,item.s);}else{row.innerHTML=`<td>${item.l}</td><td>${fmtMan(item.amt||0)}</td><td>-</td><td>-</td>`;row.style.cursor='default';}el.appendChild(row);});const withTicker=list.map((item,i)=>({item,i})).filter(x=>x.item.s);Promise.all(withTicker.map(x=>yfetch(x.item.s,'5m','1d'))).then(results=>{results.forEach((data,j)=>{const i=withTicker[j].i;const tp=document.getElementById(elId+'-p'+i),tc=document.getElementById(elId+'-c'+i),tpct=document.getElementById(elId+'-pct'+i);if(!tp)return;try{const meta=data.chart.result[0].meta;const price=meta.regularMarketPrice,prev=meta.chartPreviousClose||price;const chg=price-prev,pct=prev?chg/prev*100:0;const c=cls(chg);tp.textContent=fmt(price,2);tc.textContent=sign(chg)+fmt(chg,2);tc.className=c;tpct.textContent=sign(chg)+fmt(pct,2)+'%';tpct.className=c;}catch(e){}});});}
 function loadPension(){renderPensionRows('pension-personal-rows',getPensionList('personal',currentPensionSub.personal));renderPensionRows('pension-retire-rows',getPensionList('retire',currentPensionSub.retire));}
