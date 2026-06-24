@@ -599,6 +599,14 @@ tr:hover td{background:#f8fafc}
       <div id="admin-pension-retire-company"></div>
       <button class="admin-add-btn" onclick="addPensionTileRow('retire-company')">+ 종목 추가</button>
     </div>
+    <div class="admin-section" id="admin-sec-pension-sync">
+      <div class="admin-section-title">연금 타일 기기간 동기화</div>
+      <div style="font-size:11px;color:var(--text2);margin-bottom:6px">localStorage는 기기별로 분리되어 있어 PC/모바일에 따로 저장됩니다. 한 기기에서 "내보내기"로 코드를 만들어 다른 기기의 "가져오기"에 붙여넣으면 동기화됩니다.</div>
+      <div style="display:flex;gap:6px">
+        <button class="admin-add-btn" style="flex:1" onclick="exportPensionConfig()">내보내기</button>
+        <button class="admin-add-btn" style="flex:1" onclick="importPensionConfig()">가져오기</button>
+      </div>
+    </div>
     <div class="admin-section" id="admin-sec-portfolio">
       <div class="admin-section-title">포트폴리오</div>
       <button class="admin-add-btn" onclick="openPortfolioFromAdmin()" style="font-size:13px;padding:10px;color:var(--text)">포트폴리오 보기</button>
@@ -781,6 +789,8 @@ function pensionAutoFillTicker(inp){const tickerInp=inp.nextElementSibling;if(!t
 function renderPensionTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=pensionRowHtml(t.l,t.s,t.amt);el.appendChild(row);});}
 function addPensionTileRow(type){const elId='admin-pension-'+type;const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=pensionRowHtml();el.appendChild(row);}
 function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
+function exportPensionConfig(){const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));if(navigator.clipboard?.writeText){navigator.clipboard.writeText(code).then(()=>alert('코드가 클립보드에 복사되었습니다. 다른 기기의 "가져오기"에 붙여넣어 주세요.')).catch(()=>prompt('아래 코드를 복사해서 다른 기기에 전달하세요:',code));}else{prompt('아래 코드를 복사해서 다른 기기에 전달하세요:',code);}}
+function importPensionConfig(){const code=prompt('다른 기기에서 받은 연금 동기화 코드를 붙여넣으세요:');if(!code)return;try{const payload=JSON.parse(decodeURIComponent(escape(atob(code.trim()))));if(!payload||typeof payload!=='object')throw new Error('invalid');PENSION_PERSONAL_MINE=payload.ppm||[];PENSION_PERSONAL_COMPANY=payload.ppc||[];PENSION_RETIRE_MINE=payload.prm||[];PENSION_RETIRE_COMPANY=payload.prc||[];lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);lsSet('pension_tiles_retire_company',PENSION_RETIRE_COMPANY);renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);loadPension();alert('연금 설정을 가져왔습니다.');}catch(e){alert('코드를 읽을 수 없습니다. 정확히 복사했는지 확인해주세요.');}}
 function openAdminModal(ctx='all'){
 const cfg=getAdminCfg();
 const sm=ctx==='market',sd=ctx==='media',sp=ctx==='portfolio',sa=ctx==='all';
