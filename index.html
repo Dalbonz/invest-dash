@@ -9,7 +9,6 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 :root{--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;--border:rgba(0,0,0,0.08);--accent:#0071e3;--up:#c84a31;--down:#1261c4;--radius:14px;--radius-sm:10px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -825,18 +824,22 @@ function addPensionTileRow(type){const elId='admin-pension-'+type;const el=docum
 function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
 let pensionSyncMode='export';
 function _pensionModalReset(){document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-err').textContent='';}
+function _generateQR(data,wrap){try{const qr=qrcode(0,'L');qr.addData(data);qr.make();wrap.innerHTML=qr.createImgTag(3,3,'QR');const img=wrap.querySelector('img');if(img)img.style.cssText='display:block;margin:0 auto;border-radius:8px;max-width:100%';}catch(e){wrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 생성 실패. 아래 코드를 복사해 사용하세요.</div>';}}
 function openPensionExport(){
   const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};
-  const json=JSON.stringify(payload);
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
   pensionSyncMode='export';
   document.getElementById('pension-sync-title').textContent='연금 설정 내보내기';
-  document.getElementById('pension-sync-desc').textContent='QR코드를 모바일로 스캔하거나, 아래 코드를 직접 복사하세요.';
-  const ta=document.getElementById('pension-sync-text');ta.value=btoa(unescape(encodeURIComponent(json)));ta.readOnly=true;ta.placeholder='';
+  document.getElementById('pension-sync-desc').textContent='QR코드를 모바일로 스캔하거나, 아래 코드를 복사하세요.';
+  const ta=document.getElementById('pension-sync-text');ta.value=code;ta.readOnly=true;ta.placeholder='';
   document.getElementById('pension-cam-btn').style.display='none';
   _pensionModalReset();
   document.getElementById('pension-sync-action').textContent='복사';
   const qrWrap=document.getElementById('pension-qr-wrap');
-  try{const qr=qrcode(0,'L');qr.addData(json);qr.make();qrWrap.innerHTML=qr.createImgTag(4,4,'연금QR');qrWrap.style.display='block';}catch(e){qrWrap.style.display='none';}
+  qrWrap.innerHTML='<div style="color:#8b949e;font-size:11px;padding:4px 0">QR 생성 중...</div>';
+  qrWrap.style.display='block';
+  if(typeof qrcode==='function'){_generateQR(code,qrWrap);}
+  else{const s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';s.onload=()=>_generateQR(code,qrWrap);s.onerror=()=>{qrWrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 라이브러리 로드 실패. 아래 코드를 복사해 사용하세요.</div>';};document.head.appendChild(s);}
   document.getElementById('pension-sync-overlay').classList.add('show');
 }
 function openPensionImport(){
