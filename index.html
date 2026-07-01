@@ -9,6 +9,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <style>
 :root{--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;--border:rgba(0,0,0,0.08);--accent:#0071e3;--up:#c84a31;--down:#1261c4;--radius:14px;--radius-sm:10px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -550,8 +551,13 @@ tr:hover td{background:#f8fafc}
   <div class="pw-box" style="width:340px">
     <div id="pension-sync-title" style="color:#e6edf3;font-weight:800;font-size:18px;margin-bottom:4px">연금 설정 내보내기</div>
     <div id="pension-sync-desc" style="color:#8b949e;font-size:12px;margin-bottom:12px">아래 코드 영역을 길게 눌러 전체 복사한 뒤, 다른 기기에 전달하세요.</div>
-    <textarea id="pension-sync-text" style="width:100%;height:90px;resize:none;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;margin-bottom:8px" onclick="this.select()"></textarea>
-    <div id="pension-sync-err" style="color:#f85149;font-size:11px;margin-bottom:8px;display:none">코드를 읽을 수 없습니다. 정확히 붙여넣었는지 확인해주세요</div>
+    <div id="pension-qr-wrap" style="display:none;text-align:center;margin-bottom:10px"><canvas id="pension-qr-canvas"></canvas></div>
+    <label id="pension-cam-btn" style="display:none;width:100%;background:#21262d;color:#c9d1d9;border:0.5px solid #30363d;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;box-sizing:border-box;margin-bottom:8px">
+      📷 카메라로 QR 스캔
+      <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanPensionQrImage(this.files[0])">
+    </label>
+    <textarea id="pension-sync-text" style="width:100%;height:70px;resize:none;background:#0d1117;color:#e6edf3;border:1px solid #30363d;border-radius:8px;padding:10px;font-size:12px;font-family:monospace;margin-bottom:8px" onclick="this.select()"></textarea>
+    <div id="pension-sync-err" style="color:#f85149;font-size:11px;margin-bottom:8px;display:none"></div>
     <div style="display:flex;gap:8px">
       <button id="pension-sync-action" onclick="copyPensionSyncCode()" style="flex:1;background:#c8fa00;color:#0d1117;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit">복사</button>
       <button onclick="closePensionSyncModal()" style="background:#21262d;color:#8b949e;border:none;border-radius:8px;padding:10px 16px;font-size:13px;cursor:pointer;font-family:inherit">닫기</button>
@@ -818,11 +824,42 @@ function renderPensionTileRows(elId,tiles){const el=document.getElementById(elId
 function addPensionTileRow(type){const elId='admin-pension-'+type;const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=pensionRowHtml();el.appendChild(row);}
 function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
 let pensionSyncMode='export';
-function openPensionExport(){const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));pensionSyncMode='export';document.getElementById('pension-sync-title').textContent='연금 설정 내보내기';document.getElementById('pension-sync-desc').textContent='아래 코드 영역을 길게 눌러 전체 선택 후 복사한 뒤, 다른 기기에 전달하세요.';const ta=document.getElementById('pension-sync-text');ta.value=code;ta.readOnly=true;ta.placeholder='';document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-action').textContent='복사';document.getElementById('pension-sync-overlay').classList.add('show');setTimeout(()=>ta.select(),100);}
-function openPensionImport(){pensionSyncMode='import';document.getElementById('pension-sync-title').textContent='연금 설정 가져오기';document.getElementById('pension-sync-desc').textContent='다른 기기에서 받은 동기화 코드를 아래에 길게 눌러 붙여넣은 뒤 가져오기를 누르세요.';const ta=document.getElementById('pension-sync-text');ta.value='';ta.readOnly=false;ta.placeholder='여기에 코드를 붙여넣으세요';document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-action').textContent='가져오기';document.getElementById('pension-sync-overlay').classList.add('show');setTimeout(()=>ta.focus(),100);}
+function _pensionModalReset(){document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-err').textContent='';}
+function openPensionExport(){
+  const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};
+  const json=JSON.stringify(payload);
+  pensionSyncMode='export';
+  document.getElementById('pension-sync-title').textContent='연금 설정 내보내기';
+  document.getElementById('pension-sync-desc').textContent='QR코드를 모바일로 스캔하거나, 아래 코드를 직접 복사하세요.';
+  const ta=document.getElementById('pension-sync-text');ta.value=btoa(unescape(encodeURIComponent(json)));ta.readOnly=true;ta.placeholder='';
+  document.getElementById('pension-cam-btn').style.display='none';
+  _pensionModalReset();
+  document.getElementById('pension-sync-action').textContent='복사';
+  const qrWrap=document.getElementById('pension-qr-wrap');
+  if(typeof QRCode!=='undefined'){
+    QRCode.toCanvas(document.getElementById('pension-qr-canvas'),json,{width:200,margin:2,errorCorrectionLevel:'L'},function(err){
+      qrWrap.style.display=err?'none':'block';
+    });
+  } else {qrWrap.style.display='none';}
+  document.getElementById('pension-sync-overlay').classList.add('show');
+}
+function openPensionImport(){
+  pensionSyncMode='import';
+  document.getElementById('pension-sync-title').textContent='연금 설정 가져오기';
+  document.getElementById('pension-sync-desc').textContent='PC의 QR코드를 스캔하거나, 동기화 코드를 붙여넣으세요.';
+  const ta=document.getElementById('pension-sync-text');ta.value='';ta.readOnly=false;ta.placeholder='여기에 코드를 붙여넣으세요';
+  document.getElementById('pension-qr-wrap').style.display='none';
+  document.getElementById('pension-cam-btn').style.display='block';
+  _pensionModalReset();
+  document.getElementById('pension-sync-action').textContent='가져오기';
+  document.getElementById('pension-sync-overlay').classList.add('show');
+  setTimeout(()=>ta.focus(),100);
+}
 function closePensionSyncModal(){document.getElementById('pension-sync-overlay').classList.remove('show');}
 function copyPensionSyncCode(){if(pensionSyncMode==='import'){submitPensionImport();return;}const ta=document.getElementById('pension-sync-text');ta.select();const btn=document.getElementById('pension-sync-action');const done=()=>{btn.textContent='복사됨!';setTimeout(()=>btn.textContent='복사',1500);};if(navigator.clipboard?.writeText){navigator.clipboard.writeText(ta.value).then(done).catch(()=>{try{document.execCommand('copy');done();}catch(e){}});}else{try{document.execCommand('copy');done();}catch(e){}}}
-function submitPensionImport(){const code=document.getElementById('pension-sync-text').value.trim();const err=document.getElementById('pension-sync-err');if(!code){err.style.display='block';return;}try{const payload=JSON.parse(decodeURIComponent(escape(atob(code))));if(!payload||typeof payload!=='object')throw new Error('invalid');PENSION_PERSONAL_MINE=payload.ppm||[];PENSION_PERSONAL_COMPANY=payload.ppc||[];PENSION_RETIRE_MINE=payload.prm||[];PENSION_RETIRE_COMPANY=payload.prc||[];lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);lsSet('pension_tiles_retire_company',PENSION_RETIRE_COMPANY);renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);loadPension();closePensionSyncModal();alert('연금 설정을 가져왔습니다.');}catch(e){err.style.display='block';}}
+function _applyPensionPayload(payload){if(!payload||typeof payload!=='object')throw new Error('invalid');PENSION_PERSONAL_MINE=payload.ppm||[];PENSION_PERSONAL_COMPANY=payload.ppc||[];PENSION_RETIRE_MINE=payload.prm||[];PENSION_RETIRE_COMPANY=payload.prc||[];lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);lsSet('pension_tiles_retire_company',PENSION_RETIRE_COMPANY);renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);loadPension();closePensionSyncModal();alert('연금 설정을 가져왔습니다.');}
+function submitPensionImport(){const code=document.getElementById('pension-sync-text').value.trim();const err=document.getElementById('pension-sync-err');if(!code){err.textContent='코드를 입력해주세요.';err.style.display='block';return;}try{let payload;if(code.startsWith('{')){payload=JSON.parse(code);}else{payload=JSON.parse(decodeURIComponent(escape(atob(code))));}  _applyPensionPayload(payload);}catch(e){err.textContent='코드를 읽을 수 없습니다. 정확히 붙여넣었는지 확인해주세요.';err.style.display='block';}}
+async function scanPensionQrImage(file){if(!file)return;const err=document.getElementById('pension-sync-err');try{const img=await createImageBitmap(file);if(!('BarcodeDetector' in window)){err.textContent='이 브라우저는 QR 스캔을 지원하지 않습니다. 코드를 직접 붙여넣으세요.';err.style.display='block';return;}const bd=new BarcodeDetector({formats:['qr_code']});const codes=await bd.detect(img);if(!codes.length){err.textContent='QR코드를 인식하지 못했습니다. 더 선명하게 촬영해보세요.';err.style.display='block';return;}const json=codes[0].rawValue;try{_applyPensionPayload(JSON.parse(json));}catch(e){err.textContent='QR 데이터가 올바르지 않습니다.';err.style.display='block';}}catch(e){err.textContent='이미지 처리 중 오류가 발생했습니다.';err.style.display='block';}}
 const ADMIN_TAB_SECS={channel:['admin-sec-media','admin-sec-yt','admin-sec-tg','admin-sec-email'],stock:['admin-sec-kr','admin-sec-us'],pension:['admin-sec-pension-personal-mine','admin-sec-pension-personal-company','admin-sec-pension-retire-mine','admin-sec-pension-retire-company','admin-sec-pension-sync'],etc:['admin-sec-portfolio']};
 function switchAdminTab(tab,btn){document.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');Object.values(ADMIN_TAB_SECS).flat().forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});(ADMIN_TAB_SECS[tab]||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='';});}
 function openAdminModal(ctx='all'){
