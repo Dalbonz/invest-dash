@@ -824,7 +824,7 @@ function addPensionTileRow(type){const elId='admin-pension-'+type;const el=docum
 function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
 let pensionSyncMode='export';
 function _pensionModalReset(){document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-err').textContent='';}
-function _generateQR(data,wrap){try{const qr=qrcode(0,'L');qr.addData(data);qr.make();wrap.innerHTML=qr.createImgTag(3,3,'QR');const img=wrap.querySelector('img');if(img)img.style.cssText='display:block;margin:0 auto;border-radius:8px;max-width:100%';}catch(e){wrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 생성 실패. 아래 코드를 복사해 사용하세요.</div>';}}
+function _generateQR(data,wrap){try{const qr=qrcode(0,'L');qr.addData(data);qr.make();wrap.innerHTML=qr.createImgTag(6,2,'QR');const img=wrap.querySelector('img');if(img)img.style.cssText='display:block;margin:0 auto;border-radius:8px;width:280px;height:auto;max-width:100%';}catch(e){wrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 생성 실패. 아래 코드를 복사해 사용하세요.</div>';}}
 function openPensionExport(){
   const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};
   const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
