@@ -9,7 +9,7 @@
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="icon" href="icons/icon-192.png">
 <script src="https://unpkg.com/lightweight-charts@3.8.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 :root{--bg:#f5f5f7;--card:#fff;--text:#1d1d1f;--text2:#6e6e73;--text3:#aeaeb2;--border:rgba(0,0,0,0.08);--accent:#0071e3;--up:#c84a31;--down:#1261c4;--radius:14px;--radius-sm:10px;}
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
@@ -551,7 +551,7 @@ tr:hover td{background:#f8fafc}
   <div class="pw-box" style="width:340px">
     <div id="pension-sync-title" style="color:#e6edf3;font-weight:800;font-size:18px;margin-bottom:4px">연금 설정 내보내기</div>
     <div id="pension-sync-desc" style="color:#8b949e;font-size:12px;margin-bottom:12px">아래 코드 영역을 길게 눌러 전체 복사한 뒤, 다른 기기에 전달하세요.</div>
-    <div id="pension-qr-wrap" style="display:none;text-align:center;margin-bottom:10px"><canvas id="pension-qr-canvas"></canvas></div>
+    <div id="pension-qr-wrap" style="display:none;text-align:center;margin-bottom:10px"></div>
     <label id="pension-cam-btn" style="display:none;width:100%;background:#21262d;color:#c9d1d9;border:0.5px solid #30363d;border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-align:center;box-sizing:border-box;margin-bottom:8px">
       📷 카메라로 QR 스캔
       <input type="file" accept="image/*" capture="environment" style="display:none" onchange="scanPensionQrImage(this.files[0])">
@@ -836,11 +836,7 @@ function openPensionExport(){
   _pensionModalReset();
   document.getElementById('pension-sync-action').textContent='복사';
   const qrWrap=document.getElementById('pension-qr-wrap');
-  if(typeof QRCode!=='undefined'){
-    QRCode.toCanvas(document.getElementById('pension-qr-canvas'),json,{width:200,margin:2,errorCorrectionLevel:'L'},function(err){
-      qrWrap.style.display=err?'none':'block';
-    });
-  } else {qrWrap.style.display='none';}
+  try{const qr=qrcode(0,'L');qr.addData(json);qr.make();qrWrap.innerHTML=qr.createImgTag(4,4,'연금QR');qrWrap.style.display='block';}catch(e){qrWrap.style.display='none';}
   document.getElementById('pension-sync-overlay').classList.add('show');
 }
 function openPensionImport(){
