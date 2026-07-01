@@ -824,10 +824,23 @@ function addPensionTileRow(type){const elId='admin-pension-'+type;const el=docum
 function collectPensionTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const l=inp[0]?.value.trim();const s=inp[1]?.value.trim();const amtStr=inp[2]?.value.trim();const amt=amtStr?Number(amtStr):null;if(l&&s)result.push({l,s});else if(l&&amt!=null&&!isNaN(amt))result.push({l,amt});});return result;}
 let pensionSyncMode='export';
 function _pensionModalReset(){document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-err').textContent='';}
+// 타일을 [label,symbol] 또는 [label,null,amt] 배열로 압축
+function _tileToArr(t){return t.s?[t.l,t.s]:[t.l,null,t.amt??0];}
+// 압축 배열을 {ppm,ppc,prm,prc} 페이로드로 복원 (구형 객체 포맷도 수용)
+function _decodeSyncStr(str){
+  let raw;
+  try{raw=JSON.parse(decodeURIComponent(escape(atob(str))));}catch(e){try{raw=JSON.parse(str);}catch(e2){throw new Error('parse');}}
+  if(Array.isArray(raw)){
+    const fromArr=arr=>(arr||[]).map(e=>e[1]?{l:e[0],s:e[1]}:{l:e[0],amt:e[2]??0});
+    return{ppm:fromArr(raw[0]),ppc:fromArr(raw[1]),prm:fromArr(raw[2]),prc:fromArr(raw[3])};
+  }
+  return raw;
+}
+function _applyPensionPayload(payload){if(!payload||typeof payload!=='object')throw new Error('invalid');PENSION_PERSONAL_MINE=payload.ppm||[];PENSION_PERSONAL_COMPANY=payload.ppc||[];PENSION_RETIRE_MINE=payload.prm||[];PENSION_RETIRE_COMPANY=payload.prc||[];lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);lsSet('pension_tiles_retire_company',PENSION_RETIRE_COMPANY);renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);loadPension();closePensionSyncModal();alert('연금 설정을 가져왔습니다.');}
 function _generateQR(data,wrap){try{const qr=qrcode(0,'L');qr.addData(data);qr.make();wrap.innerHTML=qr.createImgTag(6,2,'QR');const img=wrap.querySelector('img');if(img)img.style.cssText='display:block;margin:0 auto;border-radius:8px;width:280px;height:auto;max-width:100%';}catch(e){wrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 생성 실패. 아래 코드를 복사해 사용하세요.</div>';}}
 function openPensionExport(){
-  const payload={ppm:PENSION_PERSONAL_MINE,ppc:PENSION_PERSONAL_COMPANY,prm:PENSION_RETIRE_MINE,prc:PENSION_RETIRE_COMPANY};
-  const code=btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const compact=[PENSION_PERSONAL_MINE,PENSION_PERSONAL_COMPANY,PENSION_RETIRE_MINE,PENSION_RETIRE_COMPANY].map(a=>a.map(_tileToArr));
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
   pensionSyncMode='export';
   document.getElementById('pension-sync-title').textContent='연금 설정 내보내기';
   document.getElementById('pension-sync-desc').textContent='QR코드를 모바일로 스캔하거나, 아래 코드를 복사하세요.';
@@ -839,7 +852,7 @@ function openPensionExport(){
   qrWrap.innerHTML='<div style="color:#8b949e;font-size:11px;padding:4px 0">QR 생성 중...</div>';
   qrWrap.style.display='block';
   if(typeof qrcode==='function'){_generateQR(code,qrWrap);}
-  else{const s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';s.onload=()=>_generateQR(code,qrWrap);s.onerror=()=>{qrWrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 라이브러리 로드 실패. 아래 코드를 복사해 사용하세요.</div>';};document.head.appendChild(s);}
+  else{const s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';s.onload=()=>_generateQR(code,qrWrap);s.onerror=()=>{qrWrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 라이브러리 로드 실패. 아래 코드를 복사하세요.</div>';};document.head.appendChild(s);}
   document.getElementById('pension-sync-overlay').classList.add('show');
 }
 function openPensionImport(){
@@ -856,9 +869,8 @@ function openPensionImport(){
 }
 function closePensionSyncModal(){document.getElementById('pension-sync-overlay').classList.remove('show');}
 function copyPensionSyncCode(){if(pensionSyncMode==='import'){submitPensionImport();return;}const ta=document.getElementById('pension-sync-text');ta.select();const btn=document.getElementById('pension-sync-action');const done=()=>{btn.textContent='복사됨!';setTimeout(()=>btn.textContent='복사',1500);};if(navigator.clipboard?.writeText){navigator.clipboard.writeText(ta.value).then(done).catch(()=>{try{document.execCommand('copy');done();}catch(e){}});}else{try{document.execCommand('copy');done();}catch(e){}}}
-function _applyPensionPayload(payload){if(!payload||typeof payload!=='object')throw new Error('invalid');PENSION_PERSONAL_MINE=payload.ppm||[];PENSION_PERSONAL_COMPANY=payload.ppc||[];PENSION_RETIRE_MINE=payload.prm||[];PENSION_RETIRE_COMPANY=payload.prc||[];lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);lsSet('pension_tiles_retire_company',PENSION_RETIRE_COMPANY);renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);loadPension();closePensionSyncModal();alert('연금 설정을 가져왔습니다.');}
-function submitPensionImport(){const code=document.getElementById('pension-sync-text').value.trim();const err=document.getElementById('pension-sync-err');if(!code){err.textContent='코드를 입력해주세요.';err.style.display='block';return;}try{let payload;if(code.startsWith('{')){payload=JSON.parse(code);}else{payload=JSON.parse(decodeURIComponent(escape(atob(code))));}  _applyPensionPayload(payload);}catch(e){err.textContent='코드를 읽을 수 없습니다. 정확히 붙여넣었는지 확인해주세요.';err.style.display='block';}}
-async function scanPensionQrImage(file){if(!file)return;const err=document.getElementById('pension-sync-err');try{const img=await createImageBitmap(file);if(!('BarcodeDetector' in window)){err.textContent='이 브라우저는 QR 스캔을 지원하지 않습니다. 코드를 직접 붙여넣으세요.';err.style.display='block';return;}const bd=new BarcodeDetector({formats:['qr_code']});const codes=await bd.detect(img);if(!codes.length){err.textContent='QR코드를 인식하지 못했습니다. 더 선명하게 촬영해보세요.';err.style.display='block';return;}const json=codes[0].rawValue;try{_applyPensionPayload(JSON.parse(json));}catch(e){err.textContent='QR 데이터가 올바르지 않습니다.';err.style.display='block';}}catch(e){err.textContent='이미지 처리 중 오류가 발생했습니다.';err.style.display='block';}}
+function submitPensionImport(){const code=document.getElementById('pension-sync-text').value.trim();const err=document.getElementById('pension-sync-err');if(!code){err.textContent='코드를 입력해주세요.';err.style.display='block';return;}try{_applyPensionPayload(_decodeSyncStr(code));}catch(e){err.textContent='코드를 읽을 수 없습니다. 정확히 붙여넣었는지 확인해주세요.';err.style.display='block';}}
+async function scanPensionQrImage(file){if(!file)return;const err=document.getElementById('pension-sync-err');try{const img=await createImageBitmap(file);if(!('BarcodeDetector' in window)){err.textContent='이 브라우저는 QR 스캔을 지원하지 않습니다. 코드를 직접 붙여넣으세요.';err.style.display='block';return;}const bd=new BarcodeDetector({formats:['qr_code']});const codes=await bd.detect(img);if(!codes.length){err.textContent='QR코드를 인식하지 못했습니다. 더 선명하게 촬영해보세요.';err.style.display='block';return;}try{_applyPensionPayload(_decodeSyncStr(codes[0].rawValue));}catch(e){err.textContent='QR 데이터가 올바르지 않습니다.';err.style.display='block';}}catch(e){err.textContent='이미지 처리 중 오류가 발생했습니다.';err.style.display='block';}}
 const ADMIN_TAB_SECS={channel:['admin-sec-media','admin-sec-yt','admin-sec-tg','admin-sec-email'],stock:['admin-sec-kr','admin-sec-us'],pension:['admin-sec-pension-personal-mine','admin-sec-pension-personal-company','admin-sec-pension-retire-mine','admin-sec-pension-retire-company','admin-sec-pension-sync'],etc:['admin-sec-portfolio']};
 function switchAdminTab(tab,btn){document.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');Object.values(ADMIN_TAB_SECS).flat().forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});(ADMIN_TAB_SECS[tab]||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='';});}
 function openAdminModal(ctx='all'){
