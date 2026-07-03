@@ -826,10 +826,18 @@ let pensionSyncMode='export';
 function _pensionModalReset(){document.getElementById('pension-sync-err').style.display='none';document.getElementById('pension-sync-err').textContent='';}
 // 타일을 [label,symbol] 또는 [label,null,amt] 배열로 압축
 function _tileToArr(t){return t.s?[t.l,t.s]:[t.l,null,t.amt??0];}
-// 압축 배열을 {ppm,ppc,prm,prc} 페이로드로 복원 (구형 객체 포맷도 수용)
+// 압축 배열을 {ppm,ppc,prm,prc} 페이로드로 복원 (URL/URL-safe base64/구형 포맷 모두 수용)
 function _decodeSyncStr(str){
+  let code=str.trim();
+  // URL에서 #sync= 추출
+  const m=code.match(/#sync=([A-Za-z0-9_\-]+)/);
+  if(m)code=m[1];
+  // URL-safe base64 → standard base64
+  const b64=code.replace(/-/g,'+').replace(/_/g,'/');
+  const padded=b64+'='.repeat((4-b64.length%4)%4);
   let raw;
-  try{raw=JSON.parse(decodeURIComponent(escape(atob(str))));}catch(e){try{raw=JSON.parse(str);}catch(e2){throw new Error('parse');}}
+  try{raw=JSON.parse(decodeURIComponent(escape(atob(padded))));}
+  catch(e){try{raw=JSON.parse(str.trim());}catch(e2){throw new Error('parse');}}
   if(Array.isArray(raw)){
     const fromArr=arr=>(arr||[]).map(e=>e[1]?{l:e[0],s:e[1]}:{l:e[0],amt:e[2]??0});
     return{ppm:fromArr(raw[0]),ppc:fromArr(raw[1]),prm:fromArr(raw[2]),prc:fromArr(raw[3])};
@@ -840,7 +848,7 @@ function _applyPensionPayload(payload){if(!payload||typeof payload!=='object')th
 function _generateQR(data,wrap){try{const qr=qrcode(0,'L');qr.addData(data);qr.make();wrap.innerHTML=qr.createImgTag(6,2,'QR');const img=wrap.querySelector('img');if(img)img.style.cssText='display:block;margin:0 auto;border-radius:8px;width:280px;height:auto;max-width:100%';}catch(e){wrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 생성 실패. 아래 코드를 복사해 사용하세요.</div>';}}
 function openPensionExport(){
   const compact=[PENSION_PERSONAL_MINE,PENSION_PERSONAL_COMPANY,PENSION_RETIRE_MINE,PENSION_RETIRE_COMPANY].map(a=>a.map(_tileToArr));
-  const code=btoa(unescape(encodeURIComponent(JSON.stringify(compact))));
+  const code=btoa(unescape(encodeURIComponent(JSON.stringify(compact)))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   pensionSyncMode='export';
   document.getElementById('pension-sync-title').textContent='연금 설정 내보내기';
   document.getElementById('pension-sync-desc').textContent='QR코드를 모바일로 스캔하거나, 아래 코드를 복사하세요.';
@@ -851,8 +859,9 @@ function openPensionExport(){
   const qrWrap=document.getElementById('pension-qr-wrap');
   qrWrap.innerHTML='<div style="color:#8b949e;font-size:11px;padding:4px 0">QR 생성 중...</div>';
   qrWrap.style.display='block';
-  if(typeof qrcode==='function'){_generateQR(code,qrWrap);}
-  else{const s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';s.onload=()=>_generateQR(code,qrWrap);s.onerror=()=>{qrWrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 라이브러리 로드 실패. 아래 코드를 복사하세요.</div>';};document.head.appendChild(s);}
+  const syncUrl=location.origin+location.pathname+'#sync='+code;
+  if(typeof qrcode==='function'){_generateQR(syncUrl,qrWrap);}
+  else{const s=document.createElement('script');s.src='https://unpkg.com/qrcode-generator@1.4.4/qrcode.js';s.onload=()=>_generateQR(syncUrl,qrWrap);s.onerror=()=>{qrWrap.innerHTML='<div style="color:#f85149;font-size:11px;padding:4px 0">QR 라이브러리 로드 실패. 아래 코드를 복사하세요.</div>';};document.head.appendChild(s);}
   document.getElementById('pension-sync-overlay').classList.add('show');
 }
 function openPensionImport(){
@@ -915,7 +924,18 @@ function openAdminPwModal(){document.getElementById('admin-pw-overlay').classLis
 function closeAdminPwModal(){document.getElementById('admin-pw-overlay').classList.remove('show');}
 async function submitAdminPw(){const pw=document.getElementById('admin-pw-input').value;if(await hashPw(pw)===ADMIN_PW_HASH){sessionStorage.setItem('admin_auth','1');closeAdminPwModal();document.getElementById('admin-btn').classList.add('visible');openAdminModal(pendingAdminCtx);}else{document.getElementById('admin-pw-err').style.display='block';document.getElementById('admin-pw-input').select();}}
 // 초기화
-async function init(){document.getElementById('pension-name-list').innerHTML=PENSION_NAME_DB.map(x=>`<option value="${escHtml(x.n)}">`).join('');await loadData();}
+async function init(){
+  document.getElementById('pension-name-list').innerHTML=PENSION_NAME_DB.map(x=>`<option value="${escHtml(x.n)}">`).join('');
+  const syncHash=location.hash;
+  if(syncHash.startsWith('#sync=')){
+    history.replaceState(null,'',location.pathname+location.search);
+    try{
+      const payload=_decodeSyncStr(syncHash.slice(6));
+      setTimeout(()=>{if(confirm('다른 기기의 연금 설정을 가져올까요?\n(현재 설정이 덮어쓰여집니다)')){_applyPensionPayload(payload);}},400);
+    }catch(e){}
+  }
+  await loadData();
+}
 init();
 if('serviceWorker' in navigator){window.addEventListener('load',()=>{navigator.serviceWorker.register('service-worker.js').catch(()=>{});});}
 </script>
