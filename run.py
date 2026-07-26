@@ -36,7 +36,7 @@ def _merge_today(existing_today, fetched):
     carried = [v for vid, v in existing_today.items() if vid not in fetched_ids]
     return carried + fetched
 
-SLOT_TO_MODE = {'yt1': 'yt', 'yt2': 'yt', 'yt3': 'yt', 'morning': 'morning', 'email': 'email', 'full': 'full', 'market': 'market'}
+SLOT_TO_MODE = {'yt1': 'yt', 'yt2': 'yt', 'yt3': 'yt', 'morning': 'morning', 'afternoon': 'afternoon', 'email': 'email', 'full': 'full', 'market': 'market'}
 YT_SCHEDULES = {'5 22 * * *', '8 23 * * *', '12 1 * * *'}
 MORNING_SCHEDULE = '22 23 * * *'
 EMAIL_SCHEDULE = '7 6 * * *'
@@ -71,35 +71,67 @@ def load_existing():
     except Exception:
         return {}
 
-def notify_new_videos(videos):
+def notify_new_videos(videos, existing_today=None, send_digest=False):
+    """
+    notifyMode='instant' 영상: 항상 즉시 발송 (경제사냥꾼, 12시에 만나요, 당잠사)
+    notifyMode='digest'  영상: send_digest=True일 때만 묶어서 발송 (morning/afternoon 슬롯)
+    returns True if digestSent 플래그가 업데이트되어 data.json 재저장이 필요한 경우
+    """
     from engines import notify
     if is_test_run():
         print('  테스트 실행(슬롯/스케줄 없음) - 신규영상 알림 보류 (data.json만 갱신)')
-        return
+        return False
     if notify.in_quiet_hours():
         print('  무음시간(22~07시) - 신규영상 알림 보류 (data.json만 갱신)')
-        return
-    new_videos = [v for v in videos if v.get('isNew')]
-    # 개인채널(yt)은 영상마다 개별 발송, 미디어채널(media)은 하루 수십건이라 한 건으로 묶어서 발송
-    personal = [v for v in new_videos if v.get('type') != 'media']
-    media = [v for v in new_videos if v.get('type') == 'media']
-    for v in personal:
-        notify.send(notify.yt_new_video(v['name'], v['title'], v['videoId'], v.get('summary', '')))
-        print(f'  → 텔레그램 발송: {v["name"]}')
-    if media:
-        notify.send(notify.yt_media_digest(media))
-        print(f'  → 텔레그램 발송(미디어 다이제스트): {len(media)}건')
+        return False
 
-def run_yt_only():
+    new_videos = [v for v in videos if v.get('isNew')]
+    needs_save = False
+
+    # 즉시 알림 (경제사냥꾼, 12시에 만나요, 당잠사)
+    instant = [v for v in new_videos if v.get('notifyMode') == 'instant']
+    personal_instant = [v for v in instant if v.get('type') != 'media']
+    media_instant = [v for v in instant if v.get('type') == 'media']
+    for v in personal_instant:
+        notify.send(notify.yt_new_video(v['name'], v['title'], v['videoId'], v.get('summary', '')))
+        print(f'  → 텔레그램 발송(즉시): {v["name"]}')
+    if media_instant:
+        notify.send(notify.yt_media_digest(media_instant))
+        print(f'  → 텔레그램 발송(즉시): {len(media_instant)}건')
+
+    # 다이제스트 알림 (morning ~08:30 / afternoon ~14:30 슬롯에서만)
+    if send_digest:
+        # 이번 실행에서 새로 발견된 다이제스트 영상
+        new_digest = [v for v in new_videos if v.get('notifyMode') != 'instant']
+        seen = {v['videoId'] for v in new_digest}
+        # 이전 yt슬롯에서 발견됐지만 아직 발송 안 된 영상 (data.json에서 로드)
+        for v in (existing_today or {}).values():
+            if v.get('notifyMode') != 'instant' and not v.get('digestSent') and v.get('videoId') not in seen:
+                new_digest.append(v)
+                seen.add(v['videoId'])
+        if new_digest:
+            notify.send(notify.yt_media_digest(new_digest))
+            print(f'  → 텔레그램 발송(다이제스트): {len(new_digest)}건')
+            digest_ids = {v['videoId'] for v in new_digest}
+            for v in list(videos) + list((existing_today or {}).values()):
+                if v.get('videoId') in digest_ids:
+                    v['digestSent'] = True
+            needs_save = True
+        else:
+            print('  다이제스트 발송할 신규 영상 없음')
+
+    return needs_save
+
+def run_yt_only(send_digest=False):
     existing = load_existing()
     existing_today = _today_videos_by_id(existing.get('youtube'))
 
     print('유튜브 개인채널 체크...')
     fetched = youtube.run(yt_only=True, existing=existing_today)
-    notify_new_videos(fetched)
+    needs_save = notify_new_videos(fetched, existing_today, send_digest=send_digest)
 
     youtube_data = _merge_today(existing_today, fetched)
-    if any(v.get('isNew') for v in fetched):
+    if any(v.get('isNew') for v in fetched) or needs_save:
         existing['youtube'] = youtube_data
         with open('data.json', 'w', encoding='utf-8') as f:
             json.dump(existing, f, ensure_ascii=False, indent=2)
@@ -135,7 +167,7 @@ def run_full(send_morning=False, send_email=False):
     existing = load_existing()
     existing_today = _today_videos_by_id(existing.get('youtube'))
     fetched = youtube.run(existing=existing_today)
-    notify_new_videos(fetched)
+    notify_new_videos(fetched, existing_today, send_digest=send_morning)
     # RSS 차단 등으로 일부/전체 채널 수집이 실패해도 오늘 기존 데이터를 지우지 않고 유지
     # (자정이 지나면 _today_videos_by_id가 어제 영상을 자동으로 걸러내 자연스럽게 리셋됨)
     youtube_data = _merge_today(existing_today, fetched)
@@ -170,6 +202,8 @@ def main():
 
     if mode == 'yt':
         run_yt_only()
+    elif mode == 'afternoon':
+        run_yt_only(send_digest=True)
     elif mode == 'market':
         run_market_only()
     elif mode == 'morning':

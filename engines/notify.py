@@ -73,8 +73,8 @@ def yt_new_video(name, title, video_id, summary=''):
     return '\n'.join(lines)
 
 def yt_media_digest(videos):
-    """미디어채널(한국경제TV 등)의 신규 영상을 채널별로 묶어 한 건의 다이제스트로 발송"""
-    lines = [f'<b>[유튜브] 미디어 신규영상 {len(videos)}건</b>\n']
+    """신규 영상을 채널별로 묶어 한 건의 다이제스트로 발송"""
+    lines = [f'<b>[유튜브] 신규영상 {len(videos)}건</b>\n']
     by_channel = {}
     for v in videos:
         by_channel.setdefault(v['name'], []).append(v)

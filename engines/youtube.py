@@ -19,12 +19,12 @@ SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 # (예: 한국경제TV는 하루 수백개라 기본 제목요약이지만, 아침방송 "당신이 잠든사이"는 중요해서 전체분석)
 # → 채널을 새로 추가/수정할 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 같이 정해야 함
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'fullKeywords': ['당신이 잠든사이', '당잠사']},
-    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
-    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
-    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full'},
-    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
-    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'notifyMode': 'digest', 'fullKeywords': ['당신이 잠든사이', '당잠사']},
+    {'name': '연합뉴스경제TV',  'handle': 'UC6kZpTl39-_SqfBrF1-N2oQ', 'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'notifyMode': 'digest'},
+    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'notifyMode': 'digest'},
+    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full', 'notifyMode': 'instant'},
+    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full', 'notifyMode': 'instant'},
+    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full', 'notifyMode': 'digest'},
 ]
 
 NS = {
@@ -258,12 +258,18 @@ def run(yt_only=False, existing=None):
                 print(f'  → 기존 영상(요약 재사용): {video["title"][:40]}')
                 result.append({**prev, 'name': ch['name'], 'type': ch['type'],
                                'videoId': video['videoId'], 'title': video['title'],
-                               'updated': video['published'], 'isNew': False})
+                               'updated': video['published'],
+                               'notifyMode': prev.get('notifyMode', ch.get('notifyMode', 'digest')),
+                               'digestSent': prev.get('digestSent', False),
+                               'isNew': False})
                 continue
 
             mode = ch.get('summaryMode', 'full')
             if mode == 'title' and any(kw in video['title'] for kw in ch.get('fullKeywords', [])):
                 mode = 'full'  # 채널 기본은 제목요약이지만 중요 코너는 전체분석으로 승격
+            notify_mode = ch.get('notifyMode', 'digest')
+            if notify_mode == 'digest' and any(kw in video['title'] for kw in ch.get('fullKeywords', [])):
+                notify_mode = 'instant'  # fullKeywords 해당 영상은 즉시 알림으로 승격
 
             if mode == 'full':
                 transcript = get_transcript(video['videoId']) if video['videoId'] else None
@@ -278,13 +284,15 @@ def run(yt_only=False, existing=None):
                 print('  → 제목 기반 요약(비용 절감 모드)')
 
             result.append({
-                'name':    ch['name'],
-                'type':    ch['type'],
-                'videoId': video['videoId'],
-                'title':   video['title'],
-                'updated': video['published'],
-                'summary': summary,
-                'isNew':   True,
+                'name':       ch['name'],
+                'type':       ch['type'],
+                'videoId':    video['videoId'],
+                'title':      video['title'],
+                'updated':    video['published'],
+                'summary':    summary,
+                'notifyMode': notify_mode,
+                'digestSent': False,
+                'isNew':      True,
             })
             print(f'  → {video["title"][:60]}')
     return result
