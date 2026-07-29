@@ -52,6 +52,16 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - "시트에서 가져오기"(1회용, 시트 데이터를 웹으로 import) / "구글시트에 백업"(수동 export) 버튼 존재. **백업 버튼은 현재도 실패 중 — 원인 미해결** (셀 한도 정리했는데도 안 됨, 아래 다음할일 참고)
 - 시트 값과 웹 값이 다르면 보기화면 빨간 점(●), 편집화면 빨간 입력칸으로 표시만 함(자동 덮어쓰기 없음).
 
+### 종목별 AI 브리핑 (Cloudflare Worker, 2026-07-29 진행중)
+- Claude.ai 세션 논의 결과를 바탕으로 신규 기능 2건 착수: (1) "내 주식" 탭을 포트폴리오(`pf_bong_holdings`)가 아니라 별도 `watchlist`(localStorage) 관심종목으로 분리, (2) 종목 상세팝업에서 온디맨드 AI 브리핑 생성.
+- (1) 관심종목 분리: **아직 코드 미착수** (index.html 미변경). 관리자 메뉴에 관심종목 편집 섹션 신설 + `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist` 참조하도록 변경 예정.
+- (2) AI 브리핑: 브라우저에서 Anthropic 키를 직접 쓰면 노출되므로 **Cloudflare Worker 프록시**로 우회하는 구조 채택, 오늘 세션에서 Worker 배포까지 완료함:
+  - Worker 이름: `invest-dash-briefing`, URL: `https://invest-dash-briefing.swpark1204.workers.dev`
+  - Worker 코드 원본: 레포의 `cloudflare_worker_briefing.txt` (참고용 보관, 실제 배포본은 Cloudflare 대시보드 Quick Edit 에디터에만 존재 — 이 파일과 수동 동기화 필요)
+  - Secrets 등록 완료: `ANTHROPIC_API_KEY`(Worker 전용 별도 키로 신규 발급), `APP_SHARED_KEY`(`0a273914c292ed8deb1fb3429e3aaea1d1501f67861711c5`, 클라이언트 JS에도 그대로 노출되는 값이라 완전한 보안은 아니고 최소한의 크롤러 방지용)
+  - 모델은 `claude-sonnet-4-6`로 맞춤 (`claude-sonnet-4-20250514` 최초 시도는 `not_found_error`로 실패했음 — 스냅샷 모델명이 만료됨, `engines/ai_summary.py`의 `MODEL` 상수와 동일하게 맞춘 것)
+  - **다음 세션에서 이어할 것**: 모델명 수정 후 재배포까지는 완료(달봉즈님 확인), curl 테스트로 최종 정상 응답 확인 필요 → 확인되면 `index.html` 상세팝업에 분석기간/궁금한것/분석관점/분량 선택 UI + "AI 브리핑 만들기" 버튼 추가하고 이 Worker를 호출하도록 연결
+
 ### 알아둘 것 (반복 방지)
 - **localStorage는 브라우저/기기별로 분리**됨 — PC에서 입력한 포트폴리오 데이터는 폰/다른 브라우저에 안 보이는 게 정상(버그 아님).
 - **코드스페이스에서 작업 후 반드시 커밋**할 것 — 닫히면 워킹트리 변경분이 통째로 사라짐. (단, 사라진 것처럼 보였던 사례 중 실제로는 다 저장돼 있었던 경우도 있었음 — 지레짐작하지 말고 git log/dangling commit까지 확인 후 결론낼 것)
@@ -59,6 +69,8 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 ---
 
 ## 다음 작업 (우선순위 순)
+
+0. **(진행중, 최우선) 종목별 AI 브리핑 이어서 진행** — Worker(`invest-dash-briefing`) 배포·모델명 수정까지 완료됨(위 핵심 아키텍처 참고). 재배포 후 curl로 정상 응답(JSON `{text:...}`) 확인 → `index.html` 상세팝업에 UI 추가 + Worker 연결. 관심종목(`watchlist`) 분리 작업은 아직 코드 착수 전이라 같이 진행.
 
 1. **구글시트 "백업" 실패 원인 추가 조사** — 셀 한도(`_RAW` 탭) 정리했는데도 실패 계속됨. doPost 자체 오류(권한/시트보호 등) 의심, `apps_script_full.txt`(레포에 보관됨) 기반 추가 디버깅 필요
 2. **브라우저 직접호출 야후(`yfetch`) 데이터도 같은 정확성 문제 점검** — ETF카드/상세차트/카드기간전환 버튼

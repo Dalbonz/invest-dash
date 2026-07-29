@@ -1,0 +1,107 @@
+const ALLOWED_ORIGIN = 'https://dalbonz.github.io';
+
+const PERIOD_LABELS = {
+  '1d': '최근 1일',
+  '1w': '최근 1주',
+  '1mo': '최근 1개월',
+  '3mo': '최근 3개월',
+  '1y': '최근 1년'
+};
+
+const TOPIC_LABELS = {
+  flow: '큰손 수급(기관·외국인 움직임)',
+  technical: '기술적 흐름(추세·거래량·기술지표)',
+  issue: '이슈 탐색(뉴스·공시 영향)',
+  fundamental: '기업 성과(성장성과 수익성)',
+  valuation: '가격 매력(가치·동종업계 비교)',
+  risk: '리스크 점검(반대 근거까지 확인)'
+};
+
+const PERSPECTIVE_LABELS = {
+  balanced: '균형분석',
+  bull: '상승 시나리오 중심',
+  bear: '하락 시나리오 중심',
+  conservative: '보수적 분석',
+  contrarian: '반대의견 제시',
+  simple: '쉽게 설명'
+};
+
+const LENGTH_TOKENS = { short: 500, normal: 1000, deep: 2000 };
+
+function corsHeaders() {
+  return {
+    'Access-Control-Allow-Origin': ALLOWED_ORIGIN,
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'content-type, x-app-key',
+    'content-type': 'application/json'
+  };
+}
+
+export default {
+  async fetch(request, env) {
+    if (request.method === 'OPTIONS') {
+      return new Response(null, { headers: corsHeaders() });
+    }
+    if (request.method !== 'POST') {
+      return new Response('Method Not Allowed', { status: 405, headers: corsHeaders() });
+    }
+    if (request.headers.get('X-App-Key') !== env.APP_SHARED_KEY) {
+      return new Response(JSON.stringify({ error: 'unauthorized' }), { status: 401, headers: corsHeaders() });
+    }
+
+    let body;
+    try {
+      body = await request.json();
+    } catch (e) {
+      return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: corsHeaders() });
+    }
+
+    const { name, symbol, period, topics, perspective, length } = body || {};
+    if (!symbol || typeof symbol !== 'string' || symbol.length > 20) {
+      return new Response(JSON.stringify({ error: 'invalid_symbol' }), { status: 400, headers: corsHeaders() });
+    }
+
+    const periodLabel = PERIOD_LABELS[period] || PERIOD_LABELS['1mo'];
+    const topicLabels = (Array.isArray(topics) ? topics : [])
+      .map(t => TOPIC_LABELS[t]).filter(Boolean);
+    if (!topicLabels.length) topicLabels.push(TOPIC_LABELS.technical);
+    const perspectiveLabel = PERSPECTIVE_LABELS[perspective] || PERSPECTIVE_LABELS['balanced'];
+    const maxTokens = LENGTH_TOKENS[length] || LENGTH_TOKENS['normal'];
+
+    const safeName = String(name || symbol).slice(0, 40);
+
+    const prompt = `당신은 개인 투자자를 위한 주식 분석 브리핑을 작성하는 애널리스트입니다.
+
+종목: ${safeName} (${symbol})
+분석 기간: ${periodLabel}
+분석 관점: ${perspectiveLabel}
+확인할 항목:
+${topicLabels.map(t => '- ' + t).join('\n')}
+
+위 항목을 중심으로 이 종목에 대한 브리핑을 작성하세요. 확인할 수 없는 실시간 수치는 추정하지 말고 일반적인 맥락과 해석 위주로 설명하세요. 투자 조언이 아닌 참고 정보임을 전제로 하되, 매 문단마다 disclaimer를 반복하지는 마세요.`;
+
+    const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+        'x-api-key': env.ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: maxTokens,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!anthropicRes.ok) {
+      const errText = await anthropicRes.text();
+      return new Response(JSON.stringify({ error: 'anthropic_error', detail: errText }), { status: 502, headers: corsHeaders() });
+    }
+
+    const data = await anthropicRes.json();
+    const text = (data.content || []).map(c => c.text || '').join('\n').trim();
+
+    return new Response(JSON.stringify({ text }), { headers: corsHeaders() });
+  }
+};
