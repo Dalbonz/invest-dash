@@ -56,19 +56,41 @@ export default {
       return new Response(JSON.stringify({ error: 'invalid_json' }), { status: 400, headers: corsHeaders() });
     }
 
-    const { name, symbol, period, topics, perspective, length } = body || {};
+    const { name, symbol, period, topics, perspective, length, stats, series } = body || {};
     if (!symbol || typeof symbol !== 'string' || symbol.length > 20) {
       return new Response(JSON.stringify({ error: 'invalid_symbol' }), { status: 400, headers: corsHeaders() });
     }
 
     const periodLabel = PERIOD_LABELS[period] || PERIOD_LABELS['1mo'];
-    const topicLabels = (Array.isArray(topics) ? topics : [])
-      .map(t => TOPIC_LABELS[t]).filter(Boolean);
-    if (!topicLabels.length) topicLabels.push(TOPIC_LABELS.technical);
+    const topicKeys = (Array.isArray(topics) ? topics : []).filter(t => TOPIC_LABELS[t]);
+    if (!topicKeys.length) topicKeys.push('technical');
+    const topicLabels = topicKeys.map(t => TOPIC_LABELS[t]);
     const perspectiveLabel = PERSPECTIVE_LABELS[perspective] || PERSPECTIVE_LABELS['balanced'];
     const maxTokens = LENGTH_TOKENS[length] || LENGTH_TOKENS['normal'];
 
     const safeName = String(name || symbol).slice(0, 40);
+    const NO_DATA_TOPICS = new Set(['issue', 'fundamental', 'valuation']);
+    const hasNoDataTopic = topicKeys.some(t => NO_DATA_TOPICS.has(t));
+
+    let dataSection = '실제 시세 데이터가 전달되지 않았습니다. 구체적 수치는 언급하지 말고 일반적인 맥락만 설명하세요.';
+    if (stats && typeof stats === 'object' && Array.isArray(series)) {
+      const safeSeries = series
+        .filter(p => p && typeof p.t === 'string' && typeof p.c === 'number' && isFinite(p.c))
+        .slice(0, 60)
+        .map(p => `${p.t.slice(0, 20)}: ${p.c}`)
+        .join('\n');
+      const s = stats;
+      const num = v => (typeof v === 'number' && isFinite(v)) ? v : null;
+      dataSection = `기간 시작가: ${num(s.firstClose) ?? '확인불가'}
+기간 종가: ${num(s.lastClose) ?? '확인불가'}
+기간 고가: ${num(s.periodHigh) ?? '확인불가'}
+기간 저가: ${num(s.periodLow) ?? '확인불가'}
+기간 등락률: ${num(s.periodPct) ?? '확인불가'}%
+기간 거래량 합계: ${num(s.periodVol) ?? '확인불가'}
+
+시계열 샘플(날짜/시각: 종가):
+${safeSeries || '(데이터 없음)'}`;
+    }
 
     const prompt = `당신은 개인 투자자를 위한 주식 분석 브리핑을 작성하는 애널리스트입니다.
 
@@ -78,7 +100,10 @@ export default {
 확인할 항목:
 ${topicLabels.map(t => '- ' + t).join('\n')}
 
-위 항목을 중심으로 이 종목에 대한 브리핑을 작성하세요. 확인할 수 없는 실시간 수치는 추정하지 말고 일반적인 맥락과 해석 위주로 설명하세요. 투자 조언이 아닌 참고 정보임을 전제로 하되, 매 문단마다 disclaimer를 반복하지는 마세요.`;
+[실제 시세 데이터 — 아래 데이터 범위 안에서만 구체적 수치·날짜·추세를 언급하세요. 데이터에 없는 특정 날짜나 사건을 단정적으로 지어내지 마세요]
+${dataSection}
+
+위 항목을 중심으로 이 종목에 대한 브리핑을 작성하세요.${hasNoDataTopic ? ' "이슈 탐색", "기업 성과", "가격 매력" 항목은 실시간 뉴스·재무·밸류에이션 데이터가 제공되지 않았으므로, 해당 부분은 일반적/구조적 해석 위주로 작성하고 "실시간 데이터 기반이 아닌 일반적 해석" 임을 해당 섹션 앞에 짧게 밝히세요.' : ''} 투자 조언이 아닌 참고 정보임을 전제로 하되, 매 문단마다 disclaimer를 반복하지는 마세요.`;
 
     const anthropicRes = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
