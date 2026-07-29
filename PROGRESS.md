@@ -52,15 +52,18 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - "시트에서 가져오기"(1회용, 시트 데이터를 웹으로 import) / "구글시트에 백업"(수동 export) 버튼 존재. **백업 버튼은 현재도 실패 중 — 원인 미해결** (셀 한도 정리했는데도 안 됨, 아래 다음할일 참고)
 - 시트 값과 웹 값이 다르면 보기화면 빨간 점(●), 편집화면 빨간 입력칸으로 표시만 함(자동 덮어쓰기 없음).
 
-### 종목별 AI 브리핑 (Cloudflare Worker, 2026-07-29 진행중)
+### 종목별 AI 브리핑 (Cloudflare Worker, 2026-07-29~30 완료)
 - Claude.ai 세션 논의 결과를 바탕으로 신규 기능 2건 착수: (1) "내 주식" 탭을 포트폴리오(`pf_bong_holdings`)가 아니라 별도 `watchlist`(localStorage) 관심종목으로 분리, (2) 종목 상세팝업에서 온디맨드 AI 브리핑 생성.
 - (1) 관심종목 분리: **아직 코드 미착수** (index.html 미변경). 관리자 메뉴에 관심종목 편집 섹션 신설 + `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist` 참조하도록 변경 예정.
-- (2) AI 브리핑: 브라우저에서 Anthropic 키를 직접 쓰면 노출되므로 **Cloudflare Worker 프록시**로 우회하는 구조 채택, 오늘 세션에서 Worker 배포까지 완료함:
+- (2) AI 브리핑: **완료, 배포됨**. 브라우저에서 Anthropic 키를 직접 쓰면 노출되므로 **Cloudflare Worker 프록시**로 우회.
   - Worker 이름: `invest-dash-briefing`, URL: `https://invest-dash-briefing.swpark1204.workers.dev`
-  - Worker 코드 원본: 레포의 `cloudflare_worker_briefing.txt` (참고용 보관, 실제 배포본은 Cloudflare 대시보드 Quick Edit 에디터에만 존재 — 이 파일과 수동 동기화 필요)
-  - Secrets 등록 완료: `ANTHROPIC_API_KEY`(Worker 전용 별도 키로 신규 발급), `APP_SHARED_KEY`(`0a273914c292ed8deb1fb3429e3aaea1d1501f67861711c5`, 클라이언트 JS에도 그대로 노출되는 값이라 완전한 보안은 아니고 최소한의 크롤러 방지용)
-  - 모델은 `claude-sonnet-4-6`로 맞춤 (`claude-sonnet-4-20250514` 최초 시도는 `not_found_error`로 실패했음 — 스냅샷 모델명이 만료됨, `engines/ai_summary.py`의 `MODEL` 상수와 동일하게 맞춘 것)
-  - **다음 세션에서 이어할 것**: 모델명 수정 후 재배포까지는 완료(달봉즈님 확인), curl 테스트로 최종 정상 응답 확인 필요 → 확인되면 `index.html` 상세팝업에 분석기간/궁금한것/분석관점/분량 선택 UI + "AI 브리핑 만들기" 버튼 추가하고 이 Worker를 호출하도록 연결
+  - Worker 코드 원본: 레포의 `cloudflare_worker_briefing.txt` (참고용 보관, 실제 배포본은 Cloudflare 대시보드 Quick Edit 에디터에만 존재 — 이 파일과 수동 동기화 필요, 다음에 Worker 코드 바꿀 땐 이 파일도 같이 갱신할 것)
+  - Secrets: `ANTHROPIC_API_KEY`(Worker 전용 별도 키로 신규 발급), `APP_SHARED_KEY`(`0a273914c292ed8deb1fb3429e3aaea1d1501f67861711c5`, 클라이언트 JS에도 그대로 노출되는 값이라 완전한 보안은 아니고 최소한의 크롤러 방지용)
+  - 모델은 `claude-sonnet-4-6` (`claude-sonnet-4-20250514`는 `not_found_error`로 실패 — 스냅샷 모델명 만료됨, `engines/ai_summary.py`의 `MODEL` 상수와 통일)
+  - **실제 시세 데이터로 그라운딩**: 프론트에서 선택한 기간에 맞는 차트 데이터(yfetch)를 요약(시작가/종가/고저가/거래량 합계 + 시계열 샘플 최대 60포인트)해서 Worker 요청에 같이 보냄 → 프롬프트에 "이 데이터 범위 밖 수치/날짜는 지어내지 말 것" 명시. 초기 테스트에서 AI가 실제와 다른 연도/추세를 단정적으로 서술하는 걸 확인해서 추가한 방어장치. "이슈 탐색/기업 성과/가격 매력" 항목은 실시간 뉴스·재무 데이터가 없어서 일반적 해석임을 밝히도록 프롬프트에 명시.
+  - `index.html`: `currentDetailSymbol` 기반 상세팝업 하단에 분석기간(1일~1년)/궁금한것(6개 다중선택)/분석관점(6개 단일선택)/분량(3단계) 버튼 + "AI 브리핑 만들기" + 결과 표시 + 세션 내 기록(`sessionStorage` `ab_history`, 심볼당 최근 5개) 구현. 동일 종목+동일 설정 조합은 `sessionStorage` 캐싱으로 재호출 방지(비용 관리).
+  - **버그 발견·수정**: `service-worker.js`가 모든 fetch를 가로채 `cache.put()`하는데 Cache API가 GET만 지원해서 POST(AI 브리핑 호출)가 항상 실패하고 있었음 → `if (e.request.method !== 'GET') return;` 추가로 수정. Playwright 헤드리스 브라우저로 실제 클릭 플로우까지 검증 완료(로컬 서버 + 네트워크 모킹으로 상세팝업 열기 → 브리핑 생성 → 결과표시 → 캐시히트까지 확인).
+  - 커밋: `31a3685`(index.html/service-worker.js), Worker 코드는 Cloudflare 대시보드에서 직접 배포(레포 커밋과 별도)
 
 ### 알아둘 것 (반복 방지)
 - **localStorage는 브라우저/기기별로 분리**됨 — PC에서 입력한 포트폴리오 데이터는 폰/다른 브라우저에 안 보이는 게 정상(버그 아님).
@@ -70,7 +73,7 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 
 ## 다음 작업 (우선순위 순)
 
-0. **(진행중, 최우선) 종목별 AI 브리핑 이어서 진행** — Worker(`invest-dash-briefing`) 배포·모델명 수정까지 완료됨(위 핵심 아키텍처 참고). 재배포 후 curl로 정상 응답(JSON `{text:...}`) 확인 → `index.html` 상세팝업에 UI 추가 + Worker 연결. 관심종목(`watchlist`) 분리 작업은 아직 코드 착수 전이라 같이 진행.
+0. **(최우선) "내 주식" 관심종목(watchlist) 분리 진행** — AI 브리핑 기능은 완료·배포됨(위 핵심 아키텍처 참고). 남은 건 관리자 메뉴에 관심종목 편집 섹션 신설 + `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist`(localStorage) 참조하도록 변경.
 
 1. **구글시트 "백업" 실패 원인 추가 조사** — 셀 한도(`_RAW` 탭) 정리했는데도 실패 계속됨. doPost 자체 오류(권한/시트보호 등) 의심, `apps_script_full.txt`(레포에 보관됨) 기반 추가 디버깅 필요
 2. **브라우저 직접호출 야후(`yfetch`) 데이터도 같은 정확성 문제 점검** — ETF카드/상세차트/카드기간전환 버튼
