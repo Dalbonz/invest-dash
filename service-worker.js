@@ -13,6 +13,7 @@ self.addEventListener('activate', (e) => {
 
 // data.json은 항상 네트워크에서 최신으로, 나머지 정적 자원은 네트워크 우선 + 실패시 캐시 폴백
 self.addEventListener('fetch', (e) => {
+  if (e.request.method !== 'GET') return;
   if (e.request.url.includes('data.json')) return;
   e.respondWith(
     fetch(e.request)
