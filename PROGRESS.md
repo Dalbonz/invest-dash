@@ -52,9 +52,11 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - "시트에서 가져오기"(1회용, 시트 데이터를 웹으로 import) / "구글시트에 백업"(수동 export) 버튼 존재. **백업 버튼은 현재도 실패 중 — 원인 미해결** (셀 한도 정리했는데도 안 됨, 아래 다음할일 참고)
 - 시트 값과 웹 값이 다르면 보기화면 빨간 점(●), 편집화면 빨간 입력칸으로 표시만 함(자동 덮어쓰기 없음).
 
-### 종목별 AI 브리핑 (Cloudflare Worker, 2026-07-29~30 완료)
-- Claude.ai 세션 논의 결과를 바탕으로 신규 기능 2건 착수: (1) "내 주식" 탭을 포트폴리오(`pf_bong_holdings`)가 아니라 별도 `watchlist`(localStorage) 관심종목으로 분리, (2) 종목 상세팝업에서 온디맨드 AI 브리핑 생성.
-- (1) 관심종목 분리: **아직 코드 미착수** (index.html 미변경). 관리자 메뉴에 관심종목 편집 섹션 신설 + `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist` 참조하도록 변경 예정.
+### 종목별 AI 브리핑 + 관심종목 분리 (Cloudflare Worker, 2026-07-29~30 완료)
+- Claude.ai 세션 논의 결과를 바탕으로 신규 기능 2건 완료: (1) "내 주식" 탭을 포트폴리오(`pf_bong_holdings`)가 아니라 별도 `watchlist`(localStorage) 관심종목으로 분리, (2) 종목 상세팝업에서 온디맨드 AI 브리핑 생성.
+- (1) 관심종목 분리: **완료**. 관리자 메뉴 "주식" 탭에 "관심종목(내 주식)" 편집 섹션 신설(종목명+심볼 자유 추가/삭제, `watchlist` localStorage 키) — `renderWatchlistRows`/`addWatchlistRow`/`collectWatchlistRows`. `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist` 참조하도록 변경, 비어있으면 "관리자 메뉴에서 관심종목을 추가하세요" 안내.
+  - **추가로 요청받아 만든 것**: 주식시세 "내 주식" 탭 옆에 "AI브리핑" 단추 신설(`openAiBriefPicker`) — 누르면 관심종목 목록이 뜨는 가벼운 팝업이 열리고(짧은 설명 문구 포함), 종목을 누르면 `openDetail`로 상세팝업 이동 후 AI 브리핑 섹션으로 스크롤 + `generateAiBriefing()` 자동 실행. 관심종목이 아닌 종목은 기존처럼 증시 탭에서 종목 클릭 → 상세팝업 안에서 수동으로 만드는 방식 유지. (매번 상세팝업까지 들어가야 브리핑을 만들 수 있어 불편하다는 피드백 반영)
+  - 커밋: `b150ce5`
 - (2) AI 브리핑: **완료, 배포됨**. 브라우저에서 Anthropic 키를 직접 쓰면 노출되므로 **Cloudflare Worker 프록시**로 우회.
   - Worker 이름: `invest-dash-briefing`, URL: `https://invest-dash-briefing.swpark1204.workers.dev`
   - Worker 코드 원본: 레포의 `cloudflare_worker_briefing.txt` (참고용 보관, 실제 배포본은 Cloudflare 대시보드 Quick Edit 에디터에만 존재 — 이 파일과 수동 동기화 필요, 다음에 Worker 코드 바꿀 땐 이 파일도 같이 갱신할 것)
@@ -72,8 +74,6 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 ---
 
 ## 다음 작업 (우선순위 순)
-
-0. **(최우선) "내 주식" 관심종목(watchlist) 분리 진행** — AI 브리핑 기능은 완료·배포됨(위 핵심 아키텍처 참고). 남은 건 관리자 메뉴에 관심종목 편집 섹션 신설 + `loadStockTab('mine')`이 `pf_bong_holdings` 대신 `watchlist`(localStorage) 참조하도록 변경.
 
 1. **구글시트 "백업" 실패 원인 추가 조사** — 셀 한도(`_RAW` 탭) 정리했는데도 실패 계속됨. doPost 자체 오류(권한/시트보호 등) 의심, `apps_script_full.txt`(레포에 보관됨) 기반 추가 디버깅 필요
 2. **브라우저 직접호출 야후(`yfetch`) 데이터도 같은 정확성 문제 점검** — ETF카드/상세차트/카드기간전환 버튼
