@@ -330,6 +330,7 @@ tr:hover td{background:#f8fafc}
     <div class="sec-hd"><div class="sec-title">주식 시세</div><button onclick="openAdminWithAuth('market')" style="background:transparent;border:0.5px solid var(--border);border-radius:8px;font-size:11px;font-weight:600;color:var(--text2);padding:3px 10px;cursor:pointer;font-family:inherit">설정</button></div>
     <div class="stock-tabs">
       <button class="stock-tab" onclick="switchStockTab('mine',this)">내 주식</button>
+      <button class="stock-tab" onclick="openAiBriefPicker()" style="background:var(--accent);color:#fff;border-color:var(--accent)">AI브리핑</button>
       <button class="stock-tab on" onclick="switchStockTab('kr',this)">한국 Top50</button>
       <button class="stock-tab" onclick="switchStockTab('us',this)">미국 Top50</button>
       <button class="stock-tab" onclick="switchStockTab('semicon',this)">반도체</button>
@@ -603,6 +604,18 @@ tr:hover td{background:#f8fafc}
   </div>
 </div>
 
+<!-- AI브리핑 빠른 선택 팝업 -->
+<div class="admin-overlay" id="ai-brief-picker-overlay">
+  <div class="admin-modal" style="width:min(360px,94vw)">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:700">AI 브리핑</div>
+      <button onclick="closeAiBriefPicker()" style="background:none;border:none;font-size:20px;cursor:pointer;color:var(--text3);line-height:1">x</button>
+    </div>
+    <div style="font-size:12px;color:var(--text2);margin-bottom:12px;line-height:1.5">관심종목(내 주식)을 누르면 실제 시세 데이터를 바탕으로 AI 브리핑을 바로 만들어드립니다. 관심종목이 아닌 다른 종목은 아래 목록에서 종목을 눌러 상세팝업 안에서도 만들 수 있어요.</div>
+    <div id="ai-brief-picker-list"></div>
+  </div>
+</div>
+
 <!-- 관리자 메뉴 모달 -->
 <datalist id="pension-name-list"></datalist>
 <div class="admin-overlay" id="admin-overlay">
@@ -636,6 +649,11 @@ tr:hover td{background:#f8fafc}
       <div class="admin-section-title">이메일 수신자</div>
       <div id="admin-email"></div>
       <button class="admin-add-btn" onclick="addAdminRow('email')">+ 수신자 추가</button>
+    </div>
+    <div class="admin-section" id="admin-sec-watchlist">
+      <div class="admin-section-title">관심종목 (내 주식)</div>
+      <div id="admin-watchlist"></div>
+      <button class="admin-add-btn" onclick="addWatchlistRow()">+ 종목 추가</button>
     </div>
     <div class="admin-section" id="admin-sec-kr">
       <div class="admin-section-title">주식 타일 (한국)</div>
@@ -833,7 +851,7 @@ function renderPensionRows(elId,list){const el=document.getElementById(elId);if(
 function loadPension(){renderPensionRows('pension-personal-rows',getPensionList('personal',currentPensionSub.personal));renderPensionRows('pension-retire-rows',getPensionList('retire',currentPensionSub.retire));}
 async function switchStockTab(tab,btn){document.querySelectorAll('.stock-tab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');document.getElementById('stock-scroll-wrap').style.maxHeight=tab==='mine'?'none':'240px';await loadStockTab(tab);}
 function fmtInv(v){if(v==null)return'<td class="inv-col" style="color:#bbb">-</td>';const c=v>0?'up':v<0?'down':'flat';return`<td class="inv-col ${c}">${sign(v)}${Math.abs(v)}억</td>`;}
-async function loadStockTab(tab){const tbody=document.getElementById('stb');tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">로딩 중...</td></tr>';let list=[];if(tab==='mine'){const h=lsGet('pf_bong_holdings')||[];list=h.map(x=>({n:x.name,s:x.symbol}));if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">포트폴리오에 종목을 추가하세요</td></tr>';return;}}else if(tab==='kr')list=KR50;else if(tab==='us')list=US50;else if(tab==='semicon')list=THEME_SEMICON;else if(tab==='ai')list=THEME_AI;else if(tab==='sobujang')list=THEME_SOBUJANG;else if(tab==='robot')list=THEME_ROBOT;else if(tab==='ship')list=THEME_SHIP;else if(tab==='finance')list=THEME_FINANCE;else if(tab==='bio')list=THEME_BIO;
+async function loadStockTab(tab){const tbody=document.getElementById('stb');tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">로딩 중...</td></tr>';let list=[];if(tab==='mine'){const h=lsGet('watchlist')||[];list=h.map(x=>({n:x.name,s:x.symbol}));if(!list.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">관리자 메뉴에서 관심종목을 추가하세요</td></tr>';return;}}else if(tab==='kr')list=KR50;else if(tab==='us')list=US50;else if(tab==='semicon')list=THEME_SEMICON;else if(tab==='ai')list=THEME_AI;else if(tab==='sobujang')list=THEME_SOBUJANG;else if(tab==='robot')list=THEME_ROBOT;else if(tab==='ship')list=THEME_SHIP;else if(tab==='finance')list=THEME_FINANCE;else if(tab==='bio')list=THEME_BIO;
 const results=await Promise.all(list.map(s=>yfetch(s.s,'1d','5d')));const rows=list.map((s,i)=>{try{const meta=results[i].chart.result[0].meta;const p=meta.regularMarketPrice,prev=meta.chartPreviousClose||p,c=p-prev;return{n:s.n,s:s.s,p,c,pct:prev?c/prev*100:0,vol:meta.regularMarketVolume||0,h:meta.regularMarketDayHigh||0,l:meta.regularMarketDayLow||0};}catch(e){return null;}}).filter(Boolean);if(!rows.length){tbody.innerHTML='<tr><td colspan="10" style="text-align:center;color:#bbb;padding:10px">데이터 없음</td></tr>';return;}const inv=jsonData?.market?.investors||{};tbody.innerHTML=rows.map(d=>{const c=cls(d.pct);const code=d.s.split('.')[0];const iv=inv[code];const mb=d.s.includes('.KS')||d.s.includes('.KQ')?'<span class="mkt-badge mkt-k">K</span>':'<span class="mkt-badge mkt-a">A</span>';return`<tr><td onclick="openDetail('${d.n}','${d.s}')">${mb}${d.n}</td><td>${d.p.toLocaleString(undefined,{maximumFractionDigits:2})}</td><td class="${c}">${sign(d.c)}${Math.abs(d.c)<1?d.c.toFixed(2):d.c.toFixed(0)}</td><td class="${c}">${sign(d.pct)}${d.pct.toFixed(2)}%</td><td>${d.vol?(d.vol/1000).toFixed(0)+'K':'-'}</td><td>${d.h.toLocaleString(undefined,{maximumFractionDigits:0})}</td><td>${d.l.toLocaleString(undefined,{maximumFractionDigits:0})}</td>${fmtInv(iv?.ins)}${fmtInv(iv?.for)}${fmtInv(iv?.ind)}</tr>`;}).join('');}
 function buildEtfPeriodTabs(){const el=document.getElementById('cp-etf');if(!el)return;el.innerHTML=CARD_PERIODS.map((p,i)=>`<button class="cptab${i===0?' on':''}" onclick="switchEtfPeriod(${i},this)">${p[0]}</button>`).join('');}
 async function switchEtfPeriod(idx,btn){document.getElementById('cp-etf')?.querySelectorAll('.cptab').forEach(b=>b.classList.remove('on'));btn.classList.add('on');const[,interval,range]=CARD_PERIODS[idx];await loadETF(interval,range);}
@@ -869,6 +887,14 @@ document.addEventListener('visibilitychange',async()=>{if(document.visibilitySta
 function openAdminWithAuth(ctx='all'){pendingAdminCtx=ctx;if(sessionStorage.getItem('admin_auth')==='1'){document.getElementById('admin-btn').classList.add('visible');openAdminModal(ctx);}else{openAdminPwModal();}}
 function openAdminFromMedia(){openAdminWithAuth('media');}
 function renderStockTileRows(elId,tiles){const el=document.getElementById(elId);el.innerHTML='';tiles.forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" value="${escHtml(t.k)}" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" value="${escHtml(t.l)}" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);});}
+function watchlistRowHtml(name,symbol){return `<input class="admin-input" value="${escHtml(name||'')}" placeholder="종목명" list="pension-name-list" oninput="pensionAutoFillTicker(this)" style="flex:1"><input class="admin-input" value="${escHtml(symbol||'')}" placeholder="심볼(예:005930.KS)" style="flex:1"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}
+function renderWatchlistRows(){const el=document.getElementById('admin-watchlist');el.innerHTML='';(lsGet('watchlist')||[]).forEach(t=>{const row=document.createElement('div');row.className='admin-row';row.innerHTML=watchlistRowHtml(t.name,t.symbol);el.appendChild(row);});}
+function addWatchlistRow(){const el=document.getElementById('admin-watchlist');const row=document.createElement('div');row.className='admin-row';row.innerHTML=watchlistRowHtml();el.appendChild(row);}
+function collectWatchlistRows(){const result=[];document.getElementById('admin-watchlist').querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const name=inp[0]?.value.trim();const symbol=inp[1]?.value.trim();if(name&&symbol)result.push({name,symbol});});return result;}
+function renderAiBriefPicker(){const list=lsGet('watchlist')||[];const el=document.getElementById('ai-brief-picker-list');if(!list.length){el.innerHTML='<div style="font-size:12px;color:var(--text2);text-align:center;padding:16px 0">관리자 메뉴에서 관심종목을 추가하세요</div>';return;}el.innerHTML=list.map(s=>`<div class="admin-row" style="cursor:pointer" onclick="pickAiBrief('${s.name}','${s.symbol}')"><span style="flex:1;font-size:13px;font-weight:600">${escHtml(s.name)}</span><span style="font-size:11px;color:var(--text3)">${escHtml(s.symbol)}</span></div>`).join('');}
+function openAiBriefPicker(){renderAiBriefPicker();document.getElementById('ai-brief-picker-overlay').classList.add('show');}
+function closeAiBriefPicker(){document.getElementById('ai-brief-picker-overlay').classList.remove('show');}
+async function pickAiBrief(name,symbol){closeAiBriefPicker();await openDetail(name,symbol);const abEl=document.getElementById('ab-period');if(abEl)abEl.scrollIntoView({behavior:'smooth',block:'start'});generateAiBriefing();}
 function addStockTileRow(mkt){const elId=mkt==='kr'?'admin-stock-kr':'admin-stock-us';const el=document.getElementById(elId);const row=document.createElement('div');row.className='admin-row';row.innerHTML=`<input class="admin-input" placeholder="키(예:samsung)" style="flex:0.8"><input class="admin-input" placeholder="표시명"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;el.appendChild(row);}
 function collectStockTileRows(elId){const result=[];document.getElementById(elId).querySelectorAll('.admin-row').forEach(row=>{const inp=row.querySelectorAll('input');const k=inp[0]?.value.trim();const l=inp[1]?.value.trim();if(k&&l)result.push({k,l});});return result;}
 function pensionRowHtml(name,ticker,amt){return `<input class="admin-input" value="${escHtml(name||'')}" placeholder="표시명" list="pension-name-list" oninput="pensionAutoFillTicker(this)" style="flex:1"><input class="admin-input" value="${escHtml(ticker||'')}" placeholder="티커(예:069500.KS)" style="flex:1"><input class="admin-input" value="${amt!=null?amt:''}" placeholder="금액(티커 없을 때, MMF/현금)" style="flex:1" type="number"><button class="admin-del" onclick="this.closest('.admin-row').remove()">x</button>`;}
@@ -934,13 +960,13 @@ function closePensionSyncModal(){document.getElementById('pension-sync-overlay')
 function copyPensionSyncCode(){if(pensionSyncMode==='import'){submitPensionImport();return;}const ta=document.getElementById('pension-sync-text');ta.select();const btn=document.getElementById('pension-sync-action');const done=()=>{btn.textContent='복사됨!';setTimeout(()=>btn.textContent='복사',1500);};if(navigator.clipboard?.writeText){navigator.clipboard.writeText(ta.value).then(done).catch(()=>{try{document.execCommand('copy');done();}catch(e){}});}else{try{document.execCommand('copy');done();}catch(e){}}}
 function submitPensionImport(){const code=document.getElementById('pension-sync-text').value.trim();const err=document.getElementById('pension-sync-err');if(!code){err.textContent='코드를 입력해주세요.';err.style.display='block';return;}try{_applyPensionPayload(_decodeSyncStr(code));}catch(e){err.textContent='코드를 읽을 수 없습니다. 정확히 붙여넣었는지 확인해주세요.';err.style.display='block';}}
 async function scanPensionQrImage(file){if(!file)return;const err=document.getElementById('pension-sync-err');try{const img=await createImageBitmap(file);if(!('BarcodeDetector' in window)){err.textContent='이 브라우저는 QR 스캔을 지원하지 않습니다. 코드를 직접 붙여넣으세요.';err.style.display='block';return;}const bd=new BarcodeDetector({formats:['qr_code']});const codes=await bd.detect(img);if(!codes.length){err.textContent='QR코드를 인식하지 못했습니다. 더 선명하게 촬영해보세요.';err.style.display='block';return;}try{_applyPensionPayload(_decodeSyncStr(codes[0].rawValue));}catch(e){err.textContent='QR 데이터가 올바르지 않습니다.';err.style.display='block';}}catch(e){err.textContent='이미지 처리 중 오류가 발생했습니다.';err.style.display='block';}}
-const ADMIN_TAB_SECS={channel:['admin-sec-media','admin-sec-yt','admin-sec-tg','admin-sec-email'],stock:['admin-sec-kr','admin-sec-us'],pension:['admin-sec-pension-personal-mine','admin-sec-pension-personal-company','admin-sec-pension-retire-mine','admin-sec-pension-retire-company','admin-sec-pension-sync'],etc:['admin-sec-portfolio']};
+const ADMIN_TAB_SECS={channel:['admin-sec-media','admin-sec-yt','admin-sec-tg','admin-sec-email'],stock:['admin-sec-watchlist','admin-sec-kr','admin-sec-us'],pension:['admin-sec-pension-personal-mine','admin-sec-pension-personal-company','admin-sec-pension-retire-mine','admin-sec-pension-retire-company','admin-sec-pension-sync'],etc:['admin-sec-portfolio']};
 function switchAdminTab(tab,btn){document.querySelectorAll('.admin-tab-btn').forEach(b=>b.classList.remove('on'));btn.classList.add('on');Object.values(ADMIN_TAB_SECS).flat().forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='none';});(ADMIN_TAB_SECS[tab]||[]).forEach(id=>{const e=document.getElementById(id);if(e)e.style.display='';});}
 function openAdminModal(ctx='all'){
 const cfg=getAdminCfg();
 renderAdminRows('admin-media-ch',cfg.mediaChannels,'media');renderAdminRows('admin-yt-ch',cfg.ytChannels,'yt');
 renderAdminTgRows(cfg.tgRecipients);renderAdminEmailRows(cfg.emailRecipients||[]);
-renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);
+renderStockTileRows('admin-stock-kr',STOCK_KR);renderStockTileRows('admin-stock-us',STOCK_US);renderWatchlistRows();
 renderPensionTileRows('admin-pension-personal-mine',PENSION_PERSONAL_MINE);renderPensionTileRows('admin-pension-personal-company',PENSION_PERSONAL_COMPANY);renderPensionTileRows('admin-pension-retire-mine',PENSION_RETIRE_MINE);renderPensionTileRows('admin-pension-retire-company',PENSION_RETIRE_COMPANY);
 const defaultTab={market:'stock',media:'channel',portfolio:'etc',all:'channel'}[ctx]||'channel';
 const tabBtn=document.querySelector(`.admin-tab-btn[data-atab="${defaultTab}"]`);
@@ -961,6 +987,7 @@ cfg.emailRecipients=collectAdminRows('admin-email','email');
 lsSet('admin_cfg',cfg);
 const kr=collectStockTileRows('admin-stock-kr');if(kr.length){STOCK_KR=kr;lsSet('stock_tiles_kr',kr);}
 const us=collectStockTileRows('admin-stock-us');if(us.length){STOCK_US=us;lsSet('stock_tiles_us',us);}
+lsSet('watchlist',collectWatchlistRows());
 PENSION_PERSONAL_MINE=collectPensionTileRows('admin-pension-personal-mine');lsSet('pension_tiles_personal_mine',PENSION_PERSONAL_MINE);
 PENSION_PERSONAL_COMPANY=collectPensionTileRows('admin-pension-personal-company');lsSet('pension_tiles_personal_company',PENSION_PERSONAL_COMPANY);
 PENSION_RETIRE_MINE=collectPensionTileRows('admin-pension-retire-mine');lsSet('pension_tiles_retire_mine',PENSION_RETIRE_MINE);
