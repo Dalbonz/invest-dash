@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-08T23:31:43Z",
+  "updated": "2026-08-09T06:08:34Z",
   "market": {
     "kospi": {
       "price": 6258.77,
@@ -360,14 +360,6 @@
       "vol": 0,
       "candles": [
         {
-          "time": 1785729600,
-          "open": 99.69,
-          "high": 100.02,
-          "low": 99.42,
-          "close": 99.96,
-          "vol": 0
-        },
-        {
           "time": 1785816000,
           "open": 99.97,
           "high": 100.06,
@@ -402,11 +394,11 @@
       ]
     },
     "usdkrw": {
-      "price": 1407.45,
-      "change": -14.85,
-      "pct": -1.04,
-      "high": 1425.61,
-      "low": 1406.18,
+      "price": 1415.7,
+      "change": -6.6,
+      "pct": -0.46,
+      "high": 1415.7,
+      "low": 1415.7,
       "vol": 0,
       "candles": [
         {
@@ -442,11 +434,11 @@
           "vol": 0
         },
         {
-          "time": 1786137617,
-          "open": 1422.7,
-          "high": 1425.61,
-          "low": 1406.1801,
-          "close": 1407.45,
+          "time": 1786246250,
+          "open": 1415.7,
+          "high": 1415.7,
+          "low": 1415.7,
+          "close": 1415.7,
           "vol": 0
         }
       ]
@@ -602,19 +594,19 @@
       ]
     },
     "cnykrw": {
-      "price": 208.538,
-      "change": -2.074,
-      "pct": -0.98,
-      "high": 210.921,
-      "low": 208.501,
+      "price": 209.827,
+      "change": -0.785,
+      "pct": -0.37,
+      "high": 209.827,
+      "low": 209.827,
       "vol": 0,
       "candles": [
         {
-          "time": 1786139398,
-          "open": 210.905,
-          "high": 210.921,
-          "low": 208.501,
-          "close": 208.538,
+          "time": 1786247998,
+          "open": 209.827,
+          "high": 209.827,
+          "low": 209.827,
+          "close": 209.827,
           "vol": 0
         }
       ]
@@ -627,14 +619,6 @@
       "low": 76.53,
       "vol": 206437,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 80.1,
-          "high": 81.3,
-          "low": 78.43,
-          "close": 80.34,
-          "vol": 294823
-        },
         {
           "time": 1785816000,
           "open": 80.1,
@@ -665,7 +649,7 @@
           "high": 78.77,
           "low": 76.53,
           "close": 78.18,
-          "vol": 246260
+          "vol": 206437
         }
       ]
     },
@@ -677,14 +661,6 @@
       "low": 81.5,
       "vol": 35386,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 83.36,
-          "high": 84.65,
-          "low": 81.85,
-          "close": 83.77,
-          "vol": 38780
-        },
         {
           "time": 1785816000,
           "open": 83.58,
@@ -715,7 +691,7 @@
           "high": 84.39,
           "low": 81.5,
           "close": 83.55,
-          "vol": 40651
+          "vol": 35386
         }
       ]
     },
@@ -727,14 +703,6 @@
       "low": 4288.0,
       "vol": 182381,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 4083.3999,
-          "high": 4083.5,
-          "low": 4026.5,
-          "close": 4033.7,
-          "vol": 698
-        },
         {
           "time": 1785816000,
           "open": 4050.5,
@@ -761,11 +729,11 @@
         },
         {
           "time": 1786075200,
-          "open": 4277.0,
-          "high": 4371.5,
-          "low": 4274.0,
-          "close": 4340.7002,
-          "vol": 3101
+          "open": 4298.2998,
+          "high": 4432.2998,
+          "low": 4288.0,
+          "close": 4399.7002,
+          "vol": 182381
         }
       ]
     },
@@ -777,14 +745,6 @@
       "low": 61.42,
       "vol": 62570,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 57.667,
-          "high": 57.8,
-          "low": 57.667,
-          "close": 57.667,
-          "vol": 90
-        },
         {
           "time": 1785816000,
           "open": 58.1,
@@ -811,11 +771,11 @@
         },
         {
           "time": 1786075200,
-          "open": 63.62,
-          "high": 65.05,
-          "low": 63.332,
-          "close": 63.332,
-          "vol": 8
+          "open": 61.855,
+          "high": 65.48,
+          "low": 61.42,
+          "close": 63.499,
+          "vol": 62570
         }
       ]
     },
@@ -827,14 +787,6 @@
       "low": 2.617,
       "vol": 130513,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 2.745,
-          "high": 2.81,
-          "low": 2.71,
-          "close": 2.781,
-          "vol": 101918
-        },
         {
           "time": 1785816000,
           "open": 2.774,
@@ -865,7 +817,7 @@
           "high": 2.69,
           "low": 2.617,
           "close": 2.662,
-          "vol": 124916
+          "vol": 130513
         }
       ]
     },
@@ -877,14 +829,6 @@
       "low": 6.57,
       "vol": 54336,
       "candles": [
-        {
-          "time": 1785729600,
-          "open": 6.5295,
-          "high": 6.5295,
-          "low": 6.434,
-          "close": 6.514,
-          "vol": 833
-        },
         {
           "time": 1785816000,
           "open": 6.528,
@@ -911,11 +855,11 @@
         },
         {
           "time": 1786075200,
-          "open": 6.716,
-          "high": 6.716,
-          "low": 6.5705,
-          "close": 6.5705,
-          "vol": 987
+          "open": 6.7205,
+          "high": 6.7655,
+          "low": 6.57,
+          "close": 6.591,
+          "vol": 54336
         }
       ]
     },
@@ -2024,6 +1968,13 @@
     {
       "source": "매일경제",
       "category": "분석",
+      "title": "한국투자금융지주, 상반기 순익 우리·NH농협금융 추월",
+      "link": "https://www.mk.co.kr/news/economy/12121939",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
       "title": "[표] 외국환율고시표",
       "link": "https://www.mk.co.kr/news/economy/12121172",
       "summary": ""
@@ -2043,27 +1994,6 @@
       "summary": ""
     },
     {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "해외 IB “코스피, 1만피 가능”…주가 39% 급락은 일시적 조정?",
-      "link": "https://www.mk.co.kr/news/economy/12120765",
-      "summary": ""
-    },
-    {
-      "source": "파이낸셜뉴스",
-      "category": "분석",
-      "title": "\"파느냐, 버티느냐\"...고수들이 지키는 3가지 철칙[인치범의 주식 투자 부트캠프]",
-      "link": "https://www.fnnews.com/news/202608071413011958",
-      "summary": ""
-    },
-    {
-      "source": "파이낸셜뉴스",
-      "category": "국제",
-      "title": "\"중국 의존 그만\"...美, 핵심광물에 30억달러 투자",
-      "link": "https://www.fnnews.com/news/202608080910188483",
-      "summary": ""
-    },
-    {
       "source": "파이낸셜뉴스",
       "category": "국제",
       "title": "\"이란 원유 수출 '뚝'...美 해상봉쇄에 하르그섬 정지\"",
@@ -2078,31 +2008,59 @@
       "summary": ""
     },
     {
-      "source": "Investing.com",
-      "category": "속보",
-      "title": "Telecom Argentina ADR Q2 실적, 수익 에상치보다 저조",
-      "link": "https://kr.investing.com/news/earnings/article-2053122",
+      "source": "파이낸셜뉴스",
+      "category": "국제",
+      "title": "투기세력 72% 빠졌는데 엔환율 왜 다시 157엔대 왜?",
+      "link": "https://www.fnnews.com/news/202608090915224429",
       "summary": ""
     },
     {
       "source": "Investing.com",
       "category": "속보",
-      "title": "Ivanhoe Electric Q2 실적 에상치보다 저조, 수익 예상치를 넘어",
-      "link": "https://kr.investing.com/news/earnings/article-2053120",
+      "title": "Lyell Immunopharma Q2 실적 예상치를 넘어, 수익 에상치보다 저조",
+      "link": "https://kr.investing.com/news/earnings/article-2053159",
       "summary": ""
     },
     {
       "source": "Investing.com",
       "category": "속보",
-      "title": "유럽 소프트웨어 랠리, 다음 상승은 장기 투자자 몫—도이체방크",
-      "link": "https://kr.investing.com/news/stock-market-news/article-2053117",
+      "title": "Talkspace Q2 실적, 수익 에상치보다 저조",
+      "link": "https://kr.investing.com/news/earnings/article-2053158",
       "summary": ""
     },
     {
       "source": "Investing.com",
       "category": "속보",
-      "title": "연준 금리인상 시작하면 주가는? 바클레이즈 분석",
-      "link": "https://kr.investing.com/news/stock-market-news/article-2053105",
+      "title": "[EBN 오늘(9일) 이슈 종합]코스닥 레버리지로 옮겨간 단타자금, 외인 돌아올까, 동전주 상폐 첫 절차 코앞",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2053155",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "레버리지 거품 걷힌 한국 증시… ‘역대급 저평가’에도 외인이 머뭇거리는 이유",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2053149",
+      "summary": ""
+    },
+    {
+      "source": "연합뉴스",
+      "category": "국내",
+      "title": "중기부, 31일까지 '2026년 지방 소멸 대응 유공 포상' 공모",
+      "link": "https://www.yna.co.kr/view/AKR20260809003900030",
+      "summary": ""
+    },
+    {
+      "source": "연합뉴스",
+      "category": "국내",
+      "title": "추미애 \"경기도 반도체 소득 아무리 늘어도 세입은 그대로\"",
+      "link": "https://www.yna.co.kr/view/AKR20260809020200061",
+      "summary": ""
+    },
+    {
+      "source": "연합뉴스",
+      "category": "국내",
+      "title": "한국경제인협회, 대국민 창업 프로젝트…12주간 100개팀 육성",
+      "link": "https://www.yna.co.kr/view/AKR20260809015600003",
       "summary": ""
     },
     {
@@ -2110,27 +2068,6 @@
       "category": "국내",
       "title": "전남광주투자공사 설립 난항… 제도·금융 규제에 재검토",
       "link": "https://www.yna.co.kr/view/AKR20260807097800054",
-      "summary": ""
-    },
-    {
-      "source": "연합뉴스",
-      "category": "국내",
-      "title": "[마켓스토리] 역대 최고 실적인데…웃지 못하는 증권·운용사",
-      "link": "https://www.yna.co.kr/view/AKR20260808030300008",
-      "summary": ""
-    },
-    {
-      "source": "연합뉴스",
-      "category": "국내",
-      "title": "[마켓인사이트] 韓증시, 역대급 변동성은 다소 완화…반등계기 찾나",
-      "link": "https://www.yna.co.kr/view/AKR20260807158800008",
-      "summary": ""
-    },
-    {
-      "source": "연합뉴스",
-      "category": "국내",
-      "title": "환율 1,600원 향하다 1,300원대 눈앞…변동성 금융위기 후 최고",
-      "link": "https://www.yna.co.kr/view/AKR20260808046200002",
       "summary": ""
     }
   ],
@@ -2492,6 +2429,28 @@
       "isNew": true
     },
     {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "iCSbwFCrtQs",
+      "title": "월가에서 비교하는 이재용 VS 최태원",
+      "updated": "2026-08-08T15:08:12+00:00",
+      "summary": "월가에서 비교하는 이재용 VS 최태원",
+      "notifyMode": "instant",
+      "digestSent": false,
+      "isNew": false
+    },
+    {
+      "name": "매일경제TV",
+      "type": "media",
+      "videoId": "oS_vF1X-sVo",
+      "title": "K2 전차와 K808 장갑차, 페루 수출시 최대 수혜주 현대로템!ㅣ디펜스 크러시",
+      "updated": "2026-08-09T00:00:02+00:00",
+      "summary": "K2 전차와 K808 장갑차, 페루 수출시 최대 수혜주 현대로템!ㅣ디펜스 크러시",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
       "name": "매일경제TV",
       "type": "media",
       "videoId": "HdIhHlFiyuE",
@@ -2500,7 +2459,7 @@
       "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
       "notifyMode": "digest",
       "digestSent": true,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "매일경제TV",
@@ -2511,17 +2470,6 @@
       "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
       "notifyMode": "digest",
       "digestSent": true,
-      "isNew": true
-    },
-    {
-      "name": "경제사냥꾼",
-      "type": "yt",
-      "videoId": "iCSbwFCrtQs",
-      "title": "월가에서 비교하는 이재용 VS 최태원",
-      "updated": "2026-08-08T15:08:12+00:00",
-      "summary": "월가에서 비교하는 이재용 VS 최태원",
-      "notifyMode": "instant",
-      "digestSent": false,
       "isNew": false
     }
   ]
