@@ -1,5 +1,5 @@
 {
-  "updated": "2026-08-09T06:08:34Z",
+  "updated": "2026-08-09T09:15:29Z",
   "market": {
     "kospi": {
       "price": 6258.77,
@@ -687,7 +687,7 @@
         },
         {
           "time": 1786075200,
-          "open": 83.33,
+          "open": 0,
           "high": 84.39,
           "low": 81.5,
           "close": 83.55,
@@ -1968,36 +1968,57 @@
     {
       "source": "매일경제",
       "category": "분석",
+      "title": "[표] 외국환율고시표",
+      "link": "https://www.mk.co.kr/news/economy/12122262",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
+      "title": "\"중국발 반도체 공습 점점 거세져 … 지금이 소부장 자립 마지막 기회\"",
+      "link": "https://www.mk.co.kr/news/economy/12122252",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
+      "title": "K반도체 반쪽 호황 … 장비 수출은 역성장",
+      "link": "https://www.mk.co.kr/news/economy/12122214",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
       "title": "한국투자금융지주, 상반기 순익 우리·NH농협금융 추월",
       "link": "https://www.mk.co.kr/news/economy/12121939",
       "summary": ""
     },
     {
-      "source": "매일경제",
+      "source": "파이낸셜뉴스",
       "category": "분석",
-      "title": "[표] 외국환율고시표",
-      "link": "https://www.mk.co.kr/news/economy/12121172",
-      "summary": ""
-    },
-    {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "“AI 메모리 수요 선제 대응”…SK하이닉스, 용인 Y2·청주 M17에 54조원 투자",
-      "link": "https://www.mk.co.kr/news/economy/12121053",
-      "summary": ""
-    },
-    {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "한국·대만, 올해 상반기 수출액 첫 일본 추월",
-      "link": "https://www.mk.co.kr/news/world/12120890",
+      "title": "워런 버핏처럼 투자한다…'RISE 버크셔포트폴리오TOP10 ETF' [이런펀드 어때요?]",
+      "link": "https://www.fnnews.com/news/202608090824229870",
       "summary": ""
     },
     {
       "source": "파이낸셜뉴스",
-      "category": "국제",
-      "title": "\"이란 원유 수출 '뚝'...美 해상봉쇄에 하르그섬 정지\"",
-      "link": "https://www.fnnews.com/news/202608081450313915",
+      "category": "분석",
+      "title": "출렁인 증시에도 화장품株 강세…실적·수출이 받쳤다",
+      "link": "https://www.fnnews.com/news/202608091306318125",
+      "summary": ""
+    },
+    {
+      "source": "파이낸셜뉴스",
+      "category": "분석",
+      "title": "삼전닉스 시총 비중 49%로 뚝…'비반도체' 믿어도 될까?",
+      "link": "https://www.fnnews.com/news/202608091148156050",
+      "summary": ""
+    },
+    {
+      "source": "파이낸셜뉴스",
+      "category": "분석",
+      "title": "비상장 투자 6조4천억… 자금회수는 ‘안갯속’[IPO 시장 위축]",
+      "link": "https://www.fnnews.com/news/202608091804499033",
       "summary": ""
     },
     {
@@ -2015,31 +2036,38 @@
       "summary": ""
     },
     {
+      "source": "파이낸셜뉴스",
+      "category": "국제",
+      "title": "엔화 매도 '역대 최대' 급감에도 달러수요로 개입효과 빠르게 약화",
+      "link": "https://www.fnnews.com/news/202608091811082201",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "애널리스트들의 AI 주요 분석 5선: 이 종목의 조정은 ’매수 기회’",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2053179",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "비트코인, ETF 자금 유입에도 포크 우려로 6만5천 달러 아래로 하락",
+      "link": "https://kr.investing.com/news/cryptocurrency-news/article-2053177",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "어닝 서프라이즈, 美 증시 사상 최고 랠리 우려 덜어내",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2053167",
+      "summary": ""
+    },
+    {
       "source": "Investing.com",
       "category": "속보",
       "title": "Lyell Immunopharma Q2 실적 예상치를 넘어, 수익 에상치보다 저조",
       "link": "https://kr.investing.com/news/earnings/article-2053159",
-      "summary": ""
-    },
-    {
-      "source": "Investing.com",
-      "category": "속보",
-      "title": "Talkspace Q2 실적, 수익 에상치보다 저조",
-      "link": "https://kr.investing.com/news/earnings/article-2053158",
-      "summary": ""
-    },
-    {
-      "source": "Investing.com",
-      "category": "속보",
-      "title": "[EBN 오늘(9일) 이슈 종합]코스닥 레버리지로 옮겨간 단타자금, 외인 돌아올까, 동전주 상폐 첫 절차 코앞",
-      "link": "https://kr.investing.com/news/stock-market-news/article-2053155",
-      "summary": ""
-    },
-    {
-      "source": "Investing.com",
-      "category": "속보",
-      "title": "레버리지 거품 걷힌 한국 증시… ‘역대급 저평가’에도 외인이 머뭇거리는 이유",
-      "link": "https://kr.investing.com/news/stock-market-news/article-2053149",
       "summary": ""
     },
     {
@@ -2387,13 +2415,68 @@
     {
       "name": "한국경제TV",
       "type": "media",
+      "videoId": "tbZgVoT_dzg",
+      "title": "월요일, 순환매 타겟은?ㅣ선데이 종결자",
+      "updated": "2026-08-09T06:34:14+00:00",
+      "summary": "월요일, 순환매 타겟은?ㅣ선데이 종결자",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "한국경제TV",
+      "type": "media",
+      "videoId": "_8KmCGQXY5w",
+      "title": "검사는 정상인데 계속되는 통증…사각지대 속 진짜 원인은? [몸쓸이야기 29회]",
+      "updated": "2026-08-09T05:30:24+00:00",
+      "summary": "검사는 정상인데 계속되는 통증…사각지대 속 진짜 원인은? [몸쓸이야기 29회]",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "한국경제TV",
+      "type": "media",
+      "videoId": "TtmKhJ_RqUI",
+      "title": "눈앞에 벌레가 떠다니고 번쩍인다면? 망막질환 응급신호입니다 [몸쓸이야기 29회]",
+      "updated": "2026-08-09T04:00:32+00:00",
+      "summary": "눈앞에 벌레가 떠다니고 번쩍인다면? 망막질환 응급신호입니다 [몸쓸이야기 29회]",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "한국경제TV",
+      "type": "media",
+      "videoId": "s6tAGHDfBOI",
+      "title": "여름철 자도 피곤하고 어지럽다면?…이것이 무너진겁니다 [몸쓸이야기 29회]",
+      "updated": "2026-08-09T02:30:15+00:00",
+      "summary": "여름철 자도 피곤하고 어지럽다면?…이것이 무너진겁니다 [몸쓸이야기 29회]",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "한국경제TV",
+      "type": "media",
+      "videoId": "RvlF_ADebG0",
+      "title": "척추관협착증 vs 허리디스크, 증상과 치료가 완전히 다른 이유 [몸쓸이야기 29회]",
+      "updated": "2026-08-09T01:00:11+00:00",
+      "summary": "척추관협착증 vs 허리디스크, 증상과 치료가 완전히 다른 이유 [몸쓸이야기 29회]",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "한국경제TV",
+      "type": "media",
       "videoId": "WNDKRk8-I94",
       "title": "코스피 반등은 언제? \"당분간 코스닥 주목\" | 위클리뷰 | 성공투자 오후증시",
       "updated": "2026-08-08T22:30:06+00:00",
       "summary": "코스피 반등은 언제? \"당분간 코스닥 주목\" | 위클리뷰 | 성공투자 오후증시",
       "notifyMode": "digest",
       "digestSent": true,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "한국경제TV",
@@ -2404,6 +2487,116 @@
       "summary": "다음 주 목요일 옵션 만기! 시장 완전히 뒤집힙니다 | 박석현 우리은행 WM그룹 부부장｜위클리뷰",
       "notifyMode": "digest",
       "digestSent": true,
+      "isNew": false
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "X8OgOElKnX8",
+      "title": "바이든 차남 아버지, 암 전이돼 고통스럽게 투병 중",
+      "updated": "2026-08-09T07:15:26+00:00",
+      "summary": "바이든 차남 아버지, 암 전이돼 고통스럽게 투병 중",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "YjW9yInfGCA",
+      "title": "美, 패트리엇 재고 1천700기 미만…전력차출에 대북 태세 우려",
+      "updated": "2026-08-09T07:00:12+00:00",
+      "summary": "美, 패트리엇 재고 1천700기 미만…전력차출에 대북 태세 우려",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "KBg0n0X5QB8",
+      "title": "튀르키예 메카 방위조약, 이란 겨냥 아냐",
+      "updated": "2026-08-09T06:30:31+00:00",
+      "summary": "튀르키예 메카 방위조약, 이란 겨냥 아냐",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "qO3oEfMCv58",
+      "title": "트럼프, 두 번째 국토안보장관에도 불만",
+      "updated": "2026-08-09T06:15:12+00:00",
+      "summary": "트럼프, 두 번째 국토안보장관에도 불만",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "VE9N72ub9Xk",
+      "title": "미국, 쿠바 압박하며 차기 지도자 물색…'정권 개조' 타진",
+      "updated": "2026-08-09T06:00:07+00:00",
+      "summary": "미국, 쿠바 압박하며 차기 지도자 물색…'정권 개조' 타진",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "MegKgUyTs7E",
+      "title": "美 공격잠수함 19척 개조…대중 견제 강화",
+      "updated": "2026-08-09T05:45:07+00:00",
+      "summary": "美 공격잠수함 19척 개조…대중 견제 강화",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "0RR0AbSZs1s",
+      "title": "중 인민은행, 금 보유 21개월 연속 확대",
+      "updated": "2026-08-09T05:30:32+00:00",
+      "summary": "중 인민은행, 금 보유 21개월 연속 확대",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "RbhnP1M4-5E",
+      "title": "공습 한계, 탄약 고갈…미군 수뇌부, 이란전 출구전략 모색중",
+      "updated": "2026-08-09T05:11:49+00:00",
+      "summary": "공습 한계, 탄약 고갈…미군 수뇌부, 이란전 출구전략 모색중",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "TBSxd4I1Izk",
+      "title": "독점력에 균열가는 엔비디아...우리에겐 기회입니다 (노근창) | 인포맥스라이브 2026년 8월 3일 방송",
+      "updated": "2026-08-09T05:00:11+00:00",
+      "summary": "독점력에 균열가는 엔비디아...우리에겐 기회입니다 (노근창) | 인포맥스라이브 2026년 8월 3일 방송",
+      "notifyMode": "digest",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "연합뉴스경제TV",
+      "type": "media",
+      "videoId": "zvvOMwNAS0w",
+      "title": "불탄 잠수함을 대신할 3가지 카드! 최선은 따로 있다 (샤를세환) | 작전본부",
+      "updated": "2026-08-09T01:00:03+00:00",
+      "summary": "불탄 잠수함을 대신할 3가지 카드! 최선은 따로 있다 (샤를세환) | 작전본부",
+      "notifyMode": "digest",
+      "digestSent": false,
       "isNew": true
     },
     {
@@ -2415,7 +2608,7 @@
       "summary": "엔저 얼마나 심각하길래.. 일본 현지 반응은 | 인사이트30",
       "notifyMode": "digest",
       "digestSent": true,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "연합뉴스경제TV",
@@ -2426,17 +2619,6 @@
       "summary": "하반기 중국 반도체가 한 번 더 흔든다 (이형수) | 인포맥스라이브 260805",
       "notifyMode": "digest",
       "digestSent": true,
-      "isNew": true
-    },
-    {
-      "name": "경제사냥꾼",
-      "type": "yt",
-      "videoId": "iCSbwFCrtQs",
-      "title": "월가에서 비교하는 이재용 VS 최태원",
-      "updated": "2026-08-08T15:08:12+00:00",
-      "summary": "월가에서 비교하는 이재용 VS 최태원",
-      "notifyMode": "instant",
-      "digestSent": false,
       "isNew": false
     },
     {
@@ -2448,7 +2630,7 @@
       "summary": "K2 전차와 K808 장갑차, 페루 수출시 최대 수혜주 현대로템!ㅣ디펜스 크러시",
       "notifyMode": "digest",
       "digestSent": false,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "매일경제TV",
@@ -2470,6 +2652,17 @@
       "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
       "notifyMode": "digest",
       "digestSent": true,
+      "isNew": false
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "iCSbwFCrtQs",
+      "title": "월가에서 비교하는 이재용 VS 최태원",
+      "updated": "2026-08-08T15:08:12+00:00",
+      "summary": "월가에서 비교하는 이재용 VS 최태원",
+      "notifyMode": "instant",
+      "digestSent": false,
       "isNew": false
     }
   ]
