@@ -2415,13 +2415,24 @@
     {
       "name": "경제사냥꾼",
       "type": "yt",
+      "videoId": "mBxNvk2T8zk",
+      "title": "8월 11일 투자자들이 꼭 알아야 하는 투자 포인트",
+      "updated": "2026-08-10T22:45:40+00:00",
+      "summary": "8월 11일 투자자들이 꼭 알아야 하는 투자 포인트",
+      "notifyMode": "instant",
+      "digestSent": false,
+      "isNew": true
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
       "videoId": "PQEgYdjmiY0",
       "title": "손실 복구하려는 고수들이, 현재 가장 많이 사고 있는 '종목' 정체",
       "updated": "2026-08-10T18:00:01+00:00",
       "summary": "손실 복구하려는 고수들이, 현재 가장 많이 사고 있는 '종목' 정체",
       "notifyMode": "instant",
       "digestSent": false,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "경제사냥꾼",
@@ -2432,7 +2443,7 @@
       "summary": "SK하이닉스, 결국 HBM ‘1위 자리’ 뺏긴다는 이유",
       "notifyMode": "instant",
       "digestSent": false,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "경제사냥꾼",
@@ -2443,7 +2454,7 @@
       "summary": "다가올 '미국 중간선거'가, 주식시장에 진짜 호재라는 이유",
       "notifyMode": "instant",
       "digestSent": false,
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "경제사냥꾼",
@@ -2454,7 +2465,7 @@
       "summary": "남들 주식 다 오르는데 내 주식만 안 오르는 진짜 이유",
       "notifyMode": "instant",
       "digestSent": false,
-      "isNew": true
+      "isNew": false
     }
   ]
 }
