@@ -34,11 +34,13 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - `data.json`의 `youtube` 배열은 채널별 dict가 아니라 **영상별 리스트**(채널당 여러 개 가능), `videoId` 기준으로 dedup.
 - 신규 영상은 `isNew:true` 플래그 → 웹에서 빨간 New 뱃지, 텔레그램 발송 대상.
 - **채널별 `summaryMode`로 비용 관리** (`engines/youtube.py`의 `CHANNELS` 설정):
-  - `'full'`: 자막(Supadata) 조회 + 전체 분석 요약 (개인채널 3곳 — 영상 수 적음)
-  - `'title'`: 제목만 AI요약, 자막조회 안 함 (미디어채널 3곳 — 하루 10~100개 이상 올라와서 비용 부담)
-  - `fullKeywords`: 제목에 키워드가 있으면 `'title'` 채널도 그 영상만 `'full'`로 승격 (예: 한국경제TV의 "당신이 잠든사이" 코너)
+  - `'full'`: 자막(Supadata) 조회 + 전체 분석 요약
+  - `'title'`: 제목만 AI요약, 자막조회 안 함 (하루 여러 개 올라와서 비용 부담되는 채널용)
+  - `titleKeyword`: RSS 단계에서 이 키워드가 제목에 없으면 아예 수집 안 함 (채널 전체가 아니라 특정 코너만 볼 때)
+  - `fullKeywords`: 제목에 키워드가 있으면 `'title'` 채널도 그 영상만 `'full'`로 승격
   - **규칙**: 새 채널을 추가하거나 기존 채널 설정을 바꿀 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 달봉즈님께 먼저 물어볼 것
-- **⚠️ 비용 모니터링 필요**: 위 변경으로 Anthropic API 호출이 기존 대비 크게 늘어남(미디어채널 기준 채널당 1개/일 → 10~100개/일). 며칠 지켜보고 추가 조정 여부 결정.
+- **2026-08-12 채널 구성 변경**: 연합뉴스경제TV 제거(요청). 한국경제TV는 `titleKeyword:'당신이 잠든사이'`로 좁혀서 그 코너만 수집(하루 15개 → 소수), `summaryMode`도 `'full'`로 승격. 프론트 `index.html`의 `DEFAULT_ADMIN_CFG.mediaChannels`도 같이 갱신함 — **단, 관리자 메뉴에서 채널 목록을 이미 커스터마이징(localStorage `admin_cfg`)해서 쓰고 있었다면 이 기본값 변경이 반영 안 되므로, 관리자 메뉴 → 채널 탭에서 연합뉴스경제TV가 여전히 보이면 직접 삭제 필요**.
+- **⚠️ 2026-08-07~08-12 Anthropic 크레딧 소진 사고**: 이 기간 AI 요약이 전부 실패해서 `'title'` 모드 채널은 제목을 그대로 "요약"으로 채워넣는 폴백이 발동(`engines/youtube.py`의 `_summarize_title_only`가 API 실패시 `title` 그대로 반환) → 미디어분석이 내용없이 제목만 반복되는 것처럼 보였음. `ai_summary.py`도 같은 기간 `{'error':'api_status_400'}`으로 AI 시황 완전 공백. 크레딧 충전으로 해결(2026-08-12), 자동 리로드는 기본 꺼져있으니 **잔액 임계치 알림 또는 자동충전 설정을 걸어두는 게 재발 방지에 필요** (다음 세션 논의).
 
 ### 스케줄 (2026-06-22 확정)
 - **cron-job.org가 유일한 스케줄 소스** (`invest-morning/yt1/yt2/yt3/email/full` 6개 잡, GitHub API `workflow_dispatch` 호출)
