@@ -722,7 +722,6 @@ tr:hover td{background:#f8fafc}
 <script>
 const INVEST_URL='https://dalbonz.github.io/invest-dash/data.json';
 const YT_URL='https://raw.githubusercontent.com/Dalbonz/4-my-money/main/youtube.json';
-const PROXY=[u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?'+encodeURIComponent(u),u=>'https://thingproxy.freeboard.io/fetch/'+u];
 const CARD_PERIODS=[['실시간','5m','1d'],['5일','1h','5d'],['1달','1d','1mo'],['1년','1wk','1y']];
 const NAVER={up:'#c84a31',down:'#1261c4',upBg:'rgba(200,74,49,0.10)',downBg:'rgba(18,97,196,0.10)',grid:'rgba(0,0,0,0.05)',text:'#999'};
 const ADMIN_PW_HASH='0ffe1abd1a08215353c233d6e009613e95eec4253832a761af28ff37ac5a150c';
@@ -768,7 +767,7 @@ function switchTab(id,el){if(id==='portfolio'&&sessionStorage.getItem('portfolio
 let lastLoadAt=0;
 async function loadData(){lastLoadAt=Date.now();try{const r=await fetch(INVEST_URL+'?t='+Date.now());jsonData=await r.json();const _u=jsonData.updated||new Date().toISOString();document.getElementById('updated-tag').textContent=toKST(_u,{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})+' KST';}catch(e){document.getElementById('brief-loading').textContent='데이터 로드 실패';return;}renderBrief();renderMarketCards();renderStockSec();}
 function loadYoutube(){renderYtAll();}
-async function yfetch(symbol,interval,range){const base='https://query1.finance.yahoo.com/v8/finance/chart/'+encodeURIComponent(symbol)+'?interval='+interval+'&range='+range;for(const pf of PROXY){try{const r=await fetch(pf(base),{signal:AbortSignal.timeout(10000)});if(!r.ok)continue;const j=await r.json();if(j?.chart?.result?.[0])return j;}catch(e){}}return null;}
+async function yfetch(symbol,interval,range){const url=AI_BRIEF_URL+'/yfinance?symbol='+encodeURIComponent(symbol)+'&interval='+encodeURIComponent(interval)+'&range='+encodeURIComponent(range);try{const r=await fetch(url,{headers:{'x-app-key':AI_BRIEF_KEY},signal:AbortSignal.timeout(10000)});if(!r.ok)return null;const j=await r.json();if(j?.chart?.result?.[0])return j;}catch(e){}return null;}
 // 탭1: 투자 브리핑
 function fmtNum(t){return t.replace(/([+-]\d+(?:\.\d+)?%?)/g,m=>`<span class="${m.startsWith('-')?'down':'up'}">${m}</span>`);}
 function fmtAI(txt){if(!txt)return'';const s=txt.replace(/\\n/g,'\n').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').trim();return s.split('\n').map(l=>{const t=fmtNum(l.trim());if(!t)return'';return /^\d+\./.test(l.trim())?`<div class="ai-li">${t}</div>`:`<div class="ai-head">${t}</div>`;}).join('');}
