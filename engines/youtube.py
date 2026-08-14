@@ -2,12 +2,13 @@ import os, re, time, requests
 import xml.etree.ElementTree as ET
 from datetime import datetime, timezone, timedelta
 
-KST = timezone(timedelta(hours=9))
-
-def _is_today_kst(published_str):
+def _is_recent(published_str, hours=36):
+    """최근 N시간 이내 영상만 수집 (하루 단위가 아니라 시간 기준 - 전날 저녁 영상도
+    다음날 아침 체크포인트 다이제스트에 걸리도록 여유있게 잡음). 오늘자 사이트 표시
+    필터링은 run.py의 _is_today_kst(자정 리셋)에서 별도로 함."""
     try:
         dt = datetime.fromisoformat(published_str.replace('Z', '+00:00'))
-        return dt.astimezone(KST).date() == datetime.now(KST).date()
+        return dt >= datetime.now(timezone.utc) - timedelta(hours=hours)
     except Exception:
         return True
 
@@ -15,15 +16,14 @@ HEADERS = {'User-Agent': 'Mozilla/5.0'}
 SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 
 # summaryMode: 'full'(자막분석+AI요약, 비용 높음) / 'title'(제목만 AI요약, 자막조회 안함 - 비용 최소화)
-# fullKeywords: summaryMode가 'title'이어도 제목에 이 키워드가 있으면 그 영상만 'full'로 승격
-# (예: 한국경제TV는 하루 수백개라 기본 제목요약이지만, 아침방송 "당신이 잠든사이"는 중요해서 전체분석)
+# titleKeyword: 채널 전체가 아니라 제목에 이 키워드가 있는 영상만 수집 (예: 한국경제TV는 "당신이 잠든사이" 코너만)
 # → 채널을 새로 추가/수정할 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 같이 정해야 함
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'titleKeyword': '당신이 잠든사이', 'summaryMode': 'full', 'notifyMode': 'digest'},
-    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title', 'notifyMode': 'digest'},
-    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full', 'notifyMode': 'instant'},
-    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full', 'notifyMode': 'instant'},
-    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full', 'notifyMode': 'digest'},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'titleKeyword': '당신이 잠든사이', 'summaryMode': 'full'},
+    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
+    {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full'},
+    {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
+    {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
 ]
 
 NS = {
@@ -75,7 +75,7 @@ class _NoMatch(Exception):
     """RSS는 정상 파싱됐지만 title_keyword에 맞는 entry가 없음 (재시도 불필요)"""
 
 def _parse_xml_all(text, title_keyword=None):
-    """오늘(KST) 발행된 entry를 전부 반환 (채널당 1개만 보던 기존 동작 대체)"""
+    """최근(_is_recent 기준, 기본 36시간) 발행된 entry를 전부 반환 (채널당 1개만 보던 기존 동작 대체)"""
     root = ET.fromstring(text)  # 차단 페이지(HTML)면 여기서 ParseError -> 재시도 대상
     entries = root.findall('atom:entry', NS)
     if not entries:
@@ -86,7 +86,7 @@ def _parse_xml_all(text, title_keyword=None):
         if title_keyword and title_keyword not in title:
             continue
         v = _entry_to_dict(entry)
-        if _is_today_kst(v.get('published', '')):
+        if _is_recent(v.get('published', '')):
             videos.append(v)
     if not videos:
         raise _NoMatch()
@@ -120,7 +120,7 @@ def _fetch_rss_all(url, title_keyword=None, retries=1):
     return []
 
 def fetch_today(handle, title_keyword=None):
-    """오늘(KST) 올라온 영상 전체 리스트 반환 (채널당 여러 개 가능)"""
+    """최근 올라온 영상 전체 리스트 반환 (채널당 여러 개 가능)"""
     # 1차: ?user= 형식 (handle이 채널ID가 아니면 보통 404 - 재시도 불필요)
     videos = _fetch_rss_all(_rss_url(handle), title_keyword, retries=1)
     if videos:
@@ -235,20 +235,20 @@ def _summarize_title_only(name, title):
         print(f'  AI 요약 오류 ({name}): {e}')
     return title
 
-def run(yt_only=False, existing=None):
+def run(existing=None):
     """
     existing: {videoId: 기존 영상 dict} — 호출 측(run.py)에서 '오늘(KST) 영상만' 미리 걸러서 넘겨줌.
-    반환값: 오늘 올라온 영상 전체 리스트(채널당 여러 개 가능). 기존에 있던 videoId는 isNew=False로
-    요약을 재사용하고, 새로 발견된 videoId만 자막조회/AI요약을 새로 수행해 isNew=True로 표시.
+    반환값: 최근(_is_recent 기준) 영상 전체 리스트(채널당 여러 개 가능). 기존에 있던 videoId는
+    isNew=False로 요약을 재사용하고, 새로 발견된 videoId만 자막조회/AI요약을 새로 수행해
+    isNew=True로 표시. 텔레그램 발송 여부(체크포인트 비교)는 run.py에서 별도로 처리.
     """
     existing = existing or {}
-    channels = [ch for ch in CHANNELS if ch['type'] == 'yt'] if yt_only else CHANNELS
     result = []
-    for ch in channels:
+    for ch in CHANNELS:
         print(f'YouTube: {ch["name"]} 수집 중...')
         videos = fetch_today(ch['handle'], ch.get('titleKeyword'))
         if not videos:
-            print('  → 오늘 영상 없음/조회 실패 (스킵)' + (f" - '{ch['titleKeyword']}' 포함 영상 못 찾음" if ch.get('titleKeyword') else ''))
+            print('  → 최근 영상 없음/조회 실패 (스킵)' + (f" - '{ch['titleKeyword']}' 포함 영상 못 찾음" if ch.get('titleKeyword') else ''))
             continue
 
         for video in videos:
@@ -258,18 +258,10 @@ def run(yt_only=False, existing=None):
                 result.append({**prev, 'name': ch['name'], 'type': ch['type'],
                                'videoId': video['videoId'], 'title': video['title'],
                                'updated': video['published'],
-                               'notifyMode': prev.get('notifyMode', ch.get('notifyMode', 'digest')),
-                               'digestSent': prev.get('digestSent', False),
                                'isNew': False})
                 continue
 
             mode = ch.get('summaryMode', 'full')
-            if mode == 'title' and any(kw in video['title'] for kw in ch.get('fullKeywords', [])):
-                mode = 'full'  # 채널 기본은 제목요약이지만 중요 코너는 전체분석으로 승격
-            notify_mode = ch.get('notifyMode', 'digest')
-            if notify_mode == 'digest' and any(kw in video['title'] for kw in ch.get('fullKeywords', [])):
-                notify_mode = 'instant'  # fullKeywords 해당 영상은 즉시 알림으로 승격
-
             if mode == 'full':
                 transcript = get_transcript(video['videoId']) if video['videoId'] else None
                 if transcript and len(transcript.strip()) >= 200:
@@ -289,8 +281,6 @@ def run(yt_only=False, existing=None):
                 'title':      video['title'],
                 'updated':    video['published'],
                 'summary':    summary,
-                'notifyMode': notify_mode,
-                'digestSent': False,
                 'isNew':      True,
             })
             print(f'  → {video["title"][:60]}')
