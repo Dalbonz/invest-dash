@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T06:08:34Z",
+  "updated": "2026-10-04T09:16:04Z",
   "market": {
     "kospi": {
       "price": 7003.74,
@@ -1968,6 +1968,20 @@
     {
       "source": "매일경제",
       "category": "분석",
+      "title": "[표] 외국환율고시표",
+      "link": "https://www.mk.co.kr/news/economy/12168160",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
+      "title": "中, 유령회사 통해 韓반도체기술 통째로 빼가",
+      "link": "https://www.mk.co.kr/news/economy/12168152",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
       "title": "“누구나 쓸 수 있는 AI, 지역경제에 새 기회”",
       "link": "https://www.mk.co.kr/news/economy/12167925",
       "summary": ""
@@ -1980,24 +1994,31 @@
       "summary": ""
     },
     {
-      "source": "매일경제",
+      "source": "파이낸셜뉴스",
       "category": "분석",
-      "title": "[속보] 트럼프 “韓 알래스카 투자 안한대도 괜찮다…돈 더 청구하면 돼”",
-      "link": "https://www.mk.co.kr/news/economy/12167720",
-      "summary": ""
-    },
-    {
-      "source": "매일경제",
-      "category": "분석",
-      "title": "“1550원일땐 차마 못 갚았습니다”…1350원에 달러빚 정리나선 기업들",
-      "link": "https://www.mk.co.kr/news/economy/12167675",
+      "title": "\"주가 묻는 투자는 틀렸다\"...30년 경력 경제평론가의 직격 [fn 인사이트]",
+      "link": "https://www.fnnews.com/news/202610041128276741",
       "summary": ""
     },
     {
       "source": "파이낸셜뉴스",
       "category": "분석",
-      "title": "\"주가 묻는 투자는 틀렸다\"...30년 경력 경제평론가의 직격 [fn 인사이트]",
-      "link": "https://www.fnnews.com/news/202610041128276741",
+      "title": "국민연금, 코스닥 투자액 10조원 넘어...국내 주식 투자 비중은 2%대",
+      "link": "https://www.fnnews.com/news/202610041507185563",
+      "summary": ""
+    },
+    {
+      "source": "파이낸셜뉴스",
+      "category": "분석",
+      "title": "\"4분기는 다르다\"…실적·신약 모멘텀 앞세운 바이오株 반등 모색",
+      "link": "https://www.fnnews.com/news/202610041015099578",
+      "summary": ""
+    },
+    {
+      "source": "파이낸셜뉴스",
+      "category": "분석",
+      "title": "한 달 새 30% 뛴 소부장…코스닥 900선 안착 이끌까",
+      "link": "https://www.fnnews.com/news/202610040128543745",
       "summary": ""
     },
     {
@@ -2008,17 +2029,17 @@
       "summary": ""
     },
     {
-      "source": "Investing.com",
-      "category": "속보",
-      "title": "호주 챌머스 재무장관, 美-이란 전쟁으로 인플레 및 차입 비용 상승 비난",
-      "link": "https://kr.investing.com/news/economy-news/article-2115397",
+      "source": "파이낸셜뉴스",
+      "category": "국제",
+      "title": "美 트럼프, 韓 84억달러 추가 투자 일방 주장...유세 중 치적 자랑",
+      "link": "https://www.fnnews.com/news/202610041429504888",
       "summary": ""
     },
     {
       "source": "Investing.com",
       "category": "속보",
-      "title": "미국 중간선거가 주식시장에 미치는 영향 분석",
-      "link": "https://kr.investing.com/news/stock-market-news/article-2115376",
+      "title": "호주 챌머스 재무장관, 美-이란 전쟁으로 인플레 및 차입 비용 상승 비난",
+      "link": "https://kr.investing.com/news/economy-news/article-2115397",
       "summary": ""
     },
     {
@@ -2366,11 +2387,20 @@
     {
       "name": "매일경제TV",
       "type": "media",
+      "videoId": "UGSFZYw1g1Q",
+      "title": "추락 이후 더욱더 중요해질 K-자폭무인기 핵심주 퍼스텍,주목해야 하는 이유는?ㅣ디펜스 크러시",
+      "updated": "2026-10-04T00:00:33+00:00",
+      "summary": "추락 이후 더욱더 중요해질 K-자폭무인기 핵심주 퍼스텍,주목해야 하는 이유는?ㅣ디펜스 크러시",
+      "isNew": true
+    },
+    {
+      "name": "매일경제TV",
+      "type": "media",
       "videoId": "gBVrZX5H-jY",
       "title": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
       "updated": "2026-10-03T23:00:13+00:00",
       "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
-      "isNew": true
+      "isNew": false
     },
     {
       "name": "매일경제TV",
@@ -2379,12 +2409,48 @@
       "title": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
       "updated": "2026-10-03T23:00:00+00:00",
       "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
+      "isNew": false
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "imhcllFNVMI",
+      "title": "투자자들이 꼭 알아야 할 '10월' 새로운 '매도 기준' 3가지",
+      "updated": "2026-10-04T08:00:03+00:00",
+      "summary": "투자자들이 꼭 알아야 할 '10월' 새로운 '매도 기준' 3가지",
+      "isNew": true
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "yyfCTQ2LAZQ",
+      "title": "10월 현시점, 월가가 바라보는 '코스피+나스닥' 연말 전망",
+      "updated": "2026-10-04T03:00:35+00:00",
+      "summary": "10월 현시점, 월가가 바라보는 '코스피+나스닥' 연말 전망",
+      "isNew": true
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "Mkf-2Bq75kk",
+      "title": "삼전·닉스'가 없었다면, 누가 코스피 대장주였을까?",
+      "updated": "2026-10-04T01:00:38+00:00",
+      "summary": "삼전·닉스'가 없었다면, 누가 코스피 대장주였을까?",
+      "isNew": true
+    },
+    {
+      "name": "경제사냥꾼",
+      "type": "yt",
+      "videoId": "JauYuNtbxVY",
+      "title": "외신들이 '세계 최악'이라 말한, 코스피 '하락'의 진짜 원인",
+      "updated": "2026-10-03T23:00:12+00:00",
+      "summary": "외신들이 '세계 최악'이라 말한, 코스피 '하락'의 진짜 원인",
       "isNew": true
     }
   ],
   "yt_checkpoints": {
     "12시에 만나요": "2026-10-03T09:16:04Z",
-    "경제사냥꾼": "2026-10-03T23:09:59Z",
-    "슈페tv": "2026-10-03T23:09:59Z"
+    "경제사냥꾼": "2026-10-04T09:16:01Z",
+    "슈페tv": "2026-10-04T09:16:01Z"
   }
 }
