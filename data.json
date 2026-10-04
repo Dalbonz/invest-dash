@@ -1,5 +1,5 @@
 {
-  "updated": "2026-10-04T09:16:04Z",
+  "updated": "2026-10-04T23:09:58Z",
   "market": {
     "kospi": {
       "price": 7003.74,
@@ -352,11 +352,11 @@
       ]
     },
     "dxy": {
-      "price": 101.924,
-      "change": -0.176,
-      "pct": -0.17,
-      "high": 102.132,
-      "low": 101.668,
+      "price": 101.867,
+      "change": -0.063,
+      "pct": -0.06,
+      "high": 101.926,
+      "low": 101.855,
       "vol": 0,
       "candles": [
         {
@@ -390,14 +390,22 @@
           "low": 101.67,
           "close": 101.93,
           "vol": 0
+        },
+        {
+          "time": 1791086400,
+          "open": 101.917,
+          "high": 101.926,
+          "low": 101.855,
+          "close": 101.867,
+          "vol": 0
         }
       ]
     },
     "usdkrw": {
-      "price": 1342.51,
-      "change": -18.08,
-      "pct": -1.33,
-      "high": 1366.08,
+      "price": 1342.89,
+      "change": -17.7,
+      "pct": -1.3,
+      "high": 1343.34,
       "low": 1342.51,
       "vol": 0,
       "candles": [
@@ -434,21 +442,21 @@
           "vol": 0
         },
         {
-          "time": 1790975891,
-          "open": 1359.83,
-          "high": 1366.08,
+          "time": 1791155177,
+          "open": 1342.51,
+          "high": 1343.34,
           "low": 1342.51,
-          "close": 1342.51,
+          "close": 1342.89,
           "vol": 0
         }
       ]
     },
     "jpykrw": {
-      "price": 8.481,
-      "change": -0.1336,
-      "pct": -1.55,
-      "high": 8.618,
-      "low": 8.481,
+      "price": 8.489,
+      "change": -0.1256,
+      "pct": -1.46,
+      "high": 8.495,
+      "low": 8.483,
       "vol": 0,
       "candles": [
         {
@@ -484,21 +492,21 @@
           "vol": 0
         },
         {
-          "time": 1790976587,
-          "open": 8.577,
-          "high": 8.618,
-          "low": 8.481,
-          "close": 8.481,
+          "time": 1791155091,
+          "open": 8.487,
+          "high": 8.495,
+          "low": 8.483,
+          "close": 8.489,
           "vol": 0
         }
       ]
     },
     "eurkrw": {
-      "price": 1510.0,
-      "change": -18.21,
-      "pct": -1.19,
-      "high": 1533.3,
-      "low": 1509.8,
+      "price": 1511.0,
+      "change": -17.21,
+      "pct": -1.13,
+      "high": 1512.0,
+      "low": 1510.5,
       "vol": 0,
       "candles": [
         {
@@ -534,21 +542,21 @@
           "vol": 0
         },
         {
-          "time": 1790976587,
-          "open": 1527.8,
-          "high": 1533.3,
-          "low": 1509.8,
-          "close": 1510.0,
+          "time": 1791155091,
+          "open": 1511.1,
+          "high": 1512.0,
+          "low": 1510.5,
+          "close": 1511.0,
           "vol": 0
         }
       ]
     },
     "gbpkrw": {
-      "price": 1775.98,
-      "change": -19.4538,
-      "pct": -1.08,
-      "high": 1798.58,
-      "low": 1773.18,
+      "price": 1776.94,
+      "change": -18.4938,
+      "pct": -1.03,
+      "high": 1777.39,
+      "low": 1775.79,
       "vol": 0,
       "candles": [
         {
@@ -584,40 +592,40 @@
           "vol": 0
         },
         {
-          "time": 1790976587,
-          "open": 1792.1801,
-          "high": 1798.58,
-          "low": 1773.1801,
-          "close": 1775.98,
+          "time": 1791155091,
+          "open": 1776.74,
+          "high": 1777.39,
+          "low": 1775.79,
+          "close": 1776.9399,
           "vol": 0
         }
       ]
     },
     "cnykrw": {
-      "price": 200.062,
-      "change": -2.58,
-      "pct": -1.27,
-      "high": 203.037,
-      "low": 200.062,
+      "price": 200.366,
+      "change": 0.304,
+      "pct": 0.15,
+      "high": 200.368,
+      "low": 200.084,
       "vol": 0,
       "candles": [
         {
-          "time": 1790977488,
-          "open": 202.702,
-          "high": 203.037,
-          "low": 200.062,
-          "close": 200.062,
+          "time": 1791155091,
+          "open": 200.31,
+          "high": 200.368,
+          "low": 200.084,
+          "close": 200.366,
           "vol": 0
         }
       ]
     },
     "oil": {
-      "price": 91.11,
-      "change": -1.76,
-      "pct": -1.9,
-      "high": 93.51,
-      "low": 88.06,
-      "vol": 326828,
+      "price": 91.03,
+      "change": -0.08,
+      "pct": -0.09,
+      "high": 91.88,
+      "low": 90.96,
+      "vol": 3327,
       "candles": [
         {
           "time": 1790654400,
@@ -649,17 +657,25 @@
           "high": 93.51,
           "low": 88.06,
           "close": 91.11,
-          "vol": 326828
+          "vol": 337181
+        },
+        {
+          "time": 1791154710,
+          "open": 91.77,
+          "high": 91.88,
+          "low": 90.96,
+          "close": 91.03,
+          "vol": 3327
         }
       ]
     },
     "brent": {
-      "price": 102.25,
-      "change": -0.06,
-      "pct": -0.06,
-      "high": 103.05,
-      "low": 98.43,
-      "vol": 52249,
+      "price": 102.59,
+      "change": 0.34,
+      "pct": 0.33,
+      "high": 103.55,
+      "low": 102.56,
+      "vol": 575,
       "candles": [
         {
           "time": 1790654400,
@@ -691,17 +707,25 @@
           "high": 103.05,
           "low": 98.43,
           "close": 102.25,
-          "vol": 52249
+          "vol": 54607
+        },
+        {
+          "time": 1791154673,
+          "open": 103.01,
+          "high": 103.55,
+          "low": 102.56,
+          "close": 102.59,
+          "vol": 575
         }
       ]
     },
     "gold": {
-      "price": 4162.3,
-      "change": -39.9998,
-      "pct": -0.95,
-      "high": 4259.0,
-      "low": 4153.8,
-      "vol": 164881,
+      "price": 4175.7,
+      "change": 13.4002,
+      "pct": 0.32,
+      "high": 4176.6,
+      "low": 4160.0,
+      "vol": 3517,
       "candles": [
         {
           "time": 1790654400,
@@ -733,17 +757,25 @@
           "high": 4259.0,
           "low": 4153.7998,
           "close": 4162.2998,
-          "vol": 164881
+          "vol": 130846
+        },
+        {
+          "time": 1791154713,
+          "open": 4169.3999,
+          "high": 4176.6001,
+          "low": 4160.0,
+          "close": 4175.7002,
+          "vol": 3517
         }
       ]
     },
     "silver": {
-      "price": 60.415,
-      "change": -0.31,
-      "pct": -0.51,
-      "high": 62.455,
-      "low": 59.985,
-      "vol": 38696,
+      "price": 61.085,
+      "change": 1.108,
+      "pct": 1.85,
+      "high": 61.23,
+      "low": 60.645,
+      "vol": 1183,
       "candles": [
         {
           "time": 1790654400,
@@ -771,21 +803,29 @@
         },
         {
           "time": 1790913600,
-          "open": 61.36,
-          "high": 62.455,
-          "low": 59.985,
-          "close": 60.415,
-          "vol": 38696
+          "open": 61.555,
+          "high": 61.555,
+          "low": 59.977,
+          "close": 59.977,
+          "vol": 229
+        },
+        {
+          "time": 1791154563,
+          "open": 60.7,
+          "high": 61.23,
+          "low": 60.645,
+          "close": 61.085,
+          "vol": 1183
         }
       ]
     },
     "natgas": {
-      "price": 3.035,
-      "change": 0.068,
-      "pct": 2.29,
-      "high": 3.051,
-      "low": 2.912,
-      "vol": 178518,
+      "price": 3.001,
+      "change": -0.034,
+      "pct": -1.12,
+      "high": 3.024,
+      "low": 2.999,
+      "vol": 2514,
       "candles": [
         {
           "time": 1790654400,
@@ -817,17 +857,25 @@
           "high": 3.051,
           "low": 2.912,
           "close": 3.035,
-          "vol": 178518
+          "vol": 153083
+        },
+        {
+          "time": 1791154666,
+          "open": 3.019,
+          "high": 3.024,
+          "low": 2.999,
+          "close": 3.001,
+          "vol": 2514
         }
       ]
     },
     "copper": {
-      "price": 6.549,
-      "change": 0.067,
-      "pct": 1.03,
-      "high": 6.633,
-      "low": 6.52,
-      "vol": 34321,
+      "price": 6.587,
+      "change": 0.095,
+      "pct": 1.46,
+      "high": 6.6,
+      "low": 6.572,
+      "vol": 395,
       "candles": [
         {
           "time": 1790654400,
@@ -855,11 +903,19 @@
         },
         {
           "time": 1790913600,
-          "open": 6.575,
-          "high": 6.6325,
-          "low": 6.52,
-          "close": 6.549,
-          "vol": 34321
+          "open": 6.4995,
+          "high": 6.535,
+          "low": 6.4915,
+          "close": 6.492,
+          "vol": 1453
+        },
+        {
+          "time": 1791154697,
+          "open": 6.573,
+          "high": 6.6,
+          "low": 6.572,
+          "close": 6.587,
+          "vol": 395
         }
       ]
     },
@@ -969,7 +1025,7 @@
       "pct": 1.34,
       "high": 237.87,
       "low": 233.6,
-      "vol": 134470648,
+      "vol": 135167817,
       "candles": [
         {
           "time": 1790602200,
@@ -1019,7 +1075,7 @@
       "pct": 1.02,
       "high": 334.54,
       "low": 330.61,
-      "vol": 31878433,
+      "vol": 33278552,
       "candles": [
         {
           "time": 1790602200,
@@ -1069,7 +1125,7 @@
       "pct": 0.92,
       "high": 522.5,
       "low": 513.66,
-      "vol": 17179496,
+      "vol": 17822339,
       "candles": [
         {
           "time": 1790602200,
@@ -1119,7 +1175,7 @@
       "pct": 4.65,
       "high": 374.6,
       "low": 359.411,
-      "vol": 54147498,
+      "vol": 55330140,
       "candles": [
         {
           "time": 1790602200,
@@ -1169,7 +1225,7 @@
       "pct": 1.56,
       "high": 345.77,
       "low": 341.16,
-      "vol": 22734069,
+      "vol": 23772148,
       "candles": [
         {
           "time": 1790602200,
@@ -1219,7 +1275,7 @@
       "pct": 0.3,
       "high": 741.58,
       "low": 726.2,
-      "vol": 12873427,
+      "vol": 12964079,
       "candles": [
         {
           "time": 1790602200,
@@ -1319,7 +1375,7 @@
       "pct": 1.02,
       "high": 754.53,
       "low": 747.535,
-      "vol": 34175024,
+      "vol": 34498919,
       "candles": [
         {
           "time": 1790602200,
@@ -1369,7 +1425,7 @@
       "pct": -0.3,
       "high": 78.32,
       "low": 77.28,
-      "vol": 61299947,
+      "vol": 61407955,
       "candles": [
         {
           "time": 1790602200,
@@ -1975,13 +2031,6 @@
     {
       "source": "매일경제",
       "category": "분석",
-      "title": "中, 유령회사 통해 韓반도체기술 통째로 빼가",
-      "link": "https://www.mk.co.kr/news/economy/12168152",
-      "summary": ""
-    },
-    {
-      "source": "매일경제",
-      "category": "분석",
       "title": "“누구나 쓸 수 있는 AI, 지역경제에 새 기회”",
       "link": "https://www.mk.co.kr/news/economy/12167925",
       "summary": ""
@@ -1991,6 +2040,20 @@
       "category": "분석",
       "title": "“포켓몬 카드 사줄 때가 아니네”…금리 7% 챙기는 아이통장 뭐길래",
       "link": "https://www.mk.co.kr/news/economy/12167910",
+      "summary": ""
+    },
+    {
+      "source": "매일경제",
+      "category": "분석",
+      "title": "[속보] 트럼프 “韓 알래스카 투자 안한대도 괜찮다…돈 더 청구하면 돼”",
+      "link": "https://www.mk.co.kr/news/economy/12167720",
+      "summary": ""
+    },
+    {
+      "source": "파이낸셜뉴스",
+      "category": "분석",
+      "title": "삼성전자, 배당 못 받으면 어때…'100조' 찍으면 매수세 돌아올까 [증시는 왜]",
+      "link": "https://www.fnnews.com/news/202610041454423953",
       "summary": ""
     },
     {
@@ -2016,9 +2079,9 @@
     },
     {
       "source": "파이낸셜뉴스",
-      "category": "분석",
-      "title": "한 달 새 30% 뛴 소부장…코스닥 900선 안착 이끌까",
-      "link": "https://www.fnnews.com/news/202610040128543745",
+      "category": "국제",
+      "title": "美에너지장관 \"유럽 경유 방출에 갤런당 6달러 아래로 하락\"",
+      "link": "https://www.fnnews.com/news/202610050613053277",
       "summary": ""
     },
     {
@@ -2036,38 +2099,66 @@
       "summary": ""
     },
     {
+      "source": "파이낸셜뉴스",
+      "category": "국제",
+      "title": "경합주 떠오른 알래스카…'LNG 투자' 발표에도 민심 싸늘 [격전지로 본 美 중간선거 (3)]",
+      "link": "https://www.fnnews.com/news/202610041818540446",
+      "summary": ""
+    },
+    {
       "source": "Investing.com",
       "category": "속보",
-      "title": "호주 챌머스 재무장관, 美-이란 전쟁으로 인플레 및 차입 비용 상승 비난",
-      "link": "https://kr.investing.com/news/economy-news/article-2115397",
+      "title": "어도비 주식: 새 리더십 앞두고 주목해야 할 5가지 전략적 질문",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2115457",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "Schneider Electric, 美 소프트웨어 업체 PTC 200억 달러 인수 임박 보도",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2115448",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "델핀, 몬테 데이 파스키 지분 17.6% 전량 인테사 공개매수에 응할 것",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2115447",
+      "summary": ""
+    },
+    {
+      "source": "Investing.com",
+      "category": "속보",
+      "title": "AkzoNobel, 동남아 페인트 사업부 10억 달러에 니폰 페인트에 매각 임박",
+      "link": "https://kr.investing.com/news/stock-market-news/article-2115444",
       "summary": ""
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "트럼프 알래스카 LNG 투자 압박, 한미 안보협의 새 변수 되나",
-      "link": "https://www.yna.co.kr/view/AKR20261004016600504",
+      "title": "[통합시 100일] ③ '800조 반도체' 유치…초광역 산업생태계 구축",
+      "link": "https://www.yna.co.kr/view/AKR20261001175700054",
       "summary": ""
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "시흥에 투자하는 기업에 최대 6억원 보조금…공격적 투자유치",
-      "link": "https://www.yna.co.kr/view/AKR20261002138600061",
+      "title": "\"6년간 수은·무보 구매자금융 60조…전략수출금융기금은 제자리\"",
+      "link": "https://www.yna.co.kr/view/AKR20261004025400001",
       "summary": ""
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "적자회사 주식으로 상속세 84억 납부?…\"당국 불허 적법\"",
-      "link": "https://www.yna.co.kr/view/AKR20261003027400004",
+      "title": "코스닥 지난달 최악 수익률은 제약…금리·반도체 쏠림에 직격탄",
+      "link": "https://www.yna.co.kr/view/AKR20261003033300008",
       "summary": ""
     },
     {
       "source": "연합뉴스",
       "category": "국내",
-      "title": "반도체 설비투자 확대로 공급 확대? \"내후년 하반기는 돼야\"",
-      "link": "https://www.yna.co.kr/view/AKR20261002179200008",
+      "title": "반세기만의 원전 역수출…웨스팅하우스 반대 뚫어낸 막전막후",
+      "link": "https://www.yna.co.kr/view/AKR20261003044800003",
       "summary": ""
     }
   ],
@@ -2385,72 +2476,18 @@
   },
   "youtube": [
     {
-      "name": "매일경제TV",
-      "type": "media",
-      "videoId": "UGSFZYw1g1Q",
-      "title": "추락 이후 더욱더 중요해질 K-자폭무인기 핵심주 퍼스텍,주목해야 하는 이유는?ㅣ디펜스 크러시",
-      "updated": "2026-10-04T00:00:33+00:00",
-      "summary": "추락 이후 더욱더 중요해질 K-자폭무인기 핵심주 퍼스텍,주목해야 하는 이유는?ㅣ디펜스 크러시",
-      "isNew": true
-    },
-    {
-      "name": "매일경제TV",
-      "type": "media",
-      "videoId": "gBVrZX5H-jY",
-      "title": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
-      "updated": "2026-10-03T23:00:13+00:00",
-      "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
-      "isNew": false
-    },
-    {
-      "name": "매일경제TV",
-      "type": "media",
-      "videoId": "aqulccRnjKs",
-      "title": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
-      "updated": "2026-10-03T23:00:00+00:00",
-      "summary": "↑↑↑ 본편 보기 클릭 #경제토크쇼픽",
-      "isNew": false
-    },
-    {
       "name": "경제사냥꾼",
       "type": "yt",
-      "videoId": "imhcllFNVMI",
-      "title": "투자자들이 꼭 알아야 할 '10월' 새로운 '매도 기준' 3가지",
-      "updated": "2026-10-04T08:00:03+00:00",
-      "summary": "투자자들이 꼭 알아야 할 '10월' 새로운 '매도 기준' 3가지",
-      "isNew": true
-    },
-    {
-      "name": "경제사냥꾼",
-      "type": "yt",
-      "videoId": "yyfCTQ2LAZQ",
-      "title": "10월 현시점, 월가가 바라보는 '코스피+나스닥' 연말 전망",
-      "updated": "2026-10-04T03:00:35+00:00",
-      "summary": "10월 현시점, 월가가 바라보는 '코스피+나스닥' 연말 전망",
-      "isNew": true
-    },
-    {
-      "name": "경제사냥꾼",
-      "type": "yt",
-      "videoId": "Mkf-2Bq75kk",
-      "title": "삼전·닉스'가 없었다면, 누가 코스피 대장주였을까?",
-      "updated": "2026-10-04T01:00:38+00:00",
-      "summary": "삼전·닉스'가 없었다면, 누가 코스피 대장주였을까?",
-      "isNew": true
-    },
-    {
-      "name": "경제사냥꾼",
-      "type": "yt",
-      "videoId": "JauYuNtbxVY",
-      "title": "외신들이 '세계 최악'이라 말한, 코스피 '하락'의 진짜 원인",
-      "updated": "2026-10-03T23:00:12+00:00",
-      "summary": "외신들이 '세계 최악'이라 말한, 코스피 '하락'의 진짜 원인",
+      "videoId": "4QYtyQnR_eM",
+      "title": "10월 5일 투자자들이 꼭 알아야 하는 오늘의 투자 포인트",
+      "updated": "2026-10-04T22:04:50+00:00",
+      "summary": "10월 5일 투자자들이 꼭 알아야 하는 오늘의 투자 포인트",
       "isNew": true
     }
   ],
   "yt_checkpoints": {
     "12시에 만나요": "2026-10-03T09:16:04Z",
-    "경제사냥꾼": "2026-10-04T09:16:01Z",
+    "경제사냥꾼": "2026-10-04T23:09:57Z",
     "슈페tv": "2026-10-04T09:16:01Z"
   }
 }
