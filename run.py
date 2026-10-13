@@ -3,7 +3,8 @@
 실행 모드는 SLOT 환경변수로 결정 (외부 cron 서비스가 workflow_dispatch 호출시 inputs.slot으로 전달):
   morning : 전체 실행 + 텔레그램 아침 브리핑(AI시황) + 유튜브 다이제스트 (KST 08:08)
   email   : 전체 실행 + 이메일 발송 + 유튜브 다이제스트 (KST 15:07, "12시에 만나요" 처리 후)
-  full    : 전체 실행 + 유튜브 다이제스트 (KST 18:14)
+  full    : 전체 실행 + 유튜브 다이제스트 (KST 18:14) - AI시황은 비용절감을 위해 새로 생성하지 않고
+            15:07(email) 것을 재사용 (사이트에는 ai.generated_at으로 "몇시 기준"인지 표시)
   market  : 시세만 가볍게 갱신 (장중 추가호출용, 알림 없음, 뉴스/포트폴리오/AI/유튜브는 그대로 유지)
 
 SLOT이 없으면 GITHUB_SCHEDULE(진짜 GitHub schedule: 트리거, 지연될 수 있음)로 폴백,
@@ -71,7 +72,7 @@ def load_existing():
         return {}
 
 # 텔레그램 발송 대상에서 제외할 채널 (사이트에는 표시하되 알림은 안 보냄)
-NOTIFY_EXCLUDE = {'매일경제TV'}
+NOTIFY_EXCLUDE = set()
 
 def send_yt_checkpoint_digest(youtube_data, existing_checkpoints):
     """
@@ -125,7 +126,9 @@ def run_market_only():
         json.dump(existing, f, ensure_ascii=False, indent=2)
     print('data.json market 필드만 갱신 완료')
 
-def run_full(send_morning=False, send_email=False):
+def run_full(send_morning=False, send_email=False, reuse_ai=False):
+    existing = load_existing()
+
     print('1. 시장 데이터 수집...')
     market_data = market.run()
 
@@ -135,11 +138,17 @@ def run_full(send_morning=False, send_email=False):
     print('3. 포트폴리오 로드...')
     portfolio_data = portfolio.run()
 
-    print('4. AI 요약 생성...')
-    ai_data = ai_summary.run(market_data, portfolio_data)
+    prev_ai = existing.get('ai') or {}
+    if reuse_ai and prev_ai.get('summary') and not prev_ai.get('error'):
+        print('4. AI 요약 재사용 (비용절감 - 직전 생성분 유지)')
+        ai_data = prev_ai
+    else:
+        print('4. AI 요약 생성...')
+        ai_data = ai_summary.run(market_data, portfolio_data)
+        if not ai_data.get('error'):
+            ai_data['generated_at'] = datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
 
     print('5. 유튜브 채널 수집...')
-    existing = load_existing()
     existing_today = _today_videos_by_id(existing.get('youtube'))
     # youtube.run()은 체크포인트 다이제스트용으로 최근 36시간(오늘+어제 저녁)을 넓게 가져옴
     fetched = youtube.run(existing=existing_today)
@@ -189,7 +198,8 @@ def main():
     elif mode == 'email':
         run_full(send_email=True)
     else:
-        run_full()
+        # 외부cron의 18:14 full 슬롯만 AI 재사용 (수동 Run workflow 테스트는 새로 생성)
+        run_full(reuse_ai=os.environ.get('SLOT', '').strip() == 'full')
 
 if __name__ == '__main__':
     main()

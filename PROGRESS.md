@@ -135,6 +135,13 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - **모바일에서 "실시간" 표시인데 실제로 안 갱신되던 버그 원인 발견·수정**: 모바일 브라우저가 백그라운드/화면꺼짐 시 `setInterval`을 정지시켜서 한번 열어본 시점 데이터가 계속 고정되어 있었음 → `visibilitychange` 이벤트로 화면이 다시 보일 때 즉시 재조회하도록 추가(60초 쓰로틀)
 - **연금 타일 PC/모바일 미동기화 문제**: localStorage가 기기별로 분리되는 구조적 한계(포트폴리오와 동일) → 구글시트 백업이 고쳐지기 전까지 쓸 수 있는 임시 해법으로, 관리자 화면에 "내보내기/가져오기" 코드 복사 방식 동기화 추가(클립보드 복사 → 다른 기기에 붙여넣기)
 
+**2026-10-14**: AI시황 10/3~10/13 전면 실패 원인 분석·비용 절감 →
+- 원인: Anthropic 크레딧 소진(400 `credit balance is too low`). 8/12 $22 충전분이 약 7주 만에 소진 → 달봉즈님 재충전
+- 비용 분석: AI시황(Sonnet, 하루3회) + 경제사냥꾼 자막요약(하루 ~6개)이 대부분. 어제 영상(36시간 창)을 매 실행마다 자막조회+재요약하던 낭비 발견
+- 유튜브: 매일경제TV 제거(채널 4개: 당잠사/슈페TV/경제사냥꾼/12시에 만나요), 한국경제TV `titleKeyword`를 `'당잠사'`로 수정(실제 제목이 `#당잠사` 축약형이라 8/12 이후 한 번도 수집 안 됐음), 오늘(KST) 영상만 요약
+- AI시황 하루 3회→2회: `SLOT=full`(18:14)은 직전 생성분 재사용, `ai.generated_at` 추가해 사이트에 "(10월 14일 오후 03:07 기준)" 표시. 수동 Run workflow는 계속 새로 생성
+- 주의: Actions에서 과거 실행 "Re-run"은 옛 커밋으로 돌아 data.json push 충돌로 실패함 → 테스트는 항상 "Run workflow"로 새로 실행
+
 ---
 
 ## 데이터/설정 참고
@@ -146,7 +153,7 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
   "market":  { "kospi": {...}, "sp500": {...}, "investors": {...}, ... },
   "news":    [ { "title", "link", "source", "category", "summary" }, ... ],
   "portfolio": { "holdings": [...], "count": N },
-  "ai":      { "summary", "kr", "us", "sectors", "holdings", "picks", "do", "dont", "risk_level" },
+  "ai":      { "summary", "kr", "us", "sectors", "holdings", "picks", "do", "dont", "risk_level", "generated_at" },
   "youtube": [ { "name", "type", "videoId", "title", "updated", "summary", "isNew" }, ... ]
 }
 ```
@@ -215,6 +222,8 @@ invest-dash/
 | 12시에만나요 영상 오매칭 | RSS 최신 1건만 사용, 다른 시간대 프로그램 혼입 | RSS 전체 entry 순회 + titleKeyword 필터 |
 | Supadata 429 limit-exceeded | 구버전 Apps Script가 매시간 호출해 Free플랜 소진 | 중복호출 방지 추가, 유료플랜은 보류중 |
 | data.json push 충돌 | 여러 실행 동시 종료시 git push 경쟁 | pull --rebase 재시도 루프(최대5회) |
+| data.json push 충돌(rebase CONFLICT로 실패) | 과거 실행을 "Re-run"하면 옛 커밋 기준으로 실행됨 | "Run workflow"로 새로 실행 |
+| AI시황 `api_status_400` + 유튜브 요약 동시 중단 | Anthropic 크레딧 소진 (`credit balance is too low`) | console.anthropic.com Billing에서 충전(자동충전 권장) |
 
 ---
 

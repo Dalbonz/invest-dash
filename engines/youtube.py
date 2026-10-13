@@ -12,15 +12,24 @@ def _is_recent(published_str, hours=36):
     except Exception:
         return True
 
+KST = timezone(timedelta(hours=9))
+
+def _is_today_kst(published_str):
+    try:
+        dt = datetime.fromisoformat(published_str.replace('Z', '+00:00'))
+        return dt.astimezone(KST).date() == datetime.now(KST).date()
+    except Exception:
+        return True
+
 HEADERS = {'User-Agent': 'Mozilla/5.0'}
 SUPADATA_API_KEY = os.environ.get('SUPADATA_API_KEY', '')
 
 # summaryMode: 'full'(자막분석+AI요약, 비용 높음) / 'title'(제목만 AI요약, 자막조회 안함 - 비용 최소화)
-# titleKeyword: 채널 전체가 아니라 제목에 이 키워드가 있는 영상만 수집 (예: 한국경제TV는 "당신이 잠든사이" 코너만)
+# titleKeyword: 채널 전체가 아니라 제목에 이 키워드가 있는 영상만 수집 (예: 한국경제TV는 "당신이 잠든사이" 코너만 -
+#   실제 제목은 풀네임이 아니라 "[🔴10/14 #당잠사]..." 형식이라 '당잠사'로 매칭)
 # → 채널을 새로 추가/수정할 때는 "하루에 몇 개 올라오는지 + summaryMode를 뭘로 할지"를 같이 정해야 함
 CHANNELS = [
-    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'titleKeyword': '당신이 잠든사이', 'summaryMode': 'full'},
-    {'name': '매일경제TV',      'handle': 'MKeconomy_TV',              'type': 'media', 'format': 'investment', 'summaryMode': 'title'},
+    {'name': '한국경제TV',      'handle': 'hkwowtv',                   'type': 'media', 'format': 'investment', 'titleKeyword': '당잠사', 'summaryMode': 'full'},
     {'name': '12시에 만나요',   'handle': 'gyeomsonisnothing',          'type': 'yt',    'format': 'investment', 'titleKeyword': '12시에 만나요', 'summaryMode': 'full'},
     {'name': '경제사냥꾼',      'handle': 'UC7usMJDHmtbs_oegmzQKKMA', 'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
     {'name': '슈페tv',          'handle': 'supe-tv',                   'type': 'yt',    'format': 'free', 'summaryMode': 'full'},
@@ -259,6 +268,22 @@ def run(existing=None):
                                'videoId': video['videoId'], 'title': video['title'],
                                'updated': video['published'],
                                'isNew': False})
+                continue
+
+            # 사이트/이메일에 저장되는 건 오늘(KST) 영상뿐이고 다이제스트는 제목+링크만 쓰므로,
+            # 어제 영상(36시간 창에 걸린 것)은 자막조회/AI요약 없이 넘긴다 (매 실행마다 재요약되던 비용 낭비 방지)
+            if not _is_today_kst(video.get('published', '')):
+                summary = ''
+                print('  → 어제 영상(요약 생략, 다이제스트용)')
+                result.append({
+                    'name':       ch['name'],
+                    'type':       ch['type'],
+                    'videoId':    video['videoId'],
+                    'title':      video['title'],
+                    'updated':    video['published'],
+                    'summary':    summary,
+                    'isNew':      True,
+                })
                 continue
 
             mode = ch.get('summaryMode', 'full')
