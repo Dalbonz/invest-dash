@@ -6,12 +6,12 @@
 
 ---
 
-## 현재 상태 (2026-07-30 기준)
+## 현재 상태 (2026-10-14 기준)
 
 접속 URL: https://dalbonz.github.io/invest-dash
 앱 이름: **B&K** (PWA 홈화면 설치명)
 
-전체 파이썬 엔진(시장/뉴스/AI시황/유튜브/포트폴리오) + GitHub Actions 자동화 + cron-job.org 외부스케줄 + PWA + 이메일/텔레그램 발송 + 포트폴리오(웹 단일편집) + 관심종목 기반 온디맨드 AI 브리핑(Cloudflare Worker) 모두 운영 중. 2026-07-29~30 세션에서 종목별 AI 브리핑 기능과 관심종목(watchlist) 분리를 완료·배포함(아래 핵심 아키텍처 참고). 다음 세션은 진행 중이던 신규 기능이 없는 "쉬는 지점"에서 시작 — 다음 우선순위는 아래 "다음 작업" 1번(구글시트 백업 실패 조사)부터.
+전체 파이썬 엔진(시장/뉴스/AI시황/유튜브/포트폴리오) + GitHub Actions 자동화 + cron-job.org 외부스케줄 + PWA + 이메일/텔레그램 발송 + 포트폴리오(웹 단일편집) + 관심종목 기반 온디맨드 AI 브리핑(Cloudflare Worker) 모두 운영 중. 2026-07-29~30 세션에서 종목별 AI 브리핑 기능과 관심종목(watchlist) 분리를 완료·배포함(아래 핵심 아키텍처 참고). 2026-10-14 세션: Anthropic 크레딧 2차 소진(10/3~10/13 AI시황 공백) 원인 분석 + 유튜브/AI시황 비용 절감 + UI 남색 테마·네이버/삼성증권 바로가기·차트 해상도 개선 완료·배포. 진행 중인 작업 없음 — 다음은 아래 "다음 작업" 참고(크레딧 재발방지 설정 우선).
 
 ---
 
@@ -45,14 +45,17 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - 마지막 발송 시각은 `data.json`의 `yt_checkpoints`(채널명→ISO시각)에 저장, **자정과 무관하게 유지**됨 — 그래서 아침(morning) 체크는 자연히 "어제 저녁~지금까지"를 커버함.
 - 이를 위해 `engines/youtube.py`의 수집 자체를 "오늘(자정 기준)"에서 "최근 36시간"(`_is_recent`)으로 넓힘. 다만 사이트에 저장/표시하는 `data.json`의 `youtube` 배열은 `run.py`에서 다시 오늘자로만 걸러서 어제 영상이 안 섞이게 함 — **이 둘을 분리하는 게 이 개편의 핵심이라, 나중에 손댈 때 절대 하나로 합치지 말 것** (합치면 어제 영상이 사이트에 노출되거나, 반대로 자정 넘어간 어제저녁 영상이 알림에서 영영 누락됨).
 - `notifyMode`/`digestSent`/`fullKeywords`(즉시발송 승격용) 필드는 전부 제거됨 — 더 이상 즉시발송 개념 없음.
-- 매일경제TV는 `NOTIFY_EXCLUDE`(run.py)에 넣어 수집/사이트표시는 하되 텔레그램 대상에서만 제외.
+- `NOTIFY_EXCLUDE`(run.py)는 현재 비어있음(매일경제TV 제외용이었으나 2026-10-14 채널 자체 삭제).
+- **36시간 창에 걸린 "어제 영상"은 자막조회/AI요약을 하지 않음**(2026-10-14, `youtube.run`의 `_is_today_kst` 체크) — 사이트/이메일엔 오늘 영상만 저장되고 다이제스트는 제목+링크만 쓰므로 요약이 버려지는데, 이전엔 매 실행마다 재요약해서 비용 3~4배 낭비였음. 위 "수집 36시간 / 표시 오늘" 분리 원칙은 그대로 유지.
 - **cron-job.org 액션 필요(달봉즈님)**: 기존 6개 잡(yt1 07:05/yt2 08:08/morning 08:30/yt3 10:12/email 15:07/full 18:14) → **3개만 남기기**: 08:08(slot=morning), 15:07(slot=email, 그대로), 18:14(slot=full, 그대로). yt1/yt3/기존 08:30 morning 잡은 삭제.
 - AI 시황 아침브리핑(별도 기능, 시장요약 텔레그램)은 그대로 유지 — 다만 발송 시각이 08:30→08:08로 약 22분 당겨짐(morning 슬롯이 이 시각으로 이동했으므로).
 - 원복 필요시: 이 변경 직전 커밋으로 git revert (별도 설정 플래그 없음, git 히스토리가 곧 백업).
 - **2026-08-12 채널 구성 변경**: 연합뉴스경제TV 제거(요청). 한국경제TV는 `titleKeyword:'당신이 잠든사이'`로 좁혀서 그 코너만 수집(하루 15개 → 소수), `summaryMode`도 `'full'`로 승격. 프론트 `index.html`의 `DEFAULT_ADMIN_CFG.mediaChannels`도 같이 갱신함 — **단, 관리자 메뉴에서 채널 목록을 이미 커스터마이징(localStorage `admin_cfg`)해서 쓰고 있었다면 이 기본값 변경이 반영 안 되므로, 관리자 메뉴 → 채널 탭에서 연합뉴스경제TV가 여전히 보이면 직접 삭제 필요**.
-- **⚠️ 2026-08-07~08-12 Anthropic 크레딧 소진 사고**: 이 기간 AI 요약이 전부 실패해서 `'title'` 모드 채널은 제목을 그대로 "요약"으로 채워넣는 폴백이 발동(`engines/youtube.py`의 `_summarize_title_only`가 API 실패시 `title` 그대로 반환) → 미디어분석이 내용없이 제목만 반복되는 것처럼 보였음. `ai_summary.py`도 같은 기간 `{'error':'api_status_400'}`으로 AI 시황 완전 공백. 크레딧 충전으로 해결(2026-08-12), 자동 리로드는 기본 꺼져있으니 **잔액 임계치 알림 또는 자동충전 설정을 걸어두는 게 재발 방지에 필요** (다음 세션 논의).
+- **2026-10-14 채널 구성 변경**: 매일경제TV 제거 → 현재 4개: 한국경제TV(당잠사만, `titleKeyword:'당잠사'` — 실제 제목이 `[🔴10/14 #당잠사]...` 축약형이라 기존 `'당신이 잠든사이'`로는 8/12 이후 한 번도 매칭 안 됐음) / 12시에 만나요 / 경제사냥꾼 / 슈페tv, 전부 `'full'`. 경제사냥꾼이 하루 ~6개로 유튜브 비용 대부분 — 단 배우자분이 앱/이메일에서 요약을 읽으므로 `'title'` 모드 전환은 하지 않기로 함.
+- **⚠️ 2026-08-07~08-12 Anthropic 크레딧 소진 사고 (2026-10-03~10-13 2차 재발, 아래 히스토리 참고)**: 이 기간 AI 요약이 전부 실패해서 `'title'` 모드 채널은 제목을 그대로 "요약"으로 채워넣는 폴백이 발동(`engines/youtube.py`의 `_summarize_title_only`가 API 실패시 `title` 그대로 반환) → 미디어분석이 내용없이 제목만 반복되는 것처럼 보였음. `ai_summary.py`도 같은 기간 `{'error':'api_status_400'}`으로 AI 시황 완전 공백. 크레딧 충전으로 해결(2026-08-12), 자동 리로드는 기본 꺼져있으니 **잔액 임계치 알림 또는 자동충전 설정을 걸어두는 게 재발 방지에 필요** (다음 세션 논의).
 
-### 스케줄 (2026-06-22 확정)
+### 스케줄 (2026-06-22 확정, 2026-08-14 3개로 축소, 2026-10-14 AI 2회로)
+- **현재 실제 실행(커밋 시각 기준 확인)**: 08:08 morning(AI시황 생성+텔레그램 아침브리핑) / 15:07 email(AI시황 생성+이메일) / 18:14 full(**AI시황 재사용** — 15:07분을 `ai.generated_at`으로 "오후 03:07 기준" 표시, 수동 Run workflow는 새로 생성). 아래 6개 잡 서술은 과거 기록.
 - **cron-job.org가 유일한 스케줄 소스** (`invest-morning/yt1/yt2/yt3/email/full` 6개 잡, GitHub API `workflow_dispatch` 호출)
 - `update.yml`에는 **GitHub 네이티브 `schedule:` 없음** — 예전에 cron-job.org 도입 후에도 같이 남아있어 중복실행 버그가 났던 적 있어서 완전히 제거함. 절대 다시 추가하지 말 것.
 - 시각(KST): yt1 07:05 / yt2 08:08 / **morning 08:30**(2026-06-22 22분→30분 변경) / yt3 10:12 / email 15:07 / full 18:14
@@ -79,6 +82,13 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
   - **버그 발견·수정**: `service-worker.js`가 모든 fetch를 가로채 `cache.put()`하는데 Cache API가 GET만 지원해서 POST(AI 브리핑 호출)가 항상 실패하고 있었음 → `if (e.request.method !== 'GET') return;` 추가로 수정. Playwright 헤드리스 브라우저로 실제 클릭 플로우까지 검증 완료(로컬 서버 + 네트워크 모킹으로 상세팝업 열기 → 브리핑 생성 → 결과표시 → 캐시히트까지 확인).
   - 커밋: `31a3685`(index.html/service-worker.js), Worker 코드는 Cloudflare 대시보드에서 직접 배포(레포 커밋과 별도)
 
+### UI 테마/외부 바로가기/차트 (2026-10-14)
+- **강조색 남색 `#1e3a6e`** (`index.html` `--accent`, `theme-color`, `manifest.json` `theme_color`). 하락색 `--down:#1261c4`(한국식 등락색)과 뉴스/미디어 배지 색은 의도적으로 유지.
+- 아이콘: `icons/icon-192-v2.png`, `icon-512-v2.png`(남색). 파일명을 바꾼 이유는 설치된 PWA(크롬 WebAPK)가 변경을 감지하게 하려는 것 — 아이콘을 또 바꾸면 v3로 이름 변경할 것. 홈화면 아이콘이 안 바뀌면 삭제 후 재설치(localStorage는 유지됨).
+- **네이버 증권 버튼**: 증시 탭 상단(홈) + 종목 상세팝업 상단(`naverUrl()`): 국내 `domestic/stock/{6자리}`, 지수 `domestic/index/KOSPI`·`worldstock/index/.INX` 등, 환율 `marketindex/exchange/FX_USDKRW`, 원자재/VIX 등은 `marketindex` 홈. 미국 종목은 거래소 접미사 필요(나스닥 `.O`, 일부 `.K`, NYSE 없음, BRK-B→`BRKb`) — `NAVER_US_CODE` 맵(2026-10 `api.stock.naver.com/stock/{code}/basic`으로 전수 검증), 맵에 없는 미국 종목은 접미사 없이(NYSE 가정) 연결되므로 신규 나스닥 종목 추가시 맵에도 추가할 것. 기존 팝업 하단 PC용 네이버 링크(미국 종목 깨짐)는 제거.
+- **삼성증권 버튼**: mPOP(`com.samsungpop.android.mpop`)은 종목 직접 여는 공개 딥링크가 없음 → 종목코드 클립보드 복사 후 안드로이드 intent로 앱 실행(미설치시 플레이스토어). 아이폰은 미지원.
+- **차트 해상도**: 상세팝업 3달/6달/1년 → 일봉(약 61/122/245개), 5년 → 주봉(약 263개) (기존 주봉/월봉 12~26개라 "그리다 만" 느낌). 카드 미니차트는 5분봉 10개 미만(환율은 09시 KST 리셋 등)이면 data.json 일봉 4~5개 대신 `1h/5d`로 대체.
+
 ### 알아둘 것 (반복 방지)
 - **localStorage는 브라우저/기기별로 분리**됨 — PC에서 입력한 포트폴리오 데이터는 폰/다른 브라우저에 안 보이는 게 정상(버그 아님).
 - **코드스페이스에서 작업 후 반드시 커밋**할 것 — 닫히면 워킹트리 변경분이 통째로 사라짐. (단, 사라진 것처럼 보였던 사례 중 실제로는 다 저장돼 있었던 경우도 있었음 — 지레짐작하지 말고 git log/dangling commit까지 확인 후 결론낼 것)
@@ -89,7 +99,8 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 
 1. **구글시트 "백업" 실패 원인 추가 조사** — 셀 한도(`_RAW` 탭) 정리했는데도 실패 계속됨. doPost 자체 오류(권한/시트보호 등) 의심, `apps_script_full.txt`(레포에 보관됨) 기반 추가 디버깅 필요
 2. **브라우저 직접호출 야후(`yfetch`) 데이터도 같은 정확성 문제 점검** — ETF카드/상세차트/카드기간전환 버튼
-3. **유튜브 미디어채널 비용 실사용 모니터링** — Anthropic 호출량이 감당 가능한지 며칠 지켜보고 추가 조정 여부 결정
+0. **Anthropic 크레딧 재발 방지(달봉즈님 액션)** — 2회 소진됨(8/7, 10/3). https://console.anthropic.com/settings/billing 에서 자동충전(Auto-reload) 또는 잔액 알림 설정. 선택: AI 실패시 텔레그램 경고 기능 추가(제안만 된 상태)
+3. **유튜브/AI 비용 실사용 모니터링** — 2026-10-14 절감 조치(매경TV 제거, 어제영상 재요약 제거, 18시 AI 재사용) 후 https://console.anthropic.com/usage 에서 일 사용량 확인. 이전 추정: $22로 약 7주(AI시황 ~$8-10, 경제사냥꾼 요약 ~$8-10)
 4. **포트폴리오 실제 동작 검증** (portfolio.js 분리 후) — 보기/편집/저장/시트가져오기/시트백업이 전부 정상 동작하는지 브라우저에서 직접 확인
 5. **안드로이드 실기기 검증** — 모바일 레이아웃, 연금 시세 위젯, PWA 설치(본인 폰은 성공 확인됨, 다른 기기 미확인)
 6. **미디어 탭 채널 추가/삭제/수정 UI** (관리자 메뉴) — 추가시 summaryMode/빈도 같이 결정할 것(위 핵심 아키텍처 참고)
@@ -141,6 +152,8 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 - 유튜브: 매일경제TV 제거(채널 4개: 당잠사/슈페TV/경제사냥꾼/12시에 만나요), 한국경제TV `titleKeyword`를 `'당잠사'`로 수정(실제 제목이 `#당잠사` 축약형이라 8/12 이후 한 번도 수집 안 됐음), 오늘(KST) 영상만 요약
 - AI시황 하루 3회→2회: `SLOT=full`(18:14)은 직전 생성분 재사용, `ai.generated_at` 추가해 사이트에 "(10월 14일 오후 03:07 기준)" 표시. 수동 Run workflow는 계속 새로 생성
 - 주의: Actions에서 과거 실행 "Re-run"은 옛 커밋으로 돌아 data.json push 충돌로 실패함 → 테스트는 항상 "Run workflow"로 새로 실행
+- UI: 남색 테마+아이콘 v2, 네이버증권/삼성증권 바로가기(증시탭 상단+상세팝업), 차트 해상도 개선(위 "UI 테마/외부 바로가기/차트" 참고)
+- 텔레그램 수신자: 대규 제외(index.html 기본값/문서에서 삭제). 실제 발송대상은 Secret `TELEGRAM_CHAT_IDS`에서만 결정됨 — 코드에 ID 없음
 
 ---
 
@@ -167,6 +180,7 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 | Bong GS Apps Script URL | https://script.google.com/macros/s/AKfycbw1W851igwvCuIzoghZyKfgkpqsgc2oPxNHrHsJhDLWhQbKHvlxQGTqMzLuImqnImHv/exec |
 | AI 모델 (유튜브/뉴스요약) | claude-haiku-4-5-20251001 |
 | AI 모델 (시황) | claude-sonnet-4-6 |
+| 강조색(테마) | 남색 `#1e3a6e` |
 | GOOGLE_SHEETS_ID | `1jYVXz_rJ5CiVOWl3Rts5EPXBSgib3BCvf-TDXFegC6E` |
 
 ### 텔레그램/이메일
@@ -223,6 +237,8 @@ invest-dash/
 | Supadata 429 limit-exceeded | 구버전 Apps Script가 매시간 호출해 Free플랜 소진 | 중복호출 방지 추가, 유료플랜은 보류중 |
 | data.json push 충돌 | 여러 실행 동시 종료시 git push 경쟁 | pull --rebase 재시도 루프(최대5회) |
 | data.json push 충돌(rebase CONFLICT로 실패) | 과거 실행을 "Re-run"하면 옛 커밋 기준으로 실행됨 | "Run workflow"로 새로 실행 |
+| 한국경제TV(당잠사) 영상이 아예 안 들어옴 | `titleKeyword`가 풀네임인데 실제 제목은 `#당잠사` 축약형 | `titleKeyword:'당잠사'` (2026-10-14) |
+| 종목 차트 3달/1년이 듬성듬성 | 주봉/월봉이라 점 12~13개 | 일봉/주봉으로 변경 (2026-10-14) |
 | AI시황 `api_status_400` + 유튜브 요약 동시 중단 | Anthropic 크레딧 소진 (`credit balance is too low`) | console.anthropic.com Billing에서 충전(자동충전 권장) |
 
 ---
