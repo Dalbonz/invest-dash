@@ -170,7 +170,7 @@ Python 엔진(GitHub Actions, cron-job.org가 트리거) → data.json → GitHu
 | GOOGLE_SHEETS_ID | `1jYVXz_rJ5CiVOWl3Rts5EPXBSgib3BCvf-TDXFegC6E` |
 
 ### 텔레그램/이메일
-- `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_IDS`(달봉즈, 경, 대규) 등록됨. 무음시간 KST 22:00~07:00엔 신규영상 텔레그램 보류(data.json은 갱신).
+- `TELEGRAM_BOT_TOKEN`/`TELEGRAM_CHAT_IDS`(달봉즈, 경 - 대규는 제외, 실제 값은 Secret에서만 확인/수정 가능) 등록됨. 무음시간 KST 22:00~07:00엔 신규영상 텔레그램 보류(data.json은 갱신).
 - `GMAIL_USER`/`GMAIL_PASSWORD`(앱비번)/`EMAIL_RECIPIENTS` 등록됨, SMTP 발송.
 - 주의: 텔레그램 봇 토큰이 과거 채팅에 노출된 적 있음 → BotFather `/token` 재발급 권장(아직 안 했으면).
 
