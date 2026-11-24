@@ -136,6 +136,8 @@ def run_full(send_morning=False, send_email=False, reuse_ai=False):
     news_data = news.run()
 
     print('3. 포트폴리오 로드...')
+    # portfolio_data는 AI 요약(ai_summary.run)에만 쓰고, data.json에는 저장하지 않는다.
+    # (저장소가 공개될 때 보유 종목·수량·평단·손익이 data.json으로 노출되는 것을 막기 위함)
     portfolio_data = portfolio.run()
 
     prev_ai = existing.get('ai') or {}
@@ -166,7 +168,8 @@ def run_full(send_morning=False, send_email=False, reuse_ai=False):
         'updated': datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ'),
         'market': market_data,
         'news': news_data,
-        'portfolio': portfolio_data,
+        # 공개 저장소 노출 방지: 보유 종목은 항상 빈 값으로만 저장한다
+        'portfolio': {'holdings': [], 'count': 0},
         'ai': ai_data,
         'youtube': youtube_data,
         'yt_checkpoints': checkpoints,
